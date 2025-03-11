@@ -1,7 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import StudentService from '../services/student.service';
 import { CREATED, OK } from '../responses/success.responses';
-
 import { BadRequestError } from '../responses/error.responses';
 
 class StudentController {
@@ -37,7 +36,7 @@ class StudentController {
 		const { q, page = "1", limit = "10", sort = "ctime" } = req.query;
 
 		if (!q || typeof q !== 'string') {
-			throw new BadRequestError('Truy vấn tìm kiếm không hợp lệ');
+			throw new BadRequestError('Search query is required');
 		}
 
 		const searchOptions = {
@@ -50,7 +49,7 @@ class StudentController {
 		const result = await StudentService.searchStudents(searchOptions);
 
 		return new OK({
-			message: 'Kết quả tìm kiếm',
+			message: 'Search results',
 			metadata: {
 				...result,
 				query: q
@@ -71,6 +70,15 @@ class StudentController {
 		return new OK({
 			message: 'Department enum',
 			metadata: { DepartmentTypes }
+		}).send(res);
+	}
+	
+	static async getAllStudents(req: Request, res: Response, next: NextFunction) {
+		const { page = "1", limit = "10" } = req.query;
+		const result = await StudentService.getAllStudents(parseInt(page as string, 10), parseInt(limit as string, 10));
+		return new OK({
+			message: 'All students',
+			metadata: result
 		}).send(res);
 	}
 }

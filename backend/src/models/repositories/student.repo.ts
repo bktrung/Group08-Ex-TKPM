@@ -1,6 +1,7 @@
 import Student, { IStudent } from "../student.model";
 import { CreateStudentDto, UpdateStudentDto } from "../../dto/student";
 import { getAllDocuments, PaginationResult, SearchOptions } from "../../utils";
+import { create } from "domain";
 
 export const findStudent = async (query: any): Promise<IStudent | null> => {
 	return Student.findOne(query);
@@ -36,8 +37,21 @@ export const searchStudents = async (options: SearchOptions): Promise<Pagination
 		page,
 		limit,
 		sort,
-		select: { score: { $meta: "textScore" } }
+		select: { 
+			score: { $meta: "textScore" },
+			createdAt: 0, updatedAt: 0, __v: 0, _id: 0
+		}
 	});
 
 	return result;
 };
+
+export const getAllStudents = async (page: number = 1, limit: number = 10): Promise<PaginationResult<IStudent>> => {
+	return await getAllDocuments(Student, {
+		filter: {},
+		page,
+		limit,
+		sort: "ctime",
+		select: { createdAt: 0, updatedAt: 0, __v: 0, _id: 0 }
+	});
+}

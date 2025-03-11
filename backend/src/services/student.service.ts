@@ -3,7 +3,8 @@ import {
 	findStudent, 
 	updateStudent, 
 	deleteStudent, 
-	searchStudents 
+	searchStudents, 
+	getAllStudents
 } from '../models/repositories/student.repo';
 import { IStudent, StudentStatus, Department } from '../models/student.model';
 import { BadRequestError, NotFoundError } from '../responses/error.responses';
@@ -91,6 +92,19 @@ class StudentService {
 
 	static async getDepartmentEnum(): Promise<string[]> {
 		return Object.values(Department);
+	}
+
+	static async getStudentById(studentId: string): Promise<IStudent> {
+		const student = await findStudent({ studentId });
+		if (!student) {
+			throw new NotFoundError('Không tìm thấy sinh viên');
+		}
+
+		return student;
+	}
+
+	static async getAllStudents(page: number, limit: number): Promise<PaginationResult<IStudent>> {
+		return await getAllStudents(page, limit);
 	}
 }
 

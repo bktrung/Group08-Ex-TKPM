@@ -6,6 +6,7 @@ import { updateStudentValidator } from "../../validators/student/update-student.
 const router = Router();
 
 router.post('', addStudentValidator, asyncHandler(StudentController.addStudent));
+router.get('', asyncHandler(StudentController.getAllStudents));
 router.patch('/:studentId', updateStudentValidator, asyncHandler(StudentController.updateStudent));
 router.delete('/:studentId', asyncHandler(StudentController.deleteStudent));
 router.get('/search', asyncHandler(StudentController.searchStudents));
