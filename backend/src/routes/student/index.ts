@@ -10,7 +10,7 @@ router.get('', asyncHandler(StudentController.getAllStudents));
 router.patch('/:studentId', updateStudentValidator, asyncHandler(StudentController.updateStudent));
 router.delete('/:studentId', asyncHandler(StudentController.deleteStudent));
 router.get('/search', asyncHandler(StudentController.searchStudents));
-router.get('/status-types', asyncHandler(StudentController.getStudentStatusTypes));
+router.get('/', asyncHandler(StudentController.getStudentStatusTypes));
 router.get('/department-types', asyncHandler(StudentController.getDepartmentTypes));
 
 export default router;
