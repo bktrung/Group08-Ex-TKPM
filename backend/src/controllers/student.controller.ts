@@ -57,6 +57,22 @@ class StudentController {
 			}
 		}).send(res);
 	}
+
+	static async getStudentStatusTypes(req: Request, res: Response, next: NextFunction) {
+		const studentStatusTypes = await StudentService.getStudentStatusEnum();
+		return new OK({
+			message: 'Student status enum',
+			metadata: { studentStatusTypes }
+		}).send(res);
+	}
+
+	static async getDepartmentTypes(req: Request, res: Response, next: NextFunction) {
+		const DepartmentTypes = await StudentService.getDepartmentEnum();
+		return new OK({
+			message: 'Department enum',
+			metadata: { DepartmentTypes }
+		}).send(res);
+	}
 }
 
 export default StudentController;

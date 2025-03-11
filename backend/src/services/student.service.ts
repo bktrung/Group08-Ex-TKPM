@@ -5,7 +5,7 @@ import {
 	deleteStudent, 
 	searchStudents 
 } from '../models/repositories/student.repo';
-import { IStudent } from '../models/student.model';
+import { IStudent, StudentStatus, Department } from '../models/student.model';
 import { BadRequestError, NotFoundError } from '../responses/error.responses';
 import { CreateStudentDto } from '../dto/student';
 import { PaginationResult } from '../utils';
@@ -83,6 +83,14 @@ class StudentService {
 		};
 
 		return await searchStudents(searchOptions);
+	}
+
+	static async getStudentStatusEnum(): Promise<string[]> {
+		return Object.values(StudentStatus);
+	}
+
+	static async getDepartmentEnum(): Promise<string[]> {
+		return Object.values(Department);
 	}
 }
 
