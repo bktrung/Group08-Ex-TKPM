@@ -5,6 +5,7 @@ import helmet from "helmet";
 import morgan from "morgan";
 import { NotFoundError } from "./responses/error.responses";
 import routes from "./routes";
+import cors from "cors";
 
 config();
 
@@ -16,6 +17,9 @@ app.use(helmet());
 app.use(compression());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
+// allow cross-origin requests from any origin only for development
+app.use(cors());
 
 // init db
 import "./dbs/init.mongodb";
