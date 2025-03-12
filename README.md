@@ -5,6 +5,9 @@
 ## Cấu trúc source code
 
 ## Hướng dẫn cài đặt & chạy chương trình
+Sử dụng Docker:
+1. Chạy lệnh `sudo docker compose up --build`
+2. Truy cập vào `localhost:80` để sử dụng chương trình
 
 # Biên dịch (tùy theo ngôn ngữ sử dụng)
 # Chạy chương trình
