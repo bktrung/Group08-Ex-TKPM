@@ -23,9 +23,18 @@
     <div class="container-fluid px-5 mt-5">
         <h2 class="mb-4 text-center">Danh sách sinh viên</h2>
 
-        <div class="d-flex justify-content-end mb-3">
-            <button class="btn btn-success" data-bs-toggle="modal" onclick="window.location.href='add_student.html'"
-                data-bs-target="#addStudentModal">+ Thêm Sinh Viên</button>
+        <!-- Tìm kiếm -->
+        <div class="row mb-3">
+            <div class="col-md-8">
+                <div class="input-group">
+                    <input type="text" id="search-input" class="form-control" placeholder="Tìm kiếm theo tên hoặc MSSV...">
+                    <button class="btn btn-primary" id="search-button">Tìm kiếm</button>
+                    <button class="btn btn-secondary" id="reset-button">Đặt lại</button>
+                </div>
+            </div>
+            <div class="col-md-4 text-end">
+                <button class="btn btn-success" onclick="window.location.href='add_student.html'">+ Thêm Sinh Viên</button>
+            </div>
         </div>
 
         <div class="table-responsive">
@@ -50,6 +59,11 @@
                     <!-- Dữ liệu sẽ được thêm vào đây -->
                 </tbody>
             </table>
+        </div>
+
+        <!-- Thông báo không tìm thấy kết quả -->
+        <div id="no-results" class="alert alert-info text-center d-none">
+            Không tìm thấy kết quả phù hợp với tìm kiếm của bạn.
         </div>
 
         <!-- Phân trang Bootstrap -->
@@ -78,10 +92,11 @@
             </div>
         </div>
     </div>
+    
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <script src="scripts/index.js"> </script>
+    <script src="scripts/index.js"></script>
 
 </body>
 

@@ -22,5 +22,16 @@ services:
       - mongodb
     restart: unless-stopped
 
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+    depends_on:
+      - mongodb
+      - backend
+    restart: unless-stopped
+
 volumes:
   mongo-data:
