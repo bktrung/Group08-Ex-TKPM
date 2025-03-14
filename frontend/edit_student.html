@@ -51,6 +51,7 @@
             <div class="mb-2">
                 <label class="form-label">Ngày sinh</label>
                 <input type="date" id="student-dob" class="form-control" required>
+                <div class="invalid-feedback">Ngày sinh không được là ngày trong tương lai</div>
             </div>
 
             <div class="mb-2">
@@ -71,6 +72,7 @@
                 <div class="col-md-6">
                     <label class="form-label">Khóa</label>
                     <input type="number" id="student-course" class="form-control" required>
+                    <div class="invalid-feedback">Khóa học không thể vượt quá năm hiện tại (2025)</div>
                 </div>
                 <div class="col-md-6">
                     <label class="form-label">Chương trình</label>

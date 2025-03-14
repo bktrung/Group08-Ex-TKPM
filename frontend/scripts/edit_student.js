@@ -140,10 +140,41 @@ document.getElementById('edit-student-form').addEventListener('submit', async fu
     });
 
     // Kiểm tra email và số điện thoại
+    const studentIdInput = document.getElementById('student-id');
     const emailInput = document.getElementById('student-email');
     const phoneInput = document.getElementById('student-phone');
-    const emailPattern = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    const DOB = document.getElementById('student-dob');
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const phonePattern = /^(\+84|0)[3|5|7|8|9][0-9]{8}$/;
+    const studentIdPattern = /^\d{8}$/;
+
+    if (!studentIdPattern.test(studentIdInput.value)) {
+        studentIdInput.classList.add('is-invalid');
+        studentIdInput.classList.remove('is-valid');
+        isValid = false;
+    }
+
+    const dobValue = new Date(DOB.value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); 
+
+    if (dobValue >= today) {
+        DOB.classList.add('is-invalid');
+        DOB.classList.remove('is-valid');
+        isValid = false;
+    }
+
+    const courseInput = document.getElementById('student-course');
+    const currentYear = new Date().getFullYear();
+
+    if (parseInt(courseInput.value) > currentYear) {
+        courseInput.classList.add('is-invalid');
+        courseInput.classList.remove('is-valid');
+        isValid = false;
+    } else if (courseInput.value.trim() !== '') {
+        courseInput.classList.remove('is-invalid');
+        courseInput.classList.add('is-valid');
+    }
 
     if (!emailPattern.test(emailInput.value)) {
         emailInput.classList.add('is-invalid');
@@ -188,6 +219,12 @@ document.getElementById('edit-student-form').addEventListener('submit', async fu
 
         if (!response.ok) {
             const errorData = await response.json();
+            if (errorData.message && errorData.message.includes("điện thoại đã được sử dụng")) {
+                const phoneInput = document.getElementById('student-phone');
+                phoneInput.classList.add('is-invalid');
+                phoneInput.classList.remove('is-valid');
+                return; 
+            }
             throw new Error(errorData.message || `Lỗi API: ${response.status}`);
         }
 
