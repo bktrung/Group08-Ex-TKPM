@@ -101,4 +101,4 @@ Note: thay `YOUR_MONGODB_HOST` và `YOUR_MONGODB_PORT` thành host và port củ
 #### 3. Chạy chương trình
 1. Mở terminal, di chuyển đến thư mục backend
 2. Chạy lệnh sau `npm run start`
-3. Mở file index.html bằng trình duyệt web
+3. Mở file `index.html` trong thư mục frontend bằng trình duyệt web
