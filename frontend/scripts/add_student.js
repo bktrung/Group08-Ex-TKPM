@@ -74,13 +74,24 @@ document.getElementById('add-student-form').addEventListener('submit', async fun
     const studentIdInput = document.getElementById('student-id');
     const emailInput = document.getElementById('student-email');
     const phoneInput = document.getElementById('student-phone');
-    const emailPattern = /^[a-zA-Z0-9._%+-]+@gmail\.com$/;
+    const DOB = document.getElementById('student-dob');
+    const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const phonePattern = /^(\+84|0)[3|5|7|8|9][0-9]{8}$/;
     const studentIdPattern = /^\d{8}$/;
 
     if (!studentIdPattern.test(studentIdInput.value)) {
         studentIdInput.classList.add('is-invalid');
         studentIdInput.classList.remove('is-valid');
+        isValid = false;
+    }
+
+    const dobValue = new Date(DOB.value);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); 
+
+    if (dobValue >= today) {
+        DOB.classList.add('is-invalid');
+        DOB.classList.remove('is-valid');
         isValid = false;
     }
 

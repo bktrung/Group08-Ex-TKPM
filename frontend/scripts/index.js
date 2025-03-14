@@ -35,7 +35,7 @@ async function searchStudents(query, page = 1) {
         const searchInput = document.getElementById('search-input');
         
         if (!query || query.trim() === '') {
-            // Nếu truy vấn trống, quay lại chế độ xem tất cả
+
             isSearchMode = false;
             fetchStudents(1);
             return;
