@@ -1,10 +1,11 @@
+import { Types } from "mongoose";
 import Deparment from "../department.model";
 
 export const findDepartmentByName = async (name: string) => {
 	return await Deparment.findOne({ name });
 };
 
-export const findDepartmentById = async (id: string) => {
+export const findDepartmentById = async (id: string | Types.ObjectId) => {
 	return await Deparment.findById(id);
 };
 

@@ -1,3 +1,4 @@
+import { Types } from 'mongoose';
 import Program from '../program.model';
 
 export const findProgramByName = async (name: string) => {
@@ -18,4 +19,8 @@ export const addProgram = async (name: string) => {
 
 export const getPrograms = async () => {
 	return await Program.find({}, { createdAt: 0, updatedAt: 0, __v: 0 });
+};
+
+export const findProgramById = async (id: string | Types.ObjectId) => {
+	return await Program.findById(id);
 };

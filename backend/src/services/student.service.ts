@@ -9,13 +9,15 @@ import {
 	addStudentStatus,
 	updateStudentStatus,
 	getStudentStatus,
-	findStudentStatusById
+	findStudentStatusById,
 } from '../models/repositories/student.repo';
 import { IStudent } from '../models/student.model';
 import { BadRequestError, NotFoundError } from '../responses/error.responses';
 import { CreateStudentDto } from '../dto/student';
 import { PaginationResult } from '../utils';
 import { SearchOptions } from '../utils/index';
+import { findDepartmentById } from '../models/repositories/department.repo';
+import { findProgramById } from '../models/repositories/program.repo';
 
 class StudentService {
 	static async addStudent(studentData: CreateStudentDto): Promise<IStudent> {
@@ -40,6 +42,21 @@ class StudentService {
 			}
 		}
 
+		const status = await findStudentStatusById(studentData.status);
+		if (!status) {
+			throw new BadRequestError('Trạng thái sinh viên không tồn tại');
+		}
+
+		const department = await findDepartmentById(studentData.department);
+		if (!department) {
+			throw new BadRequestError('Khoa không tồn tại');
+		}
+
+		const program = await findProgramById(studentData.program);
+		if (!program) {
+			throw new BadRequestError('Chương trình học không tồn tại');
+		}
+
 		// add new student
 		const newStudent = await addStudent(studentData);
 		return newStudent;
@@ -60,6 +77,27 @@ class StudentService {
 		const updatedStudent = await updateStudent(studentId, studentData);
 		if (!updatedStudent) {
 			throw new NotFoundError('Không tìm thấy sinh viên');
+		}
+
+		if (studentData.status) {
+			const status = await findStudentStatusById(studentData.status);
+			if (!status) {
+				throw new BadRequestError('Trạng thái sinh viên không tồn tại');
+			}
+		}
+
+		if (studentData.department) {
+			const department = await findDepartmentById(studentData.department);
+			if (!department) {
+				throw new BadRequestError('Khoa không tồn tại');
+			}
+		}
+
+		if (studentData.program) {
+			const program = await findProgramById(studentData.program);
+			if (!program) {
+				throw new BadRequestError('Chương trình học không tồn tại');
+			}
 		}
 
 		return updatedStudent;

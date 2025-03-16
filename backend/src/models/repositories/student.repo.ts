@@ -2,9 +2,13 @@ import Student, { IStudent } from "../student.model";
 import { CreateStudentDto, UpdateStudentDto } from "../../dto/student";
 import { getAllDocuments, PaginationResult, SearchOptions } from "../../utils";
 import StudentStatus from "../studentStatus.model";
+import { Types } from "mongoose";
 
 export const findStudent = async (query: any): Promise<IStudent | null> => {
-	return Student.findOne(query);
+	return Student.findOne(query)
+		.populate("department")
+		.populate("program")
+		.populate("status");
 }
 
 export const addStudent = async (studentData: CreateStudentDto): Promise<IStudent> => {
@@ -40,7 +44,12 @@ export const searchStudents = async (options: SearchOptions): Promise<Pagination
 		select: { 
 			score: { $meta: "textScore" },
 			createdAt: 0, updatedAt: 0, __v: 0, _id: 0
-		}
+		},
+		populate: [
+			{ path: 'department', select: '_id name' },
+			{ path: 'program', select: '_id name' },
+			{ path: 'status', select: '_id type' }
+		]
 	});
 
 	return result;
@@ -52,7 +61,12 @@ export const getAllStudents = async (page: number = 1, limit: number = 10): Prom
 		page,
 		limit,
 		sort: "ctime",
-		select: { createdAt: 0, updatedAt: 0, __v: 0, _id: 0 }
+		select: { createdAt: 0, updatedAt: 0, __v: 0, _id: 0 },
+		populate: [
+			{ path: 'department', select: '_id name' },
+			{ path: 'program', select: '_id name' },
+			{ path: 'status', select: '_id type' }
+		]
 	});
 }
 
@@ -62,7 +76,7 @@ export const findStudentStatus = async (statusType: string): Promise<any> => {
 	});
 }
 
-export const findStudentStatusById = async (statusId: string): Promise<any> => {
+export const findStudentStatusById = async (statusId: string | Types.ObjectId): Promise<any> => {
 	return await StudentStatus.findById(statusId);
 }
 

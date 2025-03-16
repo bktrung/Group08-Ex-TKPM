@@ -14,15 +14,12 @@ export interface IStudent extends Document {
 	dateOfBirth: Date;
 	gender: Gender;
 	department: Types.ObjectId | string;
-	departmentName?: string; // Virtual property
 	schoolYear: number;
 	program: Types.ObjectId | string;
-	programName?: string; // Virtual property
 	address: string;
 	email: string;
 	phoneNumber: string;
 	status: Types.ObjectId | string;
-	statusType?: string; // Virtual property
 }
 
 const studentSchema = new Schema<IStudent>({
@@ -86,31 +83,7 @@ const studentSchema = new Schema<IStudent>({
 	}
 }, {
 	timestamps: true,
-	collection: COLLECTION_NAME,
-	toJSON: { virtuals: true }, // Include virtuals when converting to JSON
-	toObject: { virtuals: true } // Include virtuals when converting to objects
-});
-
-// Virtual properties for department, program, and status names
-studentSchema.virtual('departmentName').get(function () {
-	if (this.populated('department')) {
-		return (this.department as any)?.name;
-	}
-	return undefined;
-});
-
-studentSchema.virtual('programName').get(function () {
-	if (this.populated('program')) {
-		return (this.program as any)?.name;
-	}
-	return undefined;
-});
-
-studentSchema.virtual('statusType').get(function () {
-	if (this.populated('status')) {
-		return (this.status as any)?.type;
-	}
-	return undefined;
+	collection: COLLECTION_NAME
 });
 
 // Create text index for full-text search

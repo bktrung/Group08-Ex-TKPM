@@ -14,6 +14,10 @@ interface QueryOptions<T> {
 	page: number;
 	filter: FilterQuery<T>;
 	select?: string | string[] | Record<string, number | boolean | string | object>;
+	populate?: Array<{
+		path: string;
+		select?: string;
+	}>;
 }
 
 export interface PaginationResult<T extends Document> {
@@ -28,22 +32,30 @@ export interface PaginationResult<T extends Document> {
 
 export const getAllDocuments = async <T extends Document>(
 	model: Model<T>,
-	{ limit, sort, page, filter, select }: QueryOptions<T>
+	{ limit, sort, page, filter, select, populate }: QueryOptions<T>
 ): Promise<PaginationResult<T>> => {
 	const skip = (page - 1) * limit;
 
 	// _id is better than createdAt in single-criteria sorting in MongoDB
 	const sortBy = sort === "ctime" ? { _id: -1 as SortOrder } : { _id: 1 as SortOrder };
 
+	// Create base query
+	let query = model.find(filter)
+		.sort(sortBy)
+		.limit(limit)
+		.skip(skip)
+		.select(select || {});
+
+	// Apply population if specified
+	if (populate && populate.length > 0) {
+		populate.forEach(populateOption => {
+			query = query.populate(populateOption);
+		});
+	}
+
 	// Add total count for pagination
 	const [documents, totalCount] = await Promise.all([
-		model
-			.find(filter)
-			.sort(sortBy)
-			.limit(limit)
-			.skip(skip)
-			.select(select || {})
-			.lean(),
+		query.lean(),
 		model.countDocuments(filter),
 	]);
 
