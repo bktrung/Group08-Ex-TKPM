@@ -6,7 +6,7 @@ document.addEventListener("DOMContentLoaded", async function () {
     if (!studentId) {
         showErrorModal("Không tìm thấy mã sinh viên");
         setTimeout(() => {
-            window.location.href = "index.html";
+            window.location.href = "../index.html";
         }, 2000);
         return;
     }
@@ -29,7 +29,7 @@ async function fetchStudentData(studentId) {
         if (!student) {
             showErrorModal("Không tìm thấy sinh viên");
             setTimeout(() => {
-                window.location.href = "index.html";
+                window.location.href = "../index.html";
             }, 2000);
             return;
         }
@@ -248,6 +248,6 @@ function showSuccessModal() {
     successModal.show();
 
     document.getElementById('successModalClose').addEventListener('click', function () {
-        window.location.href = "index.html"; // Chuyển trang sau khi đóng modal
+        window.location.href = "../index.html"; // Chuyển trang sau khi đóng modal
     });
 }

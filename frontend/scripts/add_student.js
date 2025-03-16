@@ -156,6 +156,6 @@ function showSuccessModal() {
     successModal.show();
 
     document.getElementById('successModalClose').addEventListener('click', function () {
-        window.location.href = "index.html"; // Chuyển trang sau khi đóng modal
+        window.location.href = "../index.html"; // Chuyển trang sau khi đóng modal
     });
 }
