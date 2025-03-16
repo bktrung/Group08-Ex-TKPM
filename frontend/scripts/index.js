@@ -152,7 +152,7 @@ function deleteStudent(studentId) {
 }
 
 function editStudent(studentId) {
-    window.location.href = `edit_student.html?id=${studentId}`;
+    window.location.href = `./pages/edit_student.html?id=${studentId}`;
 }
 
 // Xử lý khi nhấn "Xóa" trong modal
