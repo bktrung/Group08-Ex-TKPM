@@ -1,7 +1,7 @@
 import Student, { IStudent } from "../student.model";
 import { CreateStudentDto, UpdateStudentDto } from "../../dto/student";
 import { getAllDocuments, PaginationResult, SearchOptions } from "../../utils";
-import { create } from "domain";
+import StudentStatus from "../studentStatus.model";
 
 export const findStudent = async (query: any): Promise<IStudent | null> => {
 	return Student.findOne(query);
@@ -54,4 +54,30 @@ export const getAllStudents = async (page: number = 1, limit: number = 10): Prom
 		sort: "ctime",
 		select: { createdAt: 0, updatedAt: 0, __v: 0, _id: 0 }
 	});
+}
+
+export const findStudentStatus = async (statusType: string): Promise<any> => {
+	return await StudentStatus.findOne({
+		type: statusType
+	});
+}
+
+export const findStudentStatusById = async (statusId: string): Promise<any> => {
+	return await StudentStatus.findById(statusId);
+}
+
+export const addStudentStatus = async (statusType: string): Promise<any> => {
+	return await StudentStatus.create({ type: statusType });
+}
+
+export const updateStudentStatus = async (statusId: string, StatusType: string): Promise<any> => {
+	return await StudentStatus.findOneAndUpdate(
+		{ _id: statusId },
+		{ type: StatusType },
+		{ new: true }
+	);
+}
+
+export const getStudentStatus = async (): Promise<any> => {
+	return await StudentStatus.find({}, { createdAt: 0, updatedAt: 0, __v: 0 });
 }

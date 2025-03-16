@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { Department, StudentStatus, Gender } from "../../models/student.model";
+import { Gender } from "../../models/student.model";
 import { validateRequest } from "../../middlewares/validation.middleware";
 
 const updateStudentDto = Joi.object({
@@ -20,9 +20,12 @@ const updateStudentDto = Joi.object({
 	gender: Joi.string().valid(...Object.values(Gender)).messages({
 		'any.only': `Giới tính phải là một trong các giá trị: ${Object.values(Gender).join(', ')}`
 	}),
-	department: Joi.string().valid(...Object.values(Department)).messages({
-		'any.only': `Khoa phải là một trong các giá trị: ${Object.values(Department).join(', ')}`
-	}),
+	department: Joi.string()
+		.pattern(/^[0-9a-fA-F]{24}$/)
+		.messages({
+			'string.empty': 'ID khoa không được để trống',
+			'string.pattern.base': 'ID khoa không hợp lệ (phải là ObjectId MongoDB)'
+		}),
 	schoolYear: Joi.number()
 		.integer()
 		.min(1990)
@@ -33,9 +36,12 @@ const updateStudentDto = Joi.object({
 			'number.min': 'Khóa học phải từ năm 1990 trở đi',
 			'number.max': `Khóa học không thể vượt quá năm hiện tại (${new Date().getFullYear()})`
 		}),
-	program: Joi.string().messages({
-		'string.empty': 'Chương trình học không được để trống'
-	}),
+	program: Joi.string()
+		.pattern(/^[0-9a-fA-F]{24}$/)
+		.messages({
+			'string.empty': 'ID chương trình học không được để trống',
+			'string.pattern.base': 'ID chương trình học không hợp lệ (phải là ObjectId MongoDB)'
+		}),
 	address: Joi.string().messages({
 		'string.empty': 'Địa chỉ không được để trống'
 	}),
@@ -47,9 +53,12 @@ const updateStudentDto = Joi.object({
 		'string.pattern.base': 'Số điện thoại không hợp lệ (phải là số điện thoại Việt Nam)',
 		'string.empty': 'Số điện thoại không được để trống'
 	}),
-	status: Joi.string().valid(...Object.values(StudentStatus)).messages({
-		'any.only': `Trạng thái phải là một trong các giá trị: ${Object.values(StudentStatus).join(', ')}`
-	})
+	status: Joi.string()
+		.pattern(/^[0-9a-fA-F]{24}$/)
+		.messages({
+			'string.empty': 'ID trạng thái không được để trống',
+			'string.pattern.base': 'ID trạng thái không hợp lệ (phải là ObjectId MongoDB)'
+		})
 });
 
 export const updateStudentValidator = validateRequest(updateStudentDto);

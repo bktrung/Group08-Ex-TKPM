@@ -56,22 +56,6 @@ class StudentController {
 			}
 		}).send(res);
 	}
-
-	static async getStudentStatusTypes(req: Request, res: Response, next: NextFunction) {
-		const studentStatusTypes = await StudentService.getStudentStatusEnum();
-		return new OK({
-			message: 'Student status enum',
-			metadata: { studentStatusTypes }
-		}).send(res);
-	}
-
-	static async getDepartmentTypes(req: Request, res: Response, next: NextFunction) {
-		const DepartmentTypes = await StudentService.getDepartmentEnum();
-		return new OK({
-			message: 'Department enum',
-			metadata: { DepartmentTypes }
-		}).send(res);
-	}
 	
 	static async getAllStudents(req: Request, res: Response, next: NextFunction) {
 		const { page = "1", limit = "10" } = req.query;
@@ -79,6 +63,33 @@ class StudentController {
 		return new OK({
 			message: 'All students',
 			metadata: result
+		}).send(res);
+	}
+
+	static async getStudentStatusType(req: Request, res: Response, next: NextFunction) {
+		const statusType = await StudentService.getStudentStatus();
+		return new OK({
+			message: 'Student status types',
+			metadata: statusType
+		}).send(res);
+	}
+
+	static async addStudentStatusType(req: Request, res: Response, next: NextFunction) {
+		const statusType = req.body.type;
+		const newStatusType = await StudentService.addStudentStatus(statusType);
+		return new CREATED({
+			message: 'Student status type added',
+			metadata: newStatusType
+		}).send(res);
+	}
+
+	static async modifyStudentStatusType(req: Request, res: Response, next: NextFunction) {
+		const statusType = req.body.type;
+		const statusId = req.params.statusId;
+		const updatedStatusType = await StudentService.modifyStudentStatus(statusId, statusType);
+		return new OK({
+			message: 'Student status type updated',
+			metadata: updatedStatusType
 		}).send(res);
 	}
 }

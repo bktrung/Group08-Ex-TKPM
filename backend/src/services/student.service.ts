@@ -4,9 +4,14 @@ import {
 	updateStudent, 
 	deleteStudent, 
 	searchStudents, 
-	getAllStudents
+	getAllStudents,
+	findStudentStatus,
+	addStudentStatus,
+	updateStudentStatus,
+	getStudentStatus,
+	findStudentStatusById
 } from '../models/repositories/student.repo';
-import { IStudent, StudentStatus, Department } from '../models/student.model';
+import { IStudent } from '../models/student.model';
 import { BadRequestError, NotFoundError } from '../responses/error.responses';
 import { CreateStudentDto } from '../dto/student';
 import { PaginationResult } from '../utils';
@@ -86,14 +91,6 @@ class StudentService {
 		return await searchStudents(searchOptions);
 	}
 
-	static async getStudentStatusEnum(): Promise<string[]> {
-		return Object.values(StudentStatus);
-	}
-
-	static async getDepartmentEnum(): Promise<string[]> {
-		return Object.values(Department);
-	}
-
 	static async getStudentById(studentId: string): Promise<IStudent> {
 		const student = await findStudent({ studentId });
 		if (!student) {
@@ -105,6 +102,33 @@ class StudentService {
 
 	static async getAllStudents(page: number, limit: number): Promise<PaginationResult<IStudent>> {
 		return await getAllStudents(page, limit);
+	}
+
+	static async addStudentStatus(statusType: string): Promise<any> {
+		const existingStatus = await findStudentStatus(statusType);
+		if (existingStatus) {
+			throw new BadRequestError('Trạng thái sinh viên đã tồn tại');
+		}
+
+		return await addStudentStatus(statusType);
+	}
+
+	static async modifyStudentStatus(statusId: string, statusType: string): Promise<any> {
+		const existingStatus = await findStudentStatus(statusType);
+		if (existingStatus) {
+			throw new BadRequestError('Trạng thái sinh viên đã tồn tại');
+		}
+
+		const updatedStatus = await updateStudentStatus(statusId, statusType);
+		if (!updatedStatus) {
+			throw new NotFoundError('Không tìm thấy trạng thái sinh viên');
+		}
+
+		return updatedStatus;
+	}
+
+	static async getStudentStatus(): Promise<any> {
+		return getStudentStatus();
 	}
 }
 

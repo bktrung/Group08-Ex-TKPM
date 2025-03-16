@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { Department, StudentStatus, Gender } from "../../models/student.model";
+import { Gender } from "../../models/student.model";
 import { validateRequest } from "../../middlewares/validation.middleware";
 
 const addStudentSchema = Joi.object({
@@ -32,10 +32,14 @@ const addStudentSchema = Joi.object({
 		'any.only': `Giới tính phải là một trong các giá trị: ${Object.values(Gender).join(', ')}`,
 		'any.required': 'Giới tính là trường bắt buộc'
 	}),
-	department: Joi.string().valid(...Object.values(Department)).required().messages({
-		'any.only': `Khoa phải là một trong các giá trị: ${Object.values(Department).join(', ')}`,
-		'any.required': 'Khoa là trường bắt buộc'
-	}),
+	department: Joi.string()
+		.pattern(/^[0-9a-fA-F]{24}$/)
+		.required()
+		.messages({
+			'string.empty': 'ID khoa không được để trống',
+			'string.pattern.base': 'ID khoa không hợp lệ (phải là ObjectId MongoDB)',
+			'any.required': 'Khoa là trường bắt buộc'
+		}),
 	schoolYear: Joi.number()
 		.integer()
 		.min(1990)
@@ -48,10 +52,14 @@ const addStudentSchema = Joi.object({
 			'number.max': `Khóa học không thể vượt quá năm hiện tại (${new Date().getFullYear()})`,
 			'any.required': 'Khóa học là trường bắt buộc'
 		}),
-	program: Joi.string().required().messages({
-		'string.empty': 'Chương trình học không được để trống',
-		'any.required': 'Chương trình học là trường bắt buộc'
-	}),
+	program: Joi.string()
+		.pattern(/^[0-9a-fA-F]{24}$/)
+		.required()
+		.messages({
+			'string.empty': 'ID chương trình học không được để trống',
+			'string.pattern.base': 'ID chương trình học không hợp lệ (phải là ObjectId MongoDB)',
+			'any.required': 'Chương trình học là trường bắt buộc'
+		}),
 	address: Joi.string().required().messages({
 		'string.empty': 'Địa chỉ không được để trống',
 		'any.required': 'Địa chỉ là trường bắt buộc'
@@ -66,10 +74,14 @@ const addStudentSchema = Joi.object({
 		'string.empty': 'Số điện thoại không được để trống',
 		'any.required': 'Số điện thoại là trường bắt buộc'
 	}),
-	status: Joi.string().valid(...Object.values(StudentStatus)).default(StudentStatus.ACTIVE).messages({
-		'any.only': `Trạng thái phải là một trong các giá trị: ${Object.values(StudentStatus).join(', ')}`,
-		'any.required': 'Trạng thái là trường bắt buộc'
-	})
+	status: Joi.string()
+		.pattern(/^[0-9a-fA-F]{24}$/)
+		.required()
+		.messages({
+			'string.empty': 'ID trạng thái không được để trống',
+			'string.pattern.base': 'ID trạng thái không hợp lệ (phải là ObjectId MongoDB)',
+			'any.required': 'Trạng thái là trường bắt buộc'
+		})
 });
 
 export const addStudentValidator = validateRequest(addStudentSchema);

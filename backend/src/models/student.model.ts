@@ -1,21 +1,7 @@
-import { Schema, model, Document } from "mongoose";
+import { Schema, model, Document, Types } from "mongoose";
 
 const DOCUMENT_NAME = "Student";
 const COLLECTION_NAME = "students";
-
-export enum StudentStatus {
-	ACTIVE = 'Đang học',
-	GRADUATED = 'Đã tốt nghiệp',
-	DROPPED = 'Đã thôi học',
-	SUSPENDED = 'Tạm dừng học'
-}
-
-export enum Department {
-	LAW = 'Luật',
-	BUSINESS_ENGLISH = 'Tiếng Anh thương mại',
-	JAPANESE = 'Tiếng Nhật',
-	FRENCH = 'Tiếng Pháp'
-}
 
 export enum Gender {
 	MALE = 'Nam',
@@ -27,16 +13,19 @@ export interface IStudent extends Document {
 	fullName: string;
 	dateOfBirth: Date;
 	gender: Gender;
-	department: Department;
-	schoolYear: Number;
-	program: string;
+	department: Types.ObjectId | string;
+	departmentName?: string; // Virtual property
+	schoolYear: number;
+	program: Types.ObjectId | string;
+	programName?: string; // Virtual property
 	address: string;
 	email: string;
 	phoneNumber: string;
-	status: StudentStatus;
+	status: Types.ObjectId | string;
+	statusType?: string; // Virtual property
 }
 
-const studentSchema = new Schema({
+const studentSchema = new Schema<IStudent>({
 	studentId: {
 		type: String,
 		required: true,
@@ -58,9 +47,9 @@ const studentSchema = new Schema({
 		enum: Object.values(Gender)
 	},
 	department: {
-		type: String,
-		required: true,
-		enum: Object.values(Department)
+		type: Schema.Types.ObjectId,
+		ref: 'Department',
+		required: true
 	},
 	schoolYear: {
 		type: Number,
@@ -69,9 +58,9 @@ const studentSchema = new Schema({
 		max: new Date().getFullYear()
 	},
 	program: {
-		type: String,
-		required: true,
-		trim: true
+		type: Schema.Types.ObjectId,
+		ref: 'Program',
+		required: true
 	},
 	address: {
 		type: String,
@@ -91,14 +80,37 @@ const studentSchema = new Schema({
 		trim: true
 	},
 	status: {
-		type: String,
-		required: true,
-		enum: Object.values(StudentStatus),
-		default: StudentStatus.ACTIVE
+		type: Schema.Types.ObjectId,
+		ref: 'StudentStatus',
+		required: true
 	}
 }, {
 	timestamps: true,
-	collection: COLLECTION_NAME
+	collection: COLLECTION_NAME,
+	toJSON: { virtuals: true }, // Include virtuals when converting to JSON
+	toObject: { virtuals: true } // Include virtuals when converting to objects
+});
+
+// Virtual properties for department, program, and status names
+studentSchema.virtual('departmentName').get(function () {
+	if (this.populated('department')) {
+		return (this.department as any)?.name;
+	}
+	return undefined;
+});
+
+studentSchema.virtual('programName').get(function () {
+	if (this.populated('program')) {
+		return (this.program as any)?.name;
+	}
+	return undefined;
+});
+
+studentSchema.virtual('statusType').get(function () {
+	if (this.populated('status')) {
+		return (this.status as any)?.type;
+	}
+	return undefined;
 });
 
 // Create text index for full-text search
