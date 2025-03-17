@@ -177,6 +177,10 @@ class StudentService {
 	static async getStudentStatus(): Promise<any> {
 		return getStudentStatus();
 	}
+
+	static async getStudentByDepartment(departmentId: string, page: number, limit: number): Promise<PaginationResult<IStudent>> {
+		return await getAllStudents(page, limit, { department: departmentId });
+	}
 }
 
 export default StudentService;

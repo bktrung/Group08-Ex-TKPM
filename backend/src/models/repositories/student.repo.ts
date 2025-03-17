@@ -55,9 +55,9 @@ export const searchStudents = async (options: SearchOptions): Promise<Pagination
 	return result;
 };
 
-export const getAllStudents = async (page: number = 1, limit: number = 10): Promise<PaginationResult<IStudent>> => {
+export const getAllStudents = async (page: number = 1, limit: number = 10, filter: Object = {}): Promise<PaginationResult<IStudent>> => {
 	return await getAllDocuments(Student, {
-		filter: {},
+		filter,
 		page,
 		limit,
 		sort: "ctime",

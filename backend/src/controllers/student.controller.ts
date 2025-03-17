@@ -92,6 +92,16 @@ class StudentController {
 			metadata: updatedStatusType
 		}).send(res);
 	}
+
+	static async getStudentByDepartment(req: Request, res: Response, next: NextFunction) {
+		const { departmentId } = req.params;
+		const { page = "1", limit = "10" } = req.query;
+		const result = await StudentService.getStudentByDepartment(departmentId, parseInt(page as string, 10), parseInt(limit as string, 10));
+		return new OK({
+			message: 'Students by department',
+			metadata: result
+		}).send(res);
+	}
 }
 
 export default StudentController;
