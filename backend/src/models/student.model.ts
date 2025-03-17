@@ -1,4 +1,5 @@
 import { Schema, model, Document, Types } from "mongoose";
+import { IAddress } from "../dto/address";
 
 const DOCUMENT_NAME = "Student";
 const COLLECTION_NAME = "students";
