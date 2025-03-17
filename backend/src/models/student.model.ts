@@ -61,6 +61,8 @@ export interface IStudent extends Document {
 	email: string;
 	phoneNumber: string;
 	status: Types.ObjectId | string;
+	identityDocument: IdentityDocument;
+	nationality: string;
 }
 
 const studentSchema = new Schema<IStudent>({
@@ -127,11 +129,25 @@ const studentSchema = new Schema<IStudent>({
 		type: Schema.Types.ObjectId,
 		ref: 'StudentStatus',
 		required: true
+	},
+	identityDocument: {
+		type: Object,
+		required: true
+	},
+	nationality: {
+		type: String,
+		required: true
 	}
 }, {
 	timestamps: true,
 	collection: COLLECTION_NAME
 });
+
+// Create a unique index on identityDocument.number
+studentSchema.index(
+	{ 'identityDocument.number': 1 },
+	{ unique: true, name: "UniqueIdentityDocumentNumber" }
+);
 
 // Create text index for full-text search
 studentSchema.index(

@@ -1,6 +1,5 @@
-import { Gender } from "../../models/student.model";
+import { Gender, IdentityDocumentType, IdentityDocument, IAddress } from "../../models/student.model";
 import { Types } from "mongoose";
-import { IAddress } from "../../models/student.model";
 
 export interface CreateStudentDto {
 	studentId: string;
@@ -16,6 +15,8 @@ export interface CreateStudentDto {
 	email: string;
 	phoneNumber: string;
 	status: string | Types.ObjectId;
+	identityDocument: IdentityDocument;
+	nationality: string;
 }
 
 export interface UpdateStudentDto {
@@ -31,4 +32,32 @@ export interface UpdateStudentDto {
 	email?: string;
 	phoneNumber?: string;
 	status?: string | Types.ObjectId;
+	identityDocument?: Partial<IdentityDocument>;
+	nationality?: string;
 }
+
+// Additional DTOs for specific identity document types
+export interface BaseDtoIdentityDocument {
+	type: IdentityDocumentType;
+	number: string;
+	issueDate: Date;
+	issuedBy: string;
+	expiryDate: Date;
+}
+
+export interface CMNDDto extends BaseDtoIdentityDocument {
+	type: IdentityDocumentType.CMND;
+}
+
+export interface CCCDDto extends BaseDtoIdentityDocument {
+	type: IdentityDocumentType.CCCD;
+	hasChip: boolean;
+}
+
+export interface PassportDto extends BaseDtoIdentityDocument {
+	type: IdentityDocumentType.PASSPORT;
+	issuedCountry: string;
+	notes?: string;
+}
+
+export type IdentityDocumentDto = CMNDDto | CCCDDto | PassportDto;

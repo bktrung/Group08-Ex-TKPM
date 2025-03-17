@@ -26,7 +26,8 @@ class StudentService {
 			$or: [
 				{ studentId: studentData.studentId },
 				{ email: studentData.email },
-				{ phoneNumber: studentData.phoneNumber }
+				{ phoneNumber: studentData.phoneNumber },
+				{ 'identityDocument.number': studentData.identityDocument.number }
 			]
 		})
 
@@ -39,6 +40,9 @@ class StudentService {
 			}
 			if (existingStudent.phoneNumber === studentData.phoneNumber) {
 				throw new BadRequestError('Số điện thoại đã được sử dụng bởi sinh viên khác');
+			}
+			if (existingStudent.identityDocument.number === studentData.identityDocument.number) {
+				throw new BadRequestError('Số CMND/CCCD/Passport đã được sử dụng bởi sinh viên khác');
 			}
 		}
 
@@ -72,6 +76,11 @@ class StudentService {
 		const existingPhoneStudent = await findStudent({ phoneNumber: studentData.phoneNumber });
 		if (existingPhoneStudent && existingPhoneStudent.studentId !== studentId) {
 			throw new BadRequestError('Số điện thoại đã được sử dụng bởi sinh viên khác');
+		}
+
+		const existingIdentityDocumentStudent = await findStudent({ 'identityDocument.number': studentData.identityDocument.number });
+		if (existingIdentityDocumentStudent && existingIdentityDocumentStudent.studentId !== studentId) {
+			throw new BadRequestError('Số CMND/CCCD/Passport đã được sử dụng bởi sinh viên khác');
 		}
 
 		const updatedStudent = await updateStudent(studentId, studentData);

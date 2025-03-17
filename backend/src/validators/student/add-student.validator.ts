@@ -1,6 +1,85 @@
 import Joi from "joi";
-import { Gender } from "../../models/student.model";
+import { Gender, IdentityDocumentType } from "../../models/student.model";
 import { validateRequest } from "../../middlewares/validation.middleware";
+
+const baseIdentityDocumentSchema = {
+	issueDate: Joi.date().required().max('now').messages({
+		'date.base': 'Ngày cấp phải là một ngày hợp lệ',
+		'date.max': 'Ngày cấp không thể trong tương lai',
+		'any.required': 'Ngày cấp là trường bắt buộc'
+	}),
+	issuedBy: Joi.string().required().messages({
+		'string.empty': 'Nơi cấp không được để trống',
+		'any.required': 'Nơi cấp là trường bắt buộc'
+	}),
+	expiryDate: Joi.date().required().min('now').messages({
+		'date.base': 'Ngày hết hạn phải là một ngày hợp lệ',
+		'date.min': 'Ngày hết hạn phải sau ngày hiện tại',
+		'any.required': 'Ngày hết hạn là trường bắt buộc'
+	})
+};
+
+// CMND schema
+const cmndSchema = Joi.object({
+	type: Joi.string().valid(IdentityDocumentType.CMND).required(),
+	number: Joi.string()
+		.pattern(/^[0-9]{9}$/)
+		.required()
+		.messages({
+			'string.empty': 'Số CMND không được để trống',
+			'string.pattern.base': 'Số CMND phải có đúng 9 chữ số',
+			'any.required': 'Số CMND là trường bắt buộc'
+		}),
+	...baseIdentityDocumentSchema
+});
+
+// CCCD schema
+const cccdSchema = Joi.object({
+	type: Joi.string().valid(IdentityDocumentType.CCCD).required(),
+	number: Joi.string()
+		.pattern(/^[0-9]{12}$/)
+		.required()
+		.messages({
+			'string.empty': 'Số CCCD không được để trống',
+			'string.pattern.base': 'Số CCCD phải có đúng 12 chữ số',
+			'any.required': 'Số CCCD là trường bắt buộc'
+		}),
+	...baseIdentityDocumentSchema,
+	hasChip: Joi.boolean().required().messages({
+		'any.required': 'Thông tin về chip là trường bắt buộc'
+	})
+});
+
+// Passport schema
+const passportSchema = Joi.object({
+	type: Joi.string().valid(IdentityDocumentType.PASSPORT).required(),
+	number: Joi.string()
+		.pattern(/^[A-Z][0-9]{8}$/)
+		.required()
+		.messages({
+			'string.empty': 'Số hộ chiếu không được để trống',
+			'string.pattern.base': 'Số hộ chiếu phải có 1 chữ cái viết hoa và 8 chữ số',
+			'any.required': 'Số hộ chiếu là trường bắt buộc'
+		}),
+	...baseIdentityDocumentSchema,
+	issuingCountry: Joi.string().required().messages({
+		'string.empty': 'Quốc gia cấp không được để trống',
+		'any.required': 'Quốc gia cấp là trường bắt buộc'
+	}),
+	notes: Joi.string().optional().allow('').messages({
+		'string.base': 'Ghi chú phải là chuỗi'
+	})
+});
+
+// Combined identity document schema with conditional validation
+const identityDocumentSchema = Joi.alternatives().try(
+	cmndSchema,
+	cccdSchema,
+	passportSchema
+).required().messages({
+	'any.required': 'Giấy tờ tùy thân là trường bắt buộc',
+	'alternatives.match': 'Giấy tờ tùy thân không hợp lệ'
+});
 
 export const addressSchema = Joi.object({
 	houseNumberStreet: Joi.string().required().messages({
@@ -105,7 +184,12 @@ const addStudentSchema = Joi.object({
 			'string.empty': 'ID trạng thái không được để trống',
 			'string.pattern.base': 'ID trạng thái không hợp lệ (phải là ObjectId MongoDB)',
 			'any.required': 'Trạng thái là trường bắt buộc'
-		})
+		}),
+	identityDocument: identityDocumentSchema,
+	nationality: Joi.string().required().messages({
+		'string.empty': 'Quốc tịch không được để trống',
+		'any.required': 'Quốc tịch là trường bắt buộc'
+	})
 });
 
 export const addStudentValidator = validateRequest(addStudentSchema);
