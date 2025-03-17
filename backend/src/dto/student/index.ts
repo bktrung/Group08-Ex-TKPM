@@ -1,6 +1,6 @@
 import { Gender } from "../../models/student.model";
 import { Types } from "mongoose";
-import { IAddress } from "../address";
+import { IAddress } from "../../models/student.model";
 
 export interface CreateStudentDto {
 	studentId: string;

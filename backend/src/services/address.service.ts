@@ -1,10 +1,16 @@
 import axios, { AxiosResponse } from 'axios';
 import NodeCache from 'node-cache';
-import { GeonamesCountryResponse, GeonamesChildrenResponse, Country, Child } from '../dto/address';
+import { 
+	GeonamesCountryResponse, 
+	GeonamesChildrenResponse, 
+	Country, 
+	Child,
+	CountryDemonym
+} from '../dto/address';
 
 const cache = new NodeCache({
-	stdTTL: 300, // 5 minutes time to live
-	checkperiod: 60 // Check every 60 seconds
+	stdTTL: 600, // 10 minutes time to live
+	checkperiod: 120 // Check every 2 minutes
 });
 
 class AddressService {
@@ -25,7 +31,7 @@ class AddressService {
 			geonameId: country.geonameId
 		}));
 
-		cache.set('address_countries', countries);
+		cache.set('address_countries', countries, 86400); // 24 hours time to live
 
 		return countries;
 	}
@@ -66,6 +72,28 @@ class AddressService {
 		cache.set(`address_children_${geonameId}`, children);
 
 		return result;
+	}
+
+	static async getNationalities() {
+		const cachedNationalities = cache.get<any[]>('address_nationalities');
+		if (cachedNationalities) {
+			return cachedNationalities;
+		}
+
+		const response: AxiosResponse<CountryDemonym[]> = await axios.get('https://restcountries.com/v3.1/all', {
+			params: {
+				fields: 'demonyms',
+			}
+		});
+
+		const nationalities = response.data
+			.map((country: CountryDemonym) => country.demonyms.eng.f)
+			.filter(nationality => nationality.trim() !== '')
+			.sort();
+
+		cache.set('address_nationalities', nationalities, 86400); // 24 hours time to live
+
+		return nationalities;
 	}
 }
 

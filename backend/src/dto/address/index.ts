@@ -36,10 +36,10 @@ export interface Child {
 	geonameId: number;
 }
 
-export interface IAddress {
-	houseNumberStreet: string;
-	wardCommune: string;
-	districtCounty: string;
-	provinceCity: string;
-	country: string;
+export interface CountryDemonym {
+	demonyms: {
+		eng: {
+			f: string;
+		};
+	};
 }

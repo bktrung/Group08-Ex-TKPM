@@ -19,6 +19,14 @@ class AddressController {
 			metadata: { children }
 		}).send(res);
 	}
+
+	static async getNationalities(req: Request, res: Response, next: NextFunction) {
+		const nationalities = await AddressService.getNationalities();
+		return new OK({
+			message: 'Nationalities retrieved successfully',
+			metadata: { nationalities }
+		}).send(res);
+	}
 }
 
 export default AddressController;

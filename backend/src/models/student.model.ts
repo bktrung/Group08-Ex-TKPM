@@ -1,5 +1,4 @@
 import { Schema, model, Document, Types } from "mongoose";
-import { IAddress } from "../dto/address";
 
 const DOCUMENT_NAME = "Student";
 const COLLECTION_NAME = "students";
@@ -7,6 +6,45 @@ const COLLECTION_NAME = "students";
 export enum Gender {
 	MALE = 'Nam',
 	FEMALE = 'Nữ'
+}
+
+export enum IdentityDocumentType {
+	CMND = 'CMND',
+	CCCD = 'CCCD',
+	PASSPORT = 'PASSPORT'
+}
+
+export interface IBaseIdentityDocument {
+	type: IdentityDocumentType;
+	number: string;
+	issueDate: Date;
+	issuedBy: string;
+	expiryDate: Date;
+}
+
+export interface ICMND extends IBaseIdentityDocument {
+	type: IdentityDocumentType.CMND;
+}
+
+export interface ICCCD extends IBaseIdentityDocument {
+	type: IdentityDocumentType.CCCD;
+	hasChip: boolean;
+}
+
+export interface IPassport extends IBaseIdentityDocument {
+	type: IdentityDocumentType.PASSPORT;
+	issuedCountry: string;
+	notes?: string;
+}
+
+export type IdentityDocument = ICMND | ICCCD | IPassport;
+
+export interface IAddress {
+	houseNumberStreet: string;
+	wardCommune: string;
+	districtCounty: string;
+	provinceCity: string;
+	country: string;
 }
 
 export interface IStudent extends Document {
