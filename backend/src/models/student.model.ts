@@ -17,7 +17,9 @@ export interface IStudent extends Document {
 	department: Types.ObjectId | string;
 	schoolYear: number;
 	program: Types.ObjectId | string;
-	address: string;
+	permanentAddress?: IAddress;
+	temporaryAddress?: IAddress;
+	mailingAddress: IAddress;
 	email: string;
 	phoneNumber: string;
 	status: Types.ObjectId | string;
@@ -60,8 +62,14 @@ const studentSchema = new Schema<IStudent>({
 		ref: 'Program',
 		required: true
 	},
-	address: {
-		type: String,
+	permanentAddress: {
+		type: Object
+	},
+	temporaryAddress: {
+		type: Object
+	},
+	mailingAddress: {
+		type: Object,
 		required: true
 	},
 	email: {

@@ -1,5 +1,6 @@
 import { Gender } from "../../models/student.model";
 import { Types } from "mongoose";
+import { IAddress } from "../address";
 
 export interface CreateStudentDto {
 	studentId: string;
@@ -9,7 +10,9 @@ export interface CreateStudentDto {
 	department: string | Types.ObjectId;
 	schoolYear: number;
 	program: string | Types.ObjectId;
-	address: string;
+	permanentAddress?: IAddress;
+	temporaryAddress?: IAddress;
+	mailingAddress: IAddress;
 	email: string;
 	phoneNumber: string;
 	status: string | Types.ObjectId;
@@ -22,7 +25,9 @@ export interface UpdateStudentDto {
 	department?: string | Types.ObjectId;
 	schoolYear?: number;
 	program?: string | Types.ObjectId;
-	address?: string;
+	permanentAddress?: IAddress;
+	temporaryAddress?: IAddress;
+	mailingAddress?: IAddress;
 	email?: string;
 	phoneNumber?: string;
 	status?: string | Types.ObjectId;

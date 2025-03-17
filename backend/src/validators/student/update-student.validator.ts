@@ -1,6 +1,7 @@
 import Joi from "joi";
 import { Gender } from "../../models/student.model";
 import { validateRequest } from "../../middlewares/validation.middleware";
+import { addressSchema } from "./add-student.validator";
 
 const updateStudentDto = Joi.object({
 	fullName: Joi.string()
@@ -42,9 +43,9 @@ const updateStudentDto = Joi.object({
 			'string.empty': 'ID chương trình học không được để trống',
 			'string.pattern.base': 'ID chương trình học không hợp lệ (phải là ObjectId MongoDB)'
 		}),
-	address: Joi.string().messages({
-		'string.empty': 'Địa chỉ không được để trống'
-	}),
+	permanentAddress: addressSchema.optional(),
+	temporaryAddress: addressSchema.optional(),
+	mailingAddress: addressSchema.optional(),
 	email: Joi.string().email().messages({
 		'string.email': 'Email không hợp lệ',
 		'string.empty': 'Email không được để trống'

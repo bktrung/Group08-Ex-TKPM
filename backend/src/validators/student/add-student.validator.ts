@@ -2,6 +2,29 @@ import Joi from "joi";
 import { Gender } from "../../models/student.model";
 import { validateRequest } from "../../middlewares/validation.middleware";
 
+export const addressSchema = Joi.object({
+	houseNumberStreet: Joi.string().required().messages({
+		'string.empty': 'Số nhà, đường không được để trống',
+		'any.required': 'Số nhà, đường là trường bắt buộc'
+	}),
+	wardCommune: Joi.string().required().messages({
+		'string.empty': 'Phường/Xã không được để trống',
+		'any.required': 'Phường/Xã là trường bắt buộc'
+	}),
+	districtCounty: Joi.string().required().messages({
+		'string.empty': 'Quận/Huyện không được để trống',
+		'any.required': 'Quận/Huyện là trường bắt buộc'
+	}),
+	provinceCity: Joi.string().required().messages({
+		'string.empty': 'Tỉnh/Thành phố không được để trống',
+		'any.required': 'Tỉnh/Thành phố là trường bắt buộc'
+	}),
+	country: Joi.string().required().messages({
+		'string.empty': 'Quốc gia không được để trống',
+		'any.required': 'Quốc gia là trường bắt buộc'
+	})
+});
+
 const addStudentSchema = Joi.object({
 	studentId: Joi.string()
 		.pattern(/^[0-9]{8}$/)
@@ -60,9 +83,10 @@ const addStudentSchema = Joi.object({
 			'string.pattern.base': 'ID chương trình học không hợp lệ (phải là ObjectId MongoDB)',
 			'any.required': 'Chương trình học là trường bắt buộc'
 		}),
-	address: Joi.string().required().messages({
-		'string.empty': 'Địa chỉ không được để trống',
-		'any.required': 'Địa chỉ là trường bắt buộc'
+	permanentAddress: addressSchema.optional(),
+	temporaryAddress: addressSchema.optional(),
+	mailingAddress: addressSchema.required().messages({
+		'any.required': 'Địa chỉ nhận thư là trường bắt buộc'
 	}),
 	email: Joi.string().email().required().messages({
 		'string.email': 'Email không hợp lệ',
