@@ -1,0 +1,230 @@
+import { Response } from 'express';
+import { Transform } from 'stream';
+import { pipeline } from 'stream/promises';
+import { Readable } from 'stream';
+import { BadRequestError } from '../responses/error.responses';
+import Student from '../models/student.model';
+import { Types } from 'mongoose';
+import { flattenObject } from '../utils';
+
+interface ExportStrategy {
+	contentType: string;
+	fileExtension: string;
+	execute(res: Response, data: any[]): Promise<void>;
+}
+
+abstract class BaseExportStrategy implements ExportStrategy {
+	contentType: string;
+	fileExtension: string;
+
+	constructor(contentType: string, fileExtension: string) {
+		this.contentType = contentType;
+		this.fileExtension = fileExtension;
+	}
+
+	abstract execute(res: Response, data: any[]): Promise<void>;
+
+	protected setHeaders(res: Response, filename: string): void {
+		res.setHeader('Content-Type', this.contentType);
+		res.setHeader('Content-Disposition', `attachment; filename="${filename}.${this.fileExtension}"`);
+	}
+}
+
+class JsonExportStrategy extends BaseExportStrategy {
+	constructor() {
+		super('application/json', 'json');
+	}
+
+	async execute(res: Response, data: any[]): Promise<void> {
+		this.setHeaders(res, 'data');
+
+		// write the opening bracket
+		res.write('[\n');
+
+		// keep track if we've written any items
+		let hasWrittenItems = false;
+
+		await pipeline(
+			Readable.from(data),
+			new Transform({
+				objectMode: true,
+				transform(chunk, encoding, callback) {
+					const prefix = hasWrittenItems ? ',\n' : '';
+					hasWrittenItems = true;
+
+					try {
+						this.push(prefix + JSON.stringify(chunk, null, 2));
+						callback();
+					} catch (err) {
+						callback(err as Error);
+					}
+				}
+			}),
+			res,
+			{ end: false } // Don't end the response yet
+		);
+
+		// write the closing bracket and end the response
+		res.end('\n]');
+	}
+}
+
+class CsvExportStrategy extends BaseExportStrategy {
+	constructor() {
+		super('text/csv', 'csv');
+	}
+
+	async execute(res: Response, data: any[]): Promise<void> {
+		this.setHeaders(res, 'students');
+
+		// Ensure we have data
+		if (data.length === 0) {
+			res.end('');
+			return;
+		}
+
+		const allKeys = new Set<string>();
+
+		data.forEach(item => {
+			const flattenedKeys = flattenObject(item);
+			flattenedKeys.forEach(key => allKeys.add(key));
+		});
+
+		// Convert to array and sort for consistent output
+		const headers = Array.from(allKeys).sort().join(',');
+
+		// Write the header row
+		res.write(headers + '\n');
+
+		// Process each data row
+		await pipeline(
+			Readable.from(data),
+			new Transform({
+				objectMode: true,
+				transform(chunk, encoding, callback) {
+					try {
+						// Use the same ordered keys for each row
+						const values = Array.from(allKeys)
+							.map(key => {
+								// Use dot notation to get nested values
+								const value = key.split('.').reduce((obj, k) =>
+									obj && obj[k] !== undefined ? obj[k] : null, chunk);
+
+								// Handle different data types
+								if (value === null || value === undefined) {
+									return '';
+								} else if (value instanceof Date) {
+									return value.toISOString();
+								} else if (typeof value === 'object') {
+									// This should rarely happen as we've flattened objects
+									return `"${JSON.stringify(value).replace(/"/g, '""')}"`;
+								} else {
+									// Escape quotes and wrap in quotes if contains comma
+									const strValue = String(value).replace(/"/g, '""');
+									return strValue.includes(',') ? `"${strValue}"` : strValue;
+								}
+							})
+							.join(',');
+
+						this.push(values + '\n');
+						callback();
+					} catch (err) {
+						callback(err as Error);
+					}
+				}
+			}),
+			res
+		);
+	}
+}
+
+class ExportService {
+	private strategies: Map<string, ExportStrategy>;
+
+	constructor() {
+		this.strategies = new Map();
+	}
+
+	registerStrategy(format: string, strategy: ExportStrategy): void {
+		this.strategies.set(format.toLowerCase(), strategy);
+	}
+
+	getAvailableFormats(): string[] {
+		return Array.from(this.strategies.keys());
+	}
+
+	async exportData(res: Response, format: string, data: any[]): Promise<void> {
+		const strategy = this.strategies.get(format.toLowerCase());
+
+		if (!strategy) {
+			throw new BadRequestError(`Unsupported export format: ${format}. Available formats: ${this.getAvailableFormats().join(', ')}`);
+		}
+
+		try {
+			await strategy.execute(res, data);
+		} catch (error) {
+			if (!res.headersSent) {
+				throw error;
+			} else {
+				// If headers are already sent, end the response
+				console.error(`Export error after headers sent: ${(error as Error).message}`);
+				res.end();
+			}
+		}
+	}
+
+	async exportStudents(res: Response, format: string, filter?: any): Promise<void> {
+		try {
+			// Apply the filter and get student data
+			const query = filter || {};
+
+			const students = await Student.find(query)
+				.select('-_id -__v -createdAt -updatedAt')
+				.populate('department', 'name')
+				.populate('program', 'name')
+				.populate('status', 'type')
+				.lean();
+
+			// Transform data for export
+			const transformedData = students.map(student => {
+				// Convert ObjectIds to strings and handle nested objects
+				const transformed: any = {};
+
+				// Handle basic fields
+				for (const [key, value] of Object.entries(student)) {
+					if (value instanceof Types.ObjectId) {
+						transformed[key] = value.toString();
+					} else if (key === 'department' || key === 'program' || key === 'status') {
+						// Handle populated fields
+						transformed[key] = (value as any)?.name || (value as any)?.type || value;
+					} else if (key === 'dateOfBirth') {
+						// Format dates
+						transformed[key] = value instanceof Date ?
+							value.toISOString().split('T')[0] : value;
+					} else {
+						transformed[key] = value;
+					}
+				}
+
+				return transformed;
+			});
+
+			await this.exportData(res, format, transformedData);
+
+		} catch (error) {
+			if (!res.headersSent) {
+				throw error;
+			} else {
+				console.error(`Export error: ${(error as Error).message}`);
+				res.end();
+			}
+		}
+	}
+}
+
+const exportService = new ExportService();
+
+exportService.registerStrategy('json', new JsonExportStrategy());
+exportService.registerStrategy('csv', new CsvExportStrategy());
+
+export default exportService;

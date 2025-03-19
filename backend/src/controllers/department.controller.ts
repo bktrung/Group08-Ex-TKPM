@@ -3,7 +3,7 @@ import DepartmentService from '../services/department.service';
 import { CREATED, OK } from '../responses/success.responses';
 
 class DepartmentController {
-	static async addDepartment(req: Request, res: Response, next: NextFunction) {
+	addDepartment = async (req: Request, res: Response, next: NextFunction) => {
 		const departmentName = req.body.name;
 		const newDepartment = await DepartmentService.addDepartment(departmentName);
 		return new CREATED({
@@ -12,7 +12,7 @@ class DepartmentController {
 		}).send(res);
 	}
 
-	static async updateDepartment(req: Request, res: Response, next: NextFunction) {
+	updateDepartment = async (req: Request, res: Response, next: NextFunction) => {
 		const departmentName = req.body.name;
 		const departmentId = req.params.id;
 		const updatedDepartment = await DepartmentService.updateDepartment(departmentId, departmentName);
@@ -22,7 +22,7 @@ class DepartmentController {
 		}).send(res);
 	}
 
-	static async getDepartments(req: Request, res: Response, next: NextFunction) {
+	getDepartments = async (req: Request, res: Response, next: NextFunction) => {
 		const departments = await DepartmentService.getDepartments();
 		return new OK({
 			message: 'Departments retrieved successfully',
@@ -31,4 +31,4 @@ class DepartmentController {
 	}
 }
 
-export default DepartmentController;
+export default new DepartmentController();

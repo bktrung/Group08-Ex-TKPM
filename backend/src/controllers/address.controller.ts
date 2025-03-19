@@ -3,7 +3,7 @@ import AddressService from '../services/address.service';
 import { CREATED, OK } from '../responses/success.responses';
 
 class AddressController {
-	static async getCountries(req: Request, res: Response, next: NextFunction) {
+	getCountries = async (req: Request, res: Response, next: NextFunction) => {
 		const countries = await AddressService.getCountries();
 		return new OK({
 			message: 'Countries retrieved successfully',
@@ -11,7 +11,7 @@ class AddressController {
 		}).send(res);
 	}
 
-	static async getChildren(req: Request, res: Response, next: NextFunction) {
+	getChildren = async (req: Request, res: Response, next: NextFunction) => {
 		const geonameId = req.params.geonameId;
 		const children = await AddressService.getChildren(geonameId);
 		return new OK({
@@ -20,7 +20,7 @@ class AddressController {
 		}).send(res);
 	}
 
-	static async getNationalities(req: Request, res: Response, next: NextFunction) {
+	getNationalities = async (req: Request, res: Response, next: NextFunction) => {
 		const nationalities = await AddressService.getNationalities();
 		return new OK({
 			message: 'Nationalities retrieved successfully',
@@ -29,4 +29,4 @@ class AddressController {
 	}
 }
 
-export default AddressController;
+export default new AddressController();

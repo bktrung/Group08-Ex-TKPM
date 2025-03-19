@@ -2,7 +2,7 @@ import { Types } from 'mongoose';
 import Program from '../program.model';
 
 export const findProgramByName = async (name: string) => {
-	return await Program.findOne({ name });
+	return await Program.findOne({ name }).lean();
 };
 
 export const updateProgram = async (id: string, name: string) => {
@@ -10,7 +10,7 @@ export const updateProgram = async (id: string, name: string) => {
 		{ _id: id },
 		{ name },
 		{ new: true }
-	);
+	).lean();
 };
 
 export const addProgram = async (name: string) => {
@@ -18,9 +18,9 @@ export const addProgram = async (name: string) => {
 };
 
 export const getPrograms = async () => {
-	return await Program.find({}, { createdAt: 0, updatedAt: 0, __v: 0 });
+	return await Program.find({}, { createdAt: 0, updatedAt: 0, __v: 0 }).lean();
 };
 
 export const findProgramById = async (id: string | Types.ObjectId) => {
-	return await Program.findById(id);
+	return await Program.findById(id).lean();
 };

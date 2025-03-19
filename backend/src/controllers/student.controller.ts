@@ -4,7 +4,7 @@ import { CREATED, OK } from '../responses/success.responses';
 import { BadRequestError } from '../responses/error.responses';
 
 class StudentController {
-	static async addStudent(req: Request, res: Response, next: NextFunction) {
+	addStudent = async (req: Request, res: Response, next: NextFunction) => {
 		const studentData = req.body;
 		const newStudent = await StudentService.addStudent(studentData);
 		return new CREATED({
@@ -13,7 +13,7 @@ class StudentController {
 		}).send(res);
 	}
 
-	static async updateStudent(req: Request, res: Response, next: NextFunction) {
+	updateStudent = async (req: Request, res: Response, next: NextFunction) => {
 		const studentData = req.body;
 		const studentId = req.params.studentId;
 		const updatedStudent = await StudentService.updateStudent(studentId, studentData);
@@ -23,7 +23,7 @@ class StudentController {
 		}).send(res);
 	}
 
-	static async deleteStudent(req: Request, res: Response, next: NextFunction) {
+	deleteStudent = async (req: Request, res: Response, next: NextFunction) => {
 		const studentId = req.params.studentId;
 		const deletedStudent = await StudentService.deleteStudent(studentId);
 		return new OK({
@@ -32,7 +32,7 @@ class StudentController {
 		}).send(res);
 	}
 
-	static async searchStudents(req: Request, res: Response, next: NextFunction) {
+	searchStudents = async (req: Request, res: Response, next: NextFunction) => {
 		const { q, page = "1", limit = "10", sort = "ctime" } = req.query;
 
 		if (!q || typeof q !== 'string') {
@@ -57,7 +57,7 @@ class StudentController {
 		}).send(res);
 	}
 	
-	static async getAllStudents(req: Request, res: Response, next: NextFunction) {
+	getAllStudents = async (req: Request, res: Response, next: NextFunction) => {
 		const { page = "1", limit = "10" } = req.query;
 		const result = await StudentService.getAllStudents(parseInt(page as string, 10), parseInt(limit as string, 10));
 		return new OK({
@@ -66,7 +66,7 @@ class StudentController {
 		}).send(res);
 	}
 
-	static async getStudentStatusType(req: Request, res: Response, next: NextFunction) {
+	getStudentStatusType = async (req: Request, res: Response, next: NextFunction) => {
 		const statusType = await StudentService.getStudentStatus();
 		return new OK({
 			message: 'Student status types',
@@ -74,7 +74,7 @@ class StudentController {
 		}).send(res);
 	}
 
-	static async addStudentStatusType(req: Request, res: Response, next: NextFunction) {
+	addStudentStatusType = async (req: Request, res: Response, next: NextFunction) => {
 		const statusType = req.body.type;
 		const newStatusType = await StudentService.addStudentStatus(statusType);
 		return new CREATED({
@@ -83,7 +83,7 @@ class StudentController {
 		}).send(res);
 	}
 
-	static async modifyStudentStatusType(req: Request, res: Response, next: NextFunction) {
+	modifyStudentStatusType = async (req: Request, res: Response, next: NextFunction) => {
 		const statusType = req.body.type;
 		const statusId = req.params.statusId;
 		const updatedStatusType = await StudentService.modifyStudentStatus(statusId, statusType);
@@ -93,7 +93,7 @@ class StudentController {
 		}).send(res);
 	}
 
-	static async getStudentByDepartment(req: Request, res: Response, next: NextFunction) {
+	getStudentByDepartment = async (req: Request, res: Response, next: NextFunction) => {
 		const { departmentId } = req.params;
 		const { page = "1", limit = "10" } = req.query;
 		const result = await StudentService.getStudentByDepartment(departmentId, parseInt(page as string, 10), parseInt(limit as string, 10));
@@ -104,4 +104,4 @@ class StudentController {
 	}
 }
 
-export default StudentController;
+export default new StudentController();

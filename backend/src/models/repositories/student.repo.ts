@@ -8,7 +8,8 @@ export const findStudent = async (query: any): Promise<IStudent | null> => {
 	return Student.findOne(query)
 		.populate("department")
 		.populate("program")
-		.populate("status");
+		.populate("status")
+		.lean();
 }
 
 export const addStudent = async (studentData: CreateStudentDto): Promise<IStudent> => {
@@ -24,11 +25,11 @@ export const updateStudent = async (studentId: string, studentData: UpdateStuden
 			new: true,
 			runValidators: true
 		}
-	);
+	).lean();
 }
 
 export const deleteStudent = async (studentId: string): Promise<IStudent | null> => {
-	return await Student.findOneAndDelete({ studentId });
+	return await Student.findOneAndDelete({ studentId }).lean();
 }
 
 export const searchStudents = async (options: SearchOptions): Promise<PaginationResult<IStudent>> => {
@@ -73,11 +74,11 @@ export const getAllStudents = async (page: number = 1, limit: number = 10, filte
 export const findStudentStatus = async (statusType: string): Promise<any> => {
 	return await StudentStatus.findOne({
 		type: statusType
-	});
+	}).lean();
 }
 
 export const findStudentStatusById = async (statusId: string | Types.ObjectId): Promise<any> => {
-	return await StudentStatus.findById(statusId);
+	return await StudentStatus.findById(statusId).lean();
 }
 
 export const addStudentStatus = async (statusType: string): Promise<any> => {
@@ -89,9 +90,9 @@ export const updateStudentStatus = async (statusId: string, StatusType: string):
 		{ _id: statusId },
 		{ type: StatusType },
 		{ new: true }
-	);
+	).lean();
 }
 
 export const getStudentStatus = async (): Promise<any> => {
-	return await StudentStatus.find({}, { createdAt: 0, updatedAt: 0, __v: 0 });
+	return await StudentStatus.find({}, { createdAt: 0, updatedAt: 0, __v: 0 }).lean();
 }

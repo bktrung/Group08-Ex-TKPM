@@ -72,3 +72,20 @@ export const getAllDocuments = async <T extends Document>(
 	};
 };
 /// end get all documents with pagination
+
+// Converts a nested object into an array of dot notation paths
+export const flattenObject = (obj: any, prefix = ''): string[] => {
+	let keys: string[] = [];
+
+	for (const key in obj) {
+		const newPrefix = prefix ? `${prefix}.${key}` : key;
+
+		if (obj[key] !== null && typeof obj[key] === 'object' && !(obj[key] instanceof Date)) {
+			keys = keys.concat(flattenObject(obj[key], newPrefix));
+		} else {
+			keys.push(newPrefix);
+		}
+	}
+
+	return keys;
+}
