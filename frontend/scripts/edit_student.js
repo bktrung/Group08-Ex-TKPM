@@ -67,6 +67,8 @@ function setupGeographicDropdowns() {
         // Khi chọn quốc gia, tải các tỉnh/thành phố
         const countrySelect = document.getElementById(`${type}-country`);
         countrySelect.addEventListener('change', function() {
+            if (this.selectedIndex <= 0) return; // Không làm gì nếu chọn option mặc định
+            
             const selectedCountry = this.options[this.selectedIndex];
             const geonameId = selectedCountry.getAttribute('data-geonameid');
             if (geonameId) {
@@ -81,6 +83,8 @@ function setupGeographicDropdowns() {
         // Khi chọn tỉnh/thành phố, tải các quận/huyện
         const provinceSelect = document.getElementById(`${type}-province`);
         provinceSelect.addEventListener('change', function() {
+            if (this.selectedIndex <= 0) return; // Không làm gì nếu chọn option mặc định
+            
             const selectedProvince = this.options[this.selectedIndex];
             const geonameId = selectedProvince.getAttribute('data-geonameid');
             if (geonameId) {
@@ -94,6 +98,8 @@ function setupGeographicDropdowns() {
         // Khi chọn quận/huyện, tải các phường/xã
         const districtSelect = document.getElementById(`${type}-district`);
         districtSelect.addEventListener('change', function() {
+            if (this.selectedIndex <= 0) return; // Không làm gì nếu chọn option mặc định
+            
             const selectedDistrict = this.options[this.selectedIndex];
             const geonameId = selectedDistrict.getAttribute('data-geonameid');
             if (geonameId) {
@@ -119,7 +125,20 @@ async function fetchCountries() {
         if (!response.ok) throw new Error(`Lỗi API: ${response.status}`);
 
         const data = await response.json();
+        
+        // Kiểm tra cấu trúc dữ liệu trả về
+        if (!data || !data.metadata || !data.metadata.countries) {
+            console.warn('API trả về dữ liệu không đúng cấu trúc cho countries');
+            return;
+        }
+        
         const countries = data.metadata.countries;
+        
+        // Kiểm tra nếu không có dữ liệu hoặc mảng rỗng
+        if (!Array.isArray(countries) || countries.length === 0) {
+            console.warn('Không có dữ liệu quốc gia');
+            return;
+        }
         
         // Lưu danh sách quốc gia vào window để sử dụng sau này
         window.countriesData = countries;
@@ -137,24 +156,19 @@ async function fetchCountries() {
             select.innerHTML = '<option value="">-- Chọn quốc gia --</option>';
             
             countries.forEach(country => {
+                // Kiểm tra dữ liệu quốc gia
+                if (!country || !country.countryName) return;
+                
                 const option = document.createElement("option");
                 option.value = country.countryName;
                 option.textContent = country.countryName;
-                option.setAttribute('data-geonameid', country.geonameId);
+                if (country.geonameId) {
+                    option.setAttribute('data-geonameid', country.geonameId);
+                }
                 select.appendChild(option);
             });
             
-            // Mặc định chọn Việt Nam
-            const vietnamOption = Array.from(select.options).find(option => 
-                option.value.toLowerCase().includes('viet') || 
-                option.value.toLowerCase().includes('việt'));
-                
-            if (vietnamOption) {
-                select.value = vietnamOption.value;
-                
-                // Kích hoạt sự kiện change để tải các tỉnh/thành phố
-                select.dispatchEvent(new Event('change'));
-            }
+            // Không còn tự động chọn Việt Nam làm mặc định
         });
         
     } catch (error) {
@@ -296,26 +310,34 @@ async function fetchNationalities() {
         if (!response.ok) throw new Error(`Lỗi API: ${response.status}`);
 
         const data = await response.json();
+        
+        // Kiểm tra cấu trúc dữ liệu
+        if (!data || !data.metadata || !data.metadata.nationalities) {
+            console.warn('API trả về dữ liệu không đúng cấu trúc cho nationalities');
+            return;
+        }
+        
         const nationalities = data.metadata.nationalities;
+        
+        // Kiểm tra nếu không có dữ liệu
+        if (!Array.isArray(nationalities) || nationalities.length === 0) {
+            console.warn('Không có dữ liệu quốc tịch');
+            return;
+        }
+        
         const nationalitySelect = document.getElementById("student-nationality");
-
         nationalitySelect.innerHTML = '<option value="">-- Chọn quốc tịch --</option>';
         
         nationalities.forEach(nationality => {
+            if (!nationality) return;
+            
             const option = document.createElement("option");
             option.value = nationality;
             option.textContent = nationality;
             nationalitySelect.appendChild(option);
         });
         
-        // Mặc định chọn Vietnamese
-        const vietnameseOption = Array.from(nationalitySelect.options).find(option => 
-            option.value.toLowerCase().includes('vietnamese') || 
-            option.value.toLowerCase().includes('việt'));
-            
-        if (vietnameseOption) {
-            nationalitySelect.value = vietnameseOption.value;
-        }
+        // Không còn tự động chọn Vietnamese làm mặc định
         
     } catch (error) {
         console.error("Lỗi khi lấy danh sách quốc tịch:", error);
@@ -441,6 +463,8 @@ async function fetchStudentData(studentId) {
         if (!response.ok) throw new Error(`Lỗi API: ${response.status}`);
 
         const data = await response.json();
+        console.log("Danh sách sinh viên:", data.metadata.students);
+        
         const students = data.metadata.students;
         const student = students.find(s => s.studentId === studentId);
 
@@ -452,6 +476,8 @@ async function fetchStudentData(studentId) {
             return;
         }
 
+        console.log("Dữ liệu sinh viên:", student);
+
         // Điền thông tin cơ bản của sinh viên vào form
         document.getElementById('student-id').value = student.studentId;
         document.getElementById('student-name').value = student.fullName;
@@ -462,13 +488,88 @@ async function fetchStudentData(studentId) {
         document.getElementById('student-dob').value = formattedDob;
         
         document.getElementById('student-gender').value = student.gender;
-        document.getElementById('student-nationality').value = student.nationality || 'Vietnamese';
-        document.getElementById('student-faculty').value = student.department._id || student.department;
+        
+        // Tìm và chọn quốc tịch
+        if (student.nationality) {
+            console.log("Đang tìm quốc tịch:", student.nationality);
+            const nationalitySelect = document.getElementById('student-nationality');
+            console.log("Các option của select quốc tịch:", Array.from(nationalitySelect.options));
+            
+            // Tìm option có giá trị gần giống với quốc tịch sinh viên
+            for (let i = 0; i < nationalitySelect.options.length; i++) {
+                const option = nationalitySelect.options[i];
+                if (option.value.toLowerCase().includes(student.nationality.toLowerCase()) || 
+                    student.nationality.toLowerCase().includes(option.value.toLowerCase())) {
+                    nationalitySelect.selectedIndex = i;
+                    break;
+                }
+            }
+        }
+        
+        // Tìm và chọn khoa
+        if (student.department) {
+            const departmentId = typeof student.department === 'object' ? 
+                student.department._id : student.department;
+            console.log("Department ID:", departmentId);
+            
+            if (departmentId) {
+                document.getElementById('student-faculty').value = departmentId;
+            }
+        }
+        
         document.getElementById('student-course').value = student.schoolYear;
-        document.getElementById('student-program').value = student.program._id || student.program;
+        
+        // Tìm và chọn chương trình đào tạo
+        if (student.program) {
+            const programId = typeof student.program === 'object' ? 
+                student.program._id : student.program;
+            console.log("Program ID:", programId);
+            
+            if (programId) {
+                document.getElementById('student-program').value = programId;
+            }
+        }
+        
         document.getElementById('student-email').value = student.email;
         document.getElementById('student-phone').value = student.phoneNumber;
-        document.getElementById('student-status').value = student.status._id || student.status;
+        
+        // Tìm và chọn trạng thái
+        if (student.status) {
+            const statusId = typeof student.status === 'object' ? 
+                student.status._id : student.status;
+            console.log("Status ID:", statusId);
+            
+            const statusSelect = document.getElementById('student-status');
+            console.log("Các option của select trạng thái:", Array.from(statusSelect.options));
+            
+            // Tìm option có value trùng với statusId
+            let found = false;
+            for (let i = 0; i < statusSelect.options.length; i++) {
+                if (statusSelect.options[i].value === statusId) {
+                    statusSelect.selectedIndex = i;
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (!found) {
+                console.log("Không tìm thấy trạng thái với ID:", statusId);
+                // Thêm option mới cho trạng thái hiện tại của sinh viên
+                const newOption = document.createElement('option');
+                newOption.value = statusId;
+                
+                // Xác định tên trạng thái
+                let statusName = "Không xác định";
+                if (typeof student.status === 'object' && student.status.type) {
+                    statusName = student.status.type;
+                }
+                
+                newOption.textContent = statusName;
+                statusSelect.appendChild(newOption);
+                statusSelect.value = statusId;
+            }
+        }
+        
         
         // Tải và điền thông tin địa chỉ (sử dụng hàm riêng để đơn giản hóa code)
         if (student.permanentAddress) {
