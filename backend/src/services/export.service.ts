@@ -6,6 +6,8 @@ import { BadRequestError } from '../responses/error.responses';
 import Student from '../models/student.model';
 import { Types } from 'mongoose';
 import { flattenObject } from '../utils';
+import * as ExcelJS from 'exceljs';
+import { create as createXmlBuilder } from 'xmlbuilder2';
 
 interface ExportStrategy {
 	contentType: string;
@@ -138,6 +140,135 @@ class CsvExportStrategy extends BaseExportStrategy {
 	}
 }
 
+class XmlExportStrategy extends BaseExportStrategy {
+	constructor() {
+		super('application/xml', 'xml');
+	}
+
+	async execute(res: Response, data: any[]): Promise<void> {
+		this.setHeaders(res, 'students');
+
+		// Create root element
+		const xmlRoot = createXmlBuilder({ version: '1.0', encoding: 'UTF-8' })
+			.ele('data');
+
+		// Add each record as a child element
+		data.forEach((item, index) => {
+			const recordElement = xmlRoot.ele('record', { id: index + 1 });
+
+			this.addObjectToXml(recordElement, item);
+		});
+
+		// Convert to string and send
+		const xmlString = xmlRoot.end({ prettyPrint: true });
+		res.end(xmlString);
+	}
+
+	private addObjectToXml(parent: any, obj: any): void {
+		for (const [key, value] of Object.entries(obj)) {
+			if (value === null || value === undefined) {
+				parent.ele(key);
+			} else if (Array.isArray(value)) {
+				const arrayElement = parent.ele(key);
+				value.forEach((item, index) => {
+					const itemElement = arrayElement.ele('item', { index });
+					if (typeof item === 'object' && item !== null) {
+						this.addObjectToXml(itemElement, item);
+					} else {
+						itemElement.txt(String(item));
+					}
+				});
+			} else if (typeof value === 'object' && !(value instanceof Date)) {
+				const childElement = parent.ele(key);
+				this.addObjectToXml(childElement, value);
+			} else {
+				// Handle primitive values and dates
+				const strValue = value instanceof Date ? value.toISOString() : String(value);
+				parent.ele(key).txt(strValue);
+			}
+		}
+	}
+}
+
+class ExcelExportStrategy extends BaseExportStrategy {
+	constructor() {
+		super('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'xlsx');
+	}
+
+	async execute(res: Response, data: any[]): Promise<void> {
+		this.setHeaders(res, 'students');
+
+		// Create workbook and worksheet
+		const workbook = new ExcelJS.Workbook();
+		const worksheet = workbook.addWorksheet('Data');
+
+		// If no data, return empty workbook
+		if (data.length === 0) {
+			await workbook.xlsx.write(res);
+			return;
+		}
+
+		// Collect all keys while preserving order
+		const allKeys: string[] = [];
+		const keySet = new Set<string>();
+
+		// Gather keys in the order they appear in the first object that has them
+		data.forEach(item => {
+			const flattenedKeys = flattenObject(item);
+			flattenedKeys.forEach(key => {
+				if (!keySet.has(key)) {
+					keySet.add(key);
+					allKeys.push(key);
+				}
+			});
+		});
+
+		// Define columns preserving order
+		const columns = allKeys.map(key => ({
+			header: key,
+			key: key,
+			width: 20
+		}));
+		worksheet.columns = columns;
+
+		// Add rows with flattened data
+		data.forEach(item => {
+			const rowData: any = {};
+
+			allKeys.forEach(key => {
+				// Use dot notation to get nested values
+				const value = key.split('.').reduce((obj, k) =>
+					obj && obj[k] !== undefined ? obj[k] : null, item);
+
+				if (value === null || value === undefined) {
+					rowData[key] = '';
+				} else if (value instanceof Date) {
+					rowData[key] = value;
+				} else if (typeof value === 'object') {
+					rowData[key] = JSON.stringify(value);
+				} else {
+					rowData[key] = value;
+				}
+			});
+
+			worksheet.addRow(rowData);
+		});
+
+		// Style the header row
+		worksheet.getRow(1).font = { bold: true };
+		worksheet.getRow(1).alignment = { vertical: 'middle', horizontal: 'center' };
+
+		// Auto-fit columns (approximately)
+		worksheet.columns.forEach(column => {
+			const headerLength = column.header?.length || 10;
+			column.width = Math.max(headerLength + 2, 12);
+		});
+
+		// Write to response
+		await workbook.xlsx.write(res);
+	}
+}
+
 class ExportService {
 	private strategies: Map<string, ExportStrategy>;
 
@@ -226,5 +357,7 @@ const exportService = new ExportService();
 
 exportService.registerStrategy('json', new JsonExportStrategy());
 exportService.registerStrategy('csv', new CsvExportStrategy());
+exportService.registerStrategy('xml', new XmlExportStrategy());
+exportService.registerStrategy('excel', new ExcelExportStrategy());
 
 export default exportService;

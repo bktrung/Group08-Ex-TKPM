@@ -18,13 +18,15 @@
     "compression": "^1.8.0",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
+    "exceljs": "^4.4.0",
     "express": "^4.21.2",
     "helmet": "^8.0.0",
     "joi": "^17.13.3",
     "mongoose": "^8.12.1",
     "node-cache": "^5.1.2",
     "package.json": "^2.0.1",
-    "stream-json": "^1.9.1"
+    "stream-json": "^1.9.1",
+    "xmlbuilder2": "^3.1.1"
   },
   "devDependencies": {
     "@types/compression": "^1.7.5",
