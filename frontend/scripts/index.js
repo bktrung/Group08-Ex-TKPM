@@ -7,6 +7,7 @@ let lastSearchQuery = '';
 let departments = [];
 let selectedDepartment = '';
 
+
 async function fetchStudents(page = 1) {
     try {
         const response = await fetch(`http://127.0.0.1:3456/v1/api/students?page=${page}&limit=${studentsPerPage}`);

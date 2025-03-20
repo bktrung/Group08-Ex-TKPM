@@ -1,3 +1,12 @@
+document.addEventListener("DOMContentLoaded", function() {
+    fetch('../pages/sidebar.html')
+        .then(response => response.text())
+        .then(html => {
+            document.getElementById('sidebar-container').innerHTML = html;
+        })
+        .catch(error => console.error("Lỗi khi tải sidebar:", error));
+});
+
 document.addEventListener("DOMContentLoaded", function () {
     let faculties = [];
     let editingFacultyId = null;
