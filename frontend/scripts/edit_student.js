@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", async function () {
-    // Lấy studentId từ URL
     const urlParams = new URLSearchParams(window.location.search);
     const studentId = urlParams.get('id');
 
@@ -11,13 +10,9 @@ document.addEventListener("DOMContentLoaded", async function () {
         return;
     }
 
-    // Thiết lập xử lý sự kiện cho loại giấy tờ
     setupIdentityTypeHandler();
-
-    // Thiết lập các sự kiện cho dropdown địa lý
     setupGeographicDropdowns();
 
-    // Tải dữ liệu cần thiết từ API
     await Promise.all([
         fetchCountries(),
         fetchNationalities(),
@@ -26,8 +21,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         fetchStatusTypes()
     ]);
 
-    // Tải thông tin sinh viên sau khi đã tải xong các danh mục
     await fetchStudentData(studentId);
+    window.addEventListener('load', restoreAddressData);
 });
 
 // Thiết lập xử lý sự kiện cho loại giấy tờ tùy thân
@@ -64,16 +59,14 @@ function setupGeographicDropdowns() {
     
     // Thiết lập sự kiện cho từng loại địa chỉ
     addressTypes.forEach(type => {
-        // Khi chọn quốc gia, tải các tỉnh/thành phố
         const countrySelect = document.getElementById(`${type}-country`);
         countrySelect.addEventListener('change', function() {
-            if (this.selectedIndex <= 0) return; // Không làm gì nếu chọn option mặc định
+            if (this.selectedIndex <= 0) return;
             
             const selectedCountry = this.options[this.selectedIndex];
             const geonameId = selectedCountry.getAttribute('data-geonameid');
             if (geonameId) {
                 fetchProvinces(geonameId, type);
-                // Reset các dropdown con
                 resetDropdown(`${type}-province`);
                 resetDropdown(`${type}-district`);
                 resetDropdown(`${type}-wardcommune`);
@@ -83,7 +76,7 @@ function setupGeographicDropdowns() {
         // Khi chọn tỉnh/thành phố, tải các quận/huyện
         const provinceSelect = document.getElementById(`${type}-province`);
         provinceSelect.addEventListener('change', function() {
-            if (this.selectedIndex <= 0) return; // Không làm gì nếu chọn option mặc định
+            if (this.selectedIndex <= 0) return;
             
             const selectedProvince = this.options[this.selectedIndex];
             const geonameId = selectedProvince.getAttribute('data-geonameid');
@@ -98,7 +91,7 @@ function setupGeographicDropdowns() {
         // Khi chọn quận/huyện, tải các phường/xã
         const districtSelect = document.getElementById(`${type}-district`);
         districtSelect.addEventListener('change', function() {
-            if (this.selectedIndex <= 0) return; // Không làm gì nếu chọn option mặc định
+            if (this.selectedIndex <= 0) return;
             
             const selectedDistrict = this.options[this.selectedIndex];
             const geonameId = selectedDistrict.getAttribute('data-geonameid');
@@ -126,7 +119,6 @@ async function fetchCountries() {
 
         const data = await response.json();
         
-        // Kiểm tra cấu trúc dữ liệu trả về
         if (!data || !data.metadata || !data.metadata.countries) {
             console.warn('API trả về dữ liệu không đúng cấu trúc cho countries');
             return;
@@ -134,16 +126,13 @@ async function fetchCountries() {
         
         const countries = data.metadata.countries;
         
-        // Kiểm tra nếu không có dữ liệu hoặc mảng rỗng
         if (!Array.isArray(countries) || countries.length === 0) {
             console.warn('Không có dữ liệu quốc gia');
             return;
         }
         
-        // Lưu danh sách quốc gia vào window để sử dụng sau này
         window.countriesData = countries;
         
-        // Cập nhật tất cả các dropdown quốc gia
         const countrySelects = [
             'permanent-country', 
             'temporary-country', 
@@ -185,7 +174,6 @@ async function fetchProvinces(geonameId, addressType) {
 
         const data = await response.json();
         
-        // Kiểm tra cấu trúc dữ liệu trả về
         if (!data || !data.metadata || !data.metadata.children || !data.metadata.children.geonames) {
             console.warn(`API trả về dữ liệu không đúng cấu trúc cho ${addressType}`);
             return;
@@ -197,7 +185,6 @@ async function fetchProvinces(geonameId, addressType) {
         provinceSelect.innerHTML = '<option value="">-- Chọn tỉnh/thành phố --</option>';
         provinceSelect.disabled = false;
         
-        // Kiểm tra nếu không có dữ liệu hoặc mảng rỗng
         if (!Array.isArray(provinces) || provinces.length === 0) {
             console.warn(`Không có dữ liệu tỉnh/thành phố cho ${addressType}`);
             return;
@@ -215,7 +202,6 @@ async function fetchProvinces(geonameId, addressType) {
         
     } catch (error) {
         console.error(`Lỗi khi lấy danh sách tỉnh/thành phố cho ${addressType}:`, error);
-        // Không hiển thị modal lỗi vì có thể gây phiền nhiễu cho người dùng
     }
 }
 
@@ -227,7 +213,6 @@ async function fetchDistricts(geonameId, addressType) {
 
         const data = await response.json();
         
-        // Kiểm tra cấu trúc dữ liệu trả về
         if (!data || !data.metadata || !data.metadata.children || !data.metadata.children.geonames) {
             console.warn(`API trả về dữ liệu không đúng cấu trúc cho ${addressType}`);
             return;
@@ -239,7 +224,6 @@ async function fetchDistricts(geonameId, addressType) {
         districtSelect.innerHTML = '<option value="">-- Chọn quận/huyện --</option>';
         districtSelect.disabled = false;
         
-        // Kiểm tra nếu không có dữ liệu hoặc mảng rỗng
         if (!Array.isArray(districts) || districts.length === 0) {
             console.warn(`Không có dữ liệu quận/huyện cho ${addressType}`);
             return;
@@ -269,7 +253,6 @@ async function fetchWardCommunes(geonameId, addressType) {
 
         const data = await response.json();
         
-        // Kiểm tra cấu trúc dữ liệu trả về
         if (!data || !data.metadata || !data.metadata.children || !data.metadata.children.geonames) {
             console.warn(`API trả về dữ liệu không đúng cấu trúc cho ${addressType}`);
             return;
@@ -281,7 +264,6 @@ async function fetchWardCommunes(geonameId, addressType) {
         wardCommuneSelect.innerHTML = '<option value="">-- Chọn phường/xã --</option>';
         wardCommuneSelect.disabled = false;
         
-        // Kiểm tra nếu không có dữ liệu hoặc mảng rỗng
         if (!Array.isArray(wardCommunes) || wardCommunes.length === 0) {
             console.warn(`Không có dữ liệu phường/xã cho ${addressType}`);
             return;
@@ -307,21 +289,23 @@ async function fetchWardCommunes(geonameId, addressType) {
 async function fetchNationalities() {
     try {
         const response = await fetch("http://127.0.0.1:3456/v1/api/address/nationalities");
-        if (!response.ok) throw new Error(`Lỗi API: ${response.status}`);
+        if (!response.ok) {
+            throw new Error(`Lỗi API: ${response.status}`);
+        }
 
         const data = await response.json();
         
-        // Kiểm tra cấu trúc dữ liệu
         if (!data || !data.metadata || !data.metadata.nationalities) {
             console.warn('API trả về dữ liệu không đúng cấu trúc cho nationalities');
+            setDefaultNationalities();
             return;
         }
         
         const nationalities = data.metadata.nationalities;
         
-        // Kiểm tra nếu không có dữ liệu
         if (!Array.isArray(nationalities) || nationalities.length === 0) {
             console.warn('Không có dữ liệu quốc tịch');
+            setDefaultNationalities();
             return;
         }
         
@@ -337,11 +321,9 @@ async function fetchNationalities() {
             nationalitySelect.appendChild(option);
         });
         
-        // Không còn tự động chọn Vietnamese làm mặc định
-        
     } catch (error) {
         console.error("Lỗi khi lấy danh sách quốc tịch:", error);
-        showErrorModal("Không thể lấy danh sách quốc tịch: " + error.message);
+        setDefaultNationalities();
     }
 }
 
@@ -355,10 +337,8 @@ async function fetchDepartments() {
         const departments = data.metadata.departments;
         const facultySelect = document.getElementById("student-faculty");
 
-        // Xóa tất cả option cũ
         facultySelect.innerHTML = '<option value="">-- Chọn khoa --</option>';
 
-        // Thêm option mới từ API
         departments.forEach(department => {
             const option = document.createElement("option");
             option.value = department._id;
@@ -384,10 +364,8 @@ async function fetchPrograms() {
         const programs = data.metadata.programs;
         const programSelect = document.getElementById("student-program");
 
-        // Xóa tất cả option cũ
         programSelect.innerHTML = '<option value="">-- Chọn chương trình --</option>';
 
-        // Thêm option mới từ API
         programs.forEach(program => {
             const option = document.createElement("option");
             option.value = program._id;
@@ -413,10 +391,8 @@ async function fetchStatusTypes() {
         const statusTypes = data.metadata.statusType || [];
         const statusSelect = document.getElementById("student-status");
 
-        // Xóa tất cả option cũ
         statusSelect.innerHTML = '<option value="">-- Chọn trạng thái --</option>';
 
-        // Thêm option mới từ API
         statusTypes.forEach(status => {
             const option = document.createElement("option");
             option.value = status._id;
@@ -443,7 +419,6 @@ async function findGeonameId(name, parentGeonameId) {
         const data = await response.json();
         const locations = data.metadata.children.geonames;
         
-        // Tìm location dựa trên tên, so sánh không phân biệt hoa thường
         const location = locations.find(loc => 
             loc.toponymName.toLowerCase() === name.toLowerCase() || 
             (loc.name && loc.name.toLowerCase() === name.toLowerCase())
@@ -478,35 +453,43 @@ async function fetchStudentData(studentId) {
 
         console.log("Dữ liệu sinh viên:", student);
 
-        // Điền thông tin cơ bản của sinh viên vào form
         document.getElementById('student-id').value = student.studentId;
         document.getElementById('student-name').value = student.fullName;
         
-        // Định dạng ngày sinh
         const dob = new Date(student.dateOfBirth);
         const formattedDob = dob.toISOString().split('T')[0];
         document.getElementById('student-dob').value = formattedDob;
         
         document.getElementById('student-gender').value = student.gender;
         
-        // Tìm và chọn quốc tịch
         if (student.nationality) {
             console.log("Đang tìm quốc tịch:", student.nationality);
             const nationalitySelect = document.getElementById('student-nationality');
-            console.log("Các option của select quốc tịch:", Array.from(nationalitySelect.options));
             
-            // Tìm option có giá trị gần giống với quốc tịch sinh viên
+            let foundExactMatch = false;
             for (let i = 0; i < nationalitySelect.options.length; i++) {
                 const option = nationalitySelect.options[i];
-                if (option.value.toLowerCase().includes(student.nationality.toLowerCase()) || 
-                    student.nationality.toLowerCase().includes(option.value.toLowerCase())) {
+                if (option.value.toLowerCase() === student.nationality.toLowerCase()) {
                     nationalitySelect.selectedIndex = i;
+                    foundExactMatch = true;
+                    console.log("Đã tìm thấy quốc tịch (khớp chính xác):", option.value);
                     break;
                 }
             }
-        }
+            
+            if (!foundExactMatch) {
+                for (let i = 0; i < nationalitySelect.options.length; i++) {
+                    const option = nationalitySelect.options[i];
+                    if (option.value.toLowerCase().includes(studentNatLower) || 
+                        studentNatLower.includes(option.value.toLowerCase())) {
+                        nationalitySelect.selectedIndex = i;
+                        console.log("Đã tìm thấy quốc tịch (khớp một phần):", option.value);
+                        break;
+                    }
+                }
+            }
+            }
         
-        // Tìm và chọn khoa
         if (student.department) {
             const departmentId = typeof student.department === 'object' ? 
                 student.department._id : student.department;
@@ -519,7 +502,6 @@ async function fetchStudentData(studentId) {
         
         document.getElementById('student-course').value = student.schoolYear;
         
-        // Tìm và chọn chương trình đào tạo
         if (student.program) {
             const programId = typeof student.program === 'object' ? 
                 student.program._id : student.program;
@@ -533,7 +515,6 @@ async function fetchStudentData(studentId) {
         document.getElementById('student-email').value = student.email;
         document.getElementById('student-phone').value = student.phoneNumber;
         
-        // Tìm và chọn trạng thái
         if (student.status) {
             const statusId = typeof student.status === 'object' ? 
                 student.status._id : student.status;
@@ -554,11 +535,9 @@ async function fetchStudentData(studentId) {
             
             if (!found) {
                 console.log("Không tìm thấy trạng thái với ID:", statusId);
-                // Thêm option mới cho trạng thái hiện tại của sinh viên
                 const newOption = document.createElement('option');
                 newOption.value = statusId;
                 
-                // Xác định tên trạng thái
                 let statusName = "Không xác định";
                 if (typeof student.status === 'object' && student.status.type) {
                     statusName = student.status.type;
@@ -584,13 +563,11 @@ async function fetchStudentData(studentId) {
             await loadAddressData(student.mailingAddress, 'mailing');
         }
         
-        // Điền thông tin giấy tờ tùy thân
         if (student.identityDocument) {
             const idType = student.identityDocument.type;
             document.getElementById('identity-type').value = idType;
             document.getElementById('identity-number').value = student.identityDocument.number || '';
             
-            // Định dạng ngày cấp và ngày hết hạn
             if (student.identityDocument.issueDate) {
                 const issueDate = new Date(student.identityDocument.issueDate);
                 document.getElementById('identity-issue-date').value = issueDate.toISOString().split('T')[0];
@@ -603,13 +580,11 @@ async function fetchStudentData(studentId) {
             
             document.getElementById('identity-issued-by').value = student.identityDocument.issuedBy || '';
             
-            // Thông tin riêng cho CCCD
             if (idType === 'CCCD') {
                 document.getElementById('cccd-has-chip').value = student.identityDocument.hasChip ? 'true' : 'false';
                 document.getElementById('cccd-chip-container').style.display = 'block';
             }
             
-            // Thông tin riêng cho hộ chiếu
             if (idType === 'PASSPORT') {
                 document.getElementById('passport-country').value = student.identityDocument.issuedCountry || 'Viet Nam';
                 document.getElementById('passport-notes').value = student.identityDocument.notes || '';
@@ -629,73 +604,230 @@ async function fetchStudentData(studentId) {
 // Tải và điền thông tin địa chỉ
 async function loadAddressData(addressData, addressType) {
     try {
-        // Điền vào trường số nhà, đường
         document.getElementById(`${addressType}-housestreet`).value = addressData.houseNumberStreet || '';
         
-        // Tìm quốc gia trong danh sách và thiết lập giá trị
-        const countrySelect = document.getElementById(`${addressType}-country`);
-        const countryOption = Array.from(countrySelect.options).find(option => 
-            option.value.toLowerCase() === (addressData.country || '').toLowerCase() ||
-            option.value.toLowerCase().includes((addressData.country || '').toLowerCase())
-        );
-        
-        if (countryOption) {
-            countrySelect.value = countryOption.value;
-            // Kích hoạt sự kiện change để tải các tỉnh/thành phố
-            countrySelect.dispatchEvent(new Event('change'));
+        if (addressData.country && addressData.country !== 'null') {
+            const countrySelect = document.getElementById(`${addressType}-country`);
             
-            // Lấy geonameId của quốc gia
-            const countryGeonameId = countryOption.getAttribute('data-geonameid');
+            if (countrySelect.options.length <= 1) {
+                await new Promise(resolve => {
+                    const checkInterval = setInterval(() => {
+                        if (countrySelect.options.length > 1) {
+                            clearInterval(checkInterval);
+                            resolve();
+                        }
+                    }, 100);
+                    setTimeout(() => {
+                        clearInterval(checkInterval);
+                        resolve();
+                    }, 5000);
+                });
+            }
             
-            // Đợi API tải danh sách tỉnh/thành phố
-            await new Promise(resolve => setTimeout(resolve, 500));
+            let foundExactMatch = false;
+            for (let i = 0; i < countrySelect.options.length; i++) {
+                const option = countrySelect.options[i];
+                if (option.value.toLowerCase() === addressData.country.toLowerCase()) {
+                    countrySelect.selectedIndex = i;
+                    foundExactMatch = true;
+                    break;
+                }
+            }
             
-            // Tìm và chọn tỉnh/thành phố
-            const provinceSelect = document.getElementById(`${addressType}-province`);
-            if (addressData.provinceCity) {
-                const provinceOption = Array.from(provinceSelect.options).find(option => 
-                    option.value.toLowerCase() === addressData.provinceCity.toLowerCase() ||
-                    option.value.toLowerCase().includes(addressData.provinceCity.toLowerCase())
-                );
+            if (!foundExactMatch) {
+                for (let i = 0; i < countrySelect.options.length; i++) {
+                    const option = countrySelect.options[i];
+                    if (option.value.toLowerCase().includes(addressData.country.toLowerCase()) || 
+                        addressData.country.toLowerCase().includes(option.value.toLowerCase())) {
+                        countrySelect.selectedIndex = i;
+                        foundExactMatch = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (foundExactMatch) {
+                countrySelect.disabled = false;
                 
-                if (provinceOption) {
-                    provinceSelect.value = provinceOption.value;
-                    // Kích hoạt sự kiện change để tải các quận/huyện
-                    provinceSelect.dispatchEvent(new Event('change'));
+                if (!window.storedAddressData) window.storedAddressData = {};
+                if (!window.storedAddressData[addressType]) window.storedAddressData[addressType] = {};
+                window.storedAddressData[addressType].country = countrySelect.value;
+                
+                try {
+                    const selectedCountryOption = countrySelect.options[countrySelect.selectedIndex];
+                    const geonameId = selectedCountryOption.getAttribute('data-geonameid');
                     
-                    // Đợi API tải danh sách quận/huyện
-                    await new Promise(resolve => setTimeout(resolve, 500));
-                    
-                    // Tìm và chọn quận/huyện
-                    const districtSelect = document.getElementById(`${addressType}-district`);
-                    if (addressData.districtCounty) {
-                        const districtOption = Array.from(districtSelect.options).find(option => 
-                            option.value.toLowerCase() === addressData.districtCounty.toLowerCase() ||
-                            option.value.toLowerCase().includes(addressData.districtCounty.toLowerCase())
-                        );
-                        
-                        if (districtOption) {
-                            districtSelect.value = districtOption.value;
-                            // Kích hoạt sự kiện change để tải các phường/xã
-                            districtSelect.dispatchEvent(new Event('change'));
-                            
-                            // Đợi API tải danh sách phường/xã
-                            await new Promise(resolve => setTimeout(resolve, 500));
-                            
-                            // Tìm và chọn phường/xã
-                            const wardCommuneSelect = document.getElementById(`${addressType}-wardcommune`);
-                            if (addressData.wardCommune) {
-                                const wardOption = Array.from(wardCommuneSelect.options).find(option => 
-                                    option.value.toLowerCase() === addressData.wardCommune.toLowerCase() ||
-                                    option.value.toLowerCase().includes(addressData.wardCommune.toLowerCase())
-                                );
+                    if (geonameId) {
+                        const provinceResponse = await fetch(`http://127.0.0.1:3456/v1/api/address/children/${geonameId}`);
+                        if (provinceResponse.ok) {
+                            const provinceData = await provinceResponse.json();
+                            if (provinceData && provinceData.metadata && provinceData.metadata.children) {
+                                const provinces = provinceData.metadata.children.geonames;
+                                const provinceSelect = document.getElementById(`${addressType}-province`);
                                 
-                                if (wardOption) {
-                                    wardCommuneSelect.value = wardOption.value;
+                                provinceSelect.innerHTML = '<option value="">-- Chọn tỉnh/thành phố --</option>';
+                                provinces.forEach(province => {
+                                    const option = document.createElement("option");
+                                    option.value = province.toponymName || province.name || '';
+                                    option.textContent = province.toponymName || province.name || '';
+                                    if (province.geonameId) {
+                                        option.setAttribute('data-geonameid', province.geonameId);
+                                    }
+                                    provinceSelect.appendChild(option);
+                                });
+                                
+                                provinceSelect.disabled = false;
+                                
+                                if (addressData.provinceCity && addressData.provinceCity !== 'null') {
+                                    let foundProvince = false;
+                                    for (let i = 0; i < provinceSelect.options.length; i++) {
+                                        const option = provinceSelect.options[i];
+                                        if (option.value.toLowerCase() === addressData.provinceCity.toLowerCase()) {
+                                            provinceSelect.selectedIndex = i;
+                                            foundProvince = true;
+                                            break;
+                                        }
+                                    }
+                                    
+                                    if (!foundProvince) {
+                                        for (let i = 0; i < provinceSelect.options.length; i++) {
+                                            const option = provinceSelect.options[i];
+                                            if (option.value.toLowerCase().includes(addressData.provinceCity.toLowerCase()) || 
+                                                addressData.provinceCity.toLowerCase().includes(option.value.toLowerCase())) {
+                                                provinceSelect.selectedIndex = i;
+                                                foundProvince = true;
+                                                break;
+                                            }
+                                        }
+                                    }
+                                    
+                                    if (foundProvince) {
+                                        window.storedAddressData[addressType].province = provinceSelect.value;
+                                        
+                                        try {
+                                            const selectedProvinceOption = provinceSelect.options[provinceSelect.selectedIndex];
+                                            const provinceGeonameId = selectedProvinceOption.getAttribute('data-geonameid');
+                                            
+                                            if (provinceGeonameId) {
+                                                const districtResponse = await fetch(`http://127.0.0.1:3456/v1/api/address/children/${provinceGeonameId}`);
+                                                if (districtResponse.ok) {
+                                                    const districtData = await districtResponse.json();
+                                                    if (districtData && districtData.metadata && districtData.metadata.children) {
+                                                        const districts = districtData.metadata.children.geonames;
+                                                        const districtSelect = document.getElementById(`${addressType}-district`);
+                                                        
+                                                        districtSelect.innerHTML = '<option value="">-- Chọn quận/huyện --</option>';
+                                                        districts.forEach(district => {
+                                                            const option = document.createElement("option");
+                                                            option.value = district.toponymName || district.name || '';
+                                                            option.textContent = district.toponymName || district.name || '';
+                                                            if (district.geonameId) {
+                                                                option.setAttribute('data-geonameid', district.geonameId);
+                                                            }
+                                                            districtSelect.appendChild(option);
+                                                        });
+                                                        
+                                                        districtSelect.disabled = false;
+                                                        
+                                                        if (addressData.districtCounty && addressData.districtCounty !== 'null') {
+                                                            let foundDistrict = false;
+                                                            for (let i = 0; i < districtSelect.options.length; i++) {
+                                                                const option = districtSelect.options[i];
+                                                                if (option.value.toLowerCase() === addressData.districtCounty.toLowerCase()) {
+                                                                    districtSelect.selectedIndex = i;
+                                                                    foundDistrict = true;
+                                                                    break;
+                                                                }
+                                                            }
+                                                            
+                                                            if (!foundDistrict) {
+                                                                for (let i = 0; i < districtSelect.options.length; i++) {
+                                                                    const option = districtSelect.options[i];
+                                                                    if (option.value.toLowerCase().includes(addressData.districtCounty.toLowerCase()) || 
+                                                                        addressData.districtCounty.toLowerCase().includes(option.value.toLowerCase())) {
+                                                                        districtSelect.selectedIndex = i;
+                                                                        foundDistrict = true;
+                                                                        break;
+                                                                    }
+                                                                }
+                                                            }
+                                                            
+                                                            if (foundDistrict) {
+                                                                window.storedAddressData[addressType].district = districtSelect.value;
+                                                                
+                                                                try {
+                                                                    const selectedDistrictOption = districtSelect.options[districtSelect.selectedIndex];
+                                                                    const districtGeonameId = selectedDistrictOption.getAttribute('data-geonameid');
+                                                                    
+                                                                    if (districtGeonameId) {
+                                                                        const wardResponse = await fetch(`http://127.0.0.1:3456/v1/api/address/children/${districtGeonameId}`);
+                                                                        if (wardResponse.ok) {
+                                                                            const wardData = await wardResponse.json();
+                                                                            if (wardData && wardData.metadata && wardData.metadata.children) {
+                                                                                const wards = wardData.metadata.children.geonames;
+                                                                                const wardSelect = document.getElementById(`${addressType}-wardcommune`);
+                                                                                
+                                                                                wardSelect.innerHTML = '<option value="">-- Chọn phường/xã --</option>';
+                                                                                wards.forEach(ward => {
+                                                                                    const option = document.createElement("option");
+                                                                                    option.value = ward.toponymName || ward.name || '';
+                                                                                    option.textContent = ward.toponymName || ward.name || '';
+                                                                                    if (ward.geonameId) {
+                                                                                        option.setAttribute('data-geonameid', ward.geonameId);
+                                                                                    }
+                                                                                    wardSelect.appendChild(option);
+                                                                                });
+                                                                                
+                                                                                wardSelect.disabled = false;
+                                                                                
+                                                                                if (addressData.wardCommune && addressData.wardCommune !== 'null') {
+                                                                                    let foundWard = false;
+                                                                                    for (let i = 0; i < wardSelect.options.length; i++) {
+                                                                                        const option = wardSelect.options[i];
+                                                                                        if (option.value.toLowerCase() === addressData.wardCommune.toLowerCase()) {
+                                                                                            wardSelect.selectedIndex = i;
+                                                                                            foundWard = true;
+                                                                                            break;
+                                                                                        }
+                                                                                    }
+                                                                                    
+                                                                                    if (!foundWard) {
+                                                                                        for (let i = 0; i < wardSelect.options.length; i++) {
+                                                                                            const option = wardSelect.options[i];
+                                                                                            if (option.value.toLowerCase().includes(addressData.wardCommune.toLowerCase()) || 
+                                                                                                addressData.wardCommune.toLowerCase().includes(option.value.toLowerCase())) {
+                                                                                                wardSelect.selectedIndex = i;
+                                                                                                foundWard = true;
+                                                                                                break;
+                                                                                            }
+                                                                                        }
+                                                                                    }
+                                                                                    
+                                                                                    if (foundWard) {
+                                                                                        window.storedAddressData[addressType].ward = wardSelect.value;
+                                                                                    }
+                                                                                }
+                                                                            }
+                                                                        }
+                                                                    }
+                                                                } catch (wardError) {
+                                                                    console.error(`Error loading wards for ${addressType}:`, wardError);
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        } catch (districtError) {
+                                            console.error(`Error loading districts for ${addressType}:`, districtError);
+                                        }
+                                    }
                                 }
                             }
                         }
                     }
+                } catch (provinceError) {
+                    console.error(`Error loading provinces for ${addressType}:`, provinceError);
                 }
             }
         }
@@ -704,11 +836,73 @@ async function loadAddressData(addressData, addressType) {
     }
 }
 
-// Xử lý khi gửi form
+function restoreAddressData() {
+    if (window.storedAddressData) {
+        const addressTypes = ['permanent', 'temporary', 'mailing'];
+        
+        addressTypes.forEach(type => {
+            if (window.storedAddressData[type]) {
+                const data = window.storedAddressData[type];
+                
+                if (data.country) {
+                    const countrySelect = document.getElementById(`${type}-country`);
+                    if (countrySelect) {
+                        for (let i = 0; i < countrySelect.options.length; i++) {
+                            if (countrySelect.options[i].value === data.country) {
+                                countrySelect.selectedIndex = i;
+                                countrySelect.disabled = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                if (data.province) {
+                    const provinceSelect = document.getElementById(`${type}-province`);
+                    if (provinceSelect) {
+                        for (let i = 0; i < provinceSelect.options.length; i++) {
+                            if (provinceSelect.options[i].value === data.province) {
+                                provinceSelect.selectedIndex = i;
+                                provinceSelect.disabled = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                if (data.district) {
+                    const districtSelect = document.getElementById(`${type}-district`);
+                    if (districtSelect) {
+                        for (let i = 0; i < districtSelect.options.length; i++) {
+                            if (districtSelect.options[i].value === data.district) {
+                                districtSelect.selectedIndex = i;
+                                districtSelect.disabled = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
+                if (data.ward) {
+                    const wardSelect = document.getElementById(`${type}-wardcommune`);
+                    if (wardSelect) {
+                        for (let i = 0; i < wardSelect.options.length; i++) {
+                            if (wardSelect.options[i].value === data.ward) {
+                                wardSelect.selectedIndex = i;
+                                wardSelect.disabled = false;
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+}
+
 document.getElementById('edit-student-form').addEventListener('submit', async function (e) {
     e.preventDefault();
 
-    // Kiểm tra các trường bắt buộc
     const requiredFields = [
         'student-name', 'student-dob', 'student-course', 
         'student-email', 'student-phone',
@@ -718,7 +912,6 @@ document.getElementById('edit-student-form').addEventListener('submit', async fu
     
     let isValid = true;
 
-    // Kiểm tra từng trường bắt buộc
     requiredFields.forEach(field => {
         const input = document.getElementById(field);
         if (!input || input.value.trim() === '') {
@@ -740,7 +933,6 @@ document.getElementById('edit-student-form').addEventListener('submit', async fu
     const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
     const phonePattern = /^(\+84|0)[3|5|7|8|9][0-9]{8}$/;
 
-    // Kiểm tra ngày sinh không được là ngày trong tương lai
     const dobValue = new Date(DOB.value);
     const today = new Date();
     today.setHours(0, 0, 0, 0); 
@@ -751,7 +943,6 @@ document.getElementById('edit-student-form').addEventListener('submit', async fu
         isValid = false;
     }
 
-    // Kiểm tra khóa học không vượt quá năm hiện tại
     const courseInput = document.getElementById('student-course');
     const currentYear = new Date().getFullYear();
 
@@ -764,14 +955,12 @@ document.getElementById('edit-student-form').addEventListener('submit', async fu
         courseInput.classList.add('is-valid');
     }
 
-    // Kiểm tra định dạng email
     if (!emailPattern.test(emailInput.value)) {
         emailInput.classList.add('is-invalid');
         emailInput.classList.remove('is-valid');
         isValid = false;
     }
 
-    // Kiểm tra định dạng số điện thoại
     if (!phonePattern.test(phoneInput.value)) {
         phoneInput.classList.add('is-invalid');
         phoneInput.classList.remove('is-valid');
@@ -907,7 +1096,6 @@ function showSuccessModal() {
     });
 }
 
-// Hàm hỗ trợ định dạng ngày tháng thành YYYY-MM-DD
 function formatDate(dateString) {
     if (!dateString) return '';
     const date = new Date(dateString);
