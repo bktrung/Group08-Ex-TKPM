@@ -25,10 +25,20 @@
         <!-- Tìm kiếm -->
         <div class="row mb-3">
             <div class="col-md-8">
-                <div class="input-group">
-                    <input type="text" id="search-input" class="form-control" placeholder="Tìm kiếm theo tên hoặc MSSV...">
-                    <button class="btn btn-primary" id="search-button">Tìm kiếm</button>
-                    <button class="btn btn-secondary" id="reset-button">Đặt lại</button>
+                <div class="row">
+                    <div class="col-md-4 mb-2">
+                        <select id="department-select" class="form-select">
+                            <option value="">Tất cả khoa</option>
+                            <!-- Các khoa sẽ được thêm vào đây từ JavaScript -->
+                        </select>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="input-group">
+                            <input type="text" id="search-input" class="form-control" placeholder="Tìm kiếm theo tên hoặc MSSV...">
+                            <button class="btn btn-primary" id="search-button">Tìm kiếm</button>
+                            <button class="btn btn-secondary" id="reset-button">Đặt lại</button>
+                        </div>
+                    </div>
                 </div>
             </div>
             <div class="col-md-4 text-end">
