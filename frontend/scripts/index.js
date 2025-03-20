@@ -1,11 +1,10 @@
-let students = []; // Mảng lưu danh sách sinh viên từ API
+let students = [];
 let currentPage = 1;
-const studentsPerPage = 10; // Số sinh viên trên mỗi trang
-let totalPages = 1; // Tổng số trang từ API
-let isSearchMode = false; // Flag để theo dõi chế độ tìm kiếm
-let lastSearchQuery = ''; // Lưu trữ truy vấn tìm kiếm cuối cùng
+const studentsPerPage = 10;
+let totalPages = 1; 
+let isSearchMode = false;
+let lastSearchQuery = '';
 
-// Hàm gọi API để lấy danh sách sinh viên có phân trang
 async function fetchStudents(page = 1) {
     try {
         const response = await fetch(`http://127.0.0.1:3456/v1/api/students?page=${page}&limit=${studentsPerPage}`);
@@ -15,10 +14,10 @@ async function fetchStudents(page = 1) {
 
         const data = await response.json();
 
-        students = data.metadata.students; // Lấy danh sách sinh viên từ API
-        totalPages = data.metadata.pagination.totalPages; // Tổng số trang từ API
+        students = data.metadata.students;
+        totalPages = data.metadata.pagination.totalPages;
 
-        currentPage = page; // Cập nhật trang hiện tại
+        currentPage = page; 
         populateTable();
         
         // Ẩn thông báo không tìm thấy kết quả
@@ -28,7 +27,6 @@ async function fetchStudents(page = 1) {
     }
 }
 
-// Hàm tìm kiếm sinh viên
 async function searchStudents(query, page = 1) {
     try {
         // Hiển thị thông báo đang tìm kiếm (nếu cần)
@@ -101,7 +99,6 @@ function populateTable() {
     updatePagination();
 }
 
-// Hàm cập nhật phân trang
 function updatePagination() {
     const pagination = document.getElementById('pagination');
     pagination.innerHTML = '';
@@ -124,7 +121,6 @@ function updatePagination() {
 </li>`;
 }
 
-// Hàm thay đổi trang
 function changePage(page) {
     if (page >= 1 && page <= totalPages) {
         if (isSearchMode) {
@@ -139,24 +135,25 @@ function changePage(page) {
 
 let selectedStudentId = null; // Lưu studentId cần xóa
 
-const deleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
-
-// Hiển thị modal xác nhận xóa
 function deleteStudent(studentId) {
     selectedStudentId = studentId; // Lưu ID của sinh viên cần xóa
     const student = students.find(s => s.studentId === studentId); // Tìm thông tin sinh viên
     document.getElementById("deleteStudentName").textContent = student.fullName; // Hiển thị tên sinh viên trong modal
 
     // Hiển thị modal xác nhận
+    const deleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
     deleteModal.show();
 }
 
+// Hàm chuyển hướng đến trang sửa
 function editStudent(studentId) {
     window.location.href = `./pages/edit_student.html?id=${studentId}`;
 }
 
-// Xử lý khi nhấn "Xóa" trong modal
 document.addEventListener("DOMContentLoaded", () => {
+    // Gọi API lấy danh sách sinh viên
+    fetchStudents(currentPage);
+    
     const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
     if (confirmDeleteBtn) {
         confirmDeleteBtn.addEventListener("click", async function () {
@@ -169,6 +166,7 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
 
                 if (response.ok) {
+                    const deleteModal = bootstrap.Modal.getInstance(document.getElementById('confirmDeleteModal'));
                     deleteModal.hide();
                     
                     // Kiểm tra xem đang ở chế độ tìm kiếm hay không
@@ -184,11 +182,8 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.error("Lỗi mạng:", error);
             }
         });
-    } else {
-        console.error("Không tìm thấy nút confirmDeleteBtn");
     }
     
-    // Thêm sự kiện cho nút tìm kiếm
     const searchButton = document.getElementById("search-button");
     const searchInput = document.getElementById("search-input");
     
@@ -218,6 +213,3 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     }
 });
-
-// Gọi API khi tải trang
-document.addEventListener("DOMContentLoaded", () => fetchStudents(currentPage));
