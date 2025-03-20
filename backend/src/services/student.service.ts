@@ -129,6 +129,7 @@ class StudentService {
 
 		// Normalize options
 		const searchOptions: SearchOptions = {
+			filter: options.filter || {},
 			query: options.query.trim(),
 			page: options.page || 1,
 			limit: options.limit || 10,

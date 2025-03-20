@@ -33,9 +33,12 @@ export const deleteStudent = async (studentId: string): Promise<IStudent | null>
 }
 
 export const searchStudents = async (options: SearchOptions): Promise<PaginationResult<IStudent>> => {
-	const { query, page = 1, limit = 10, sort = "ctime" } = options;
+	const { query, page = 1, limit = 10, sort = "ctime", filter } = options;
 
-	const searchFilter = { $text: { $search: query } };
+	const searchFilter = { 
+		$text: { $search: query },
+		...filter
+	};
 
 	const result = await getAllDocuments(Student, {
 		filter: searchFilter,

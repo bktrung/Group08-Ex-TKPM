@@ -4,6 +4,7 @@ import department from "./department/index";
 import program from "./program/index";
 import address from "./address/index";
 import exportData from "./export/index";
+import importData from "./import/index";
 
 const router = Router();
 
@@ -12,5 +13,6 @@ router.use("/v1/api/departments", department);
 router.use("/v1/api/programs", program);
 router.use("/v1/api/address", address);
 router.use("/v1/api/export", exportData);
+router.use("/v1/api/import", importData);
 
 export default router;

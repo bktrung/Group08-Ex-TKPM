@@ -12,7 +12,7 @@ import { create as createXmlBuilder } from 'xmlbuilder2';
 interface ExportStrategy {
 	contentType: string;
 	fileExtension: string;
-	execute(res: Response, data: any[]): Promise<void>;
+	exportData(res: Response, data: any[]): Promise<void>;
 }
 
 abstract class BaseExportStrategy implements ExportStrategy {
@@ -24,7 +24,7 @@ abstract class BaseExportStrategy implements ExportStrategy {
 		this.fileExtension = fileExtension;
 	}
 
-	abstract execute(res: Response, data: any[]): Promise<void>;
+	abstract exportData(res: Response, data: any[]): Promise<void>;
 
 	protected setHeaders(res: Response, filename: string): void {
 		res.setHeader('Content-Type', this.contentType);
@@ -37,8 +37,8 @@ class JsonExportStrategy extends BaseExportStrategy {
 		super('application/json', 'json');
 	}
 
-	async execute(res: Response, data: any[]): Promise<void> {
-		this.setHeaders(res, 'data');
+	async exportData(res: Response, data: any[]): Promise<void> {
+		this.setHeaders(res, 'students');
 
 		// write the opening bracket
 		res.write('[\n');
@@ -76,7 +76,7 @@ class CsvExportStrategy extends BaseExportStrategy {
 		super('text/csv', 'csv');
 	}
 
-	async execute(res: Response, data: any[]): Promise<void> {
+	async exportData(res: Response, data: any[]): Promise<void> {
 		this.setHeaders(res, 'students');
 
 		// Ensure we have data
@@ -145,7 +145,7 @@ class XmlExportStrategy extends BaseExportStrategy {
 		super('application/xml', 'xml');
 	}
 
-	async execute(res: Response, data: any[]): Promise<void> {
+	async exportData(res: Response, data: any[]): Promise<void> {
 		this.setHeaders(res, 'students');
 
 		// Create root element
@@ -195,7 +195,7 @@ class ExcelExportStrategy extends BaseExportStrategy {
 		super('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'xlsx');
 	}
 
-	async execute(res: Response, data: any[]): Promise<void> {
+	async exportData(res: Response, data: any[]): Promise<void> {
 		this.setHeaders(res, 'students');
 
 		// Create workbook and worksheet
@@ -292,7 +292,7 @@ class ExportService {
 		}
 
 		try {
-			await strategy.execute(res, data);
+			await strategy.exportData(res, data);
 		} catch (error) {
 			if (!res.headersSent) {
 				throw error;

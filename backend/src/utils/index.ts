@@ -1,6 +1,7 @@
 import { Model, Document, FilterQuery, SortOrder } from 'mongoose';
 
 export interface SearchOptions {
+	filter?: Record<string, any>;
 	query: string;
 	page?: number;
 	limit?: number;

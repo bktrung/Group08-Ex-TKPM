@@ -104,7 +104,7 @@ export const addressSchema = Joi.object({
 	})
 });
 
-const addStudentSchema = Joi.object({
+export const addStudentSchema = Joi.object({
 	studentId: Joi.string()
 		.pattern(/^[0-9]{8}$/)
 		.required()

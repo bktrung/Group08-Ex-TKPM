@@ -15,8 +15,8 @@ const PORT = process.env.PORT || 3000;
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(compression());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '100mb' }));
+app.use(express.urlencoded({ limit: '100mb', extended: true }));
 
 // allow cross-origin requests from any origin only for development
 app.use(cors());

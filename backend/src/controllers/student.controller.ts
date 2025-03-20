@@ -33,13 +33,14 @@ class StudentController {
 	}
 
 	searchStudents = async (req: Request, res: Response, next: NextFunction) => {
-		const { q, page = "1", limit = "10", sort = "ctime" } = req.query;
+		const { q, page = "1", limit = "10", sort = "ctime", departmentId } = req.query;
 
 		if (!q || typeof q !== 'string') {
 			throw new BadRequestError('Search query is required');
 		}
 
 		const searchOptions = {
+			department: departmentId ? {deparment: departmentId} : {},
 			query: q,
 			page: parseInt(page as string, 10),
 			limit: parseInt(limit as string, 10),
