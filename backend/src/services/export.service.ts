@@ -85,28 +85,34 @@ class CsvExportStrategy extends BaseExportStrategy {
 			return;
 		}
 
-		const allKeys = new Set<string>();
+		// Create a Map to preserve insertion order of fields
+		const allKeysMap = new Map<string, boolean>();
 
+		// First, collect all fields while preserving their first appearance order
 		data.forEach(item => {
 			const flattenedKeys = flattenObject(item);
-			flattenedKeys.forEach(key => allKeys.add(key));
+			flattenedKeys.forEach(key => {
+				if (!allKeysMap.has(key)) {
+					allKeysMap.set(key, true);
+				}
+			});
 		});
 
-		// Convert to array and sort for consistent output
-		const headers = Array.from(allKeys).sort().join(',');
+		// Convert to array while preserving order
+		const orderedKeys = Array.from(allKeysMap.keys());
 
-		// Write the header row
-		res.write(headers + '\n');
+		// Write the header row with the preserved order
+		res.write(orderedKeys.join(',') + '\n');
 
-		// Process each data row
+		// Process each data row using the preserved field order
 		await pipeline(
 			Readable.from(data),
 			new Transform({
 				objectMode: true,
 				transform(chunk, encoding, callback) {
 					try {
-						// Use the same ordered keys for each row
-						const values = Array.from(allKeys)
+						// Use the ordered keys for each row
+						const values = orderedKeys
 							.map(key => {
 								// Use dot notation to get nested values
 								const value = key.split('.').reduce((obj, k) =>
