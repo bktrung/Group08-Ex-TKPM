@@ -1,8 +1,8 @@
-import { Schema } from 'mongoose';
-import { IStudent } from '../student.model';
-import Logger from '../../services/logger.service';
+import { Schema } from "mongoose";
+import { IProgram } from "../interfaces/program.interface";
+import Logger from "../../services/logger.service";
 
-export const registerStudentLoggerHooks = (schema: Schema<IStudent>): void => {
+export const registerProgramLoggerHooks = (schema: Schema<IProgram>): void => {
 	// Pre-save hook
 	schema.pre('save', function (next) {
 		// Store operation type to log after save completes
@@ -13,18 +13,18 @@ export const registerStudentLoggerHooks = (schema: Schema<IStudent>): void => {
 	// Post-save hook
 	schema.post('save', function (doc) {
 		const operation = this.$locals.operation;
-		Logger.info(`[DATABASE][${operation}][Student] Student ${operation === 'CREATE' ? 'created' : 'updated'}`, {
+		Logger.info(`[DATABASE][${operation}][Program] Program ${operation === 'CREATE' ? 'created' : 'updated'}`, {
 			id: doc._id?.toString(),
-			studentId: doc.studentId
+			name: doc.name
 		});
 	});
 
 	// findOneAndUpdate hook
 	schema.post('findOneAndUpdate', function (doc) {
 		if (doc) {
-			Logger.info(`[DATABASE][UPDATE][Student] Student updated`, {
+			Logger.info(`[DATABASE][UPDATE][Program] Program updated`, {
 				id: doc._id.toString(),
-				studentId: doc.studentId
+				name: doc.name
 			});
 		}
 	});
@@ -32,9 +32,9 @@ export const registerStudentLoggerHooks = (schema: Schema<IStudent>): void => {
 	// Delete hook
 	schema.post('findOneAndDelete', function (doc) {
 		if (doc) {
-			Logger.info(`[DATABASE][DELETE][Student] Student deleted`, {
+			Logger.info(`[DATABASE][DELETE][Program] Program deleted`, {
 				id: doc._id.toString(),
-				studentId: doc.studentId
+				name: doc.name
 			});
 		}
 	});

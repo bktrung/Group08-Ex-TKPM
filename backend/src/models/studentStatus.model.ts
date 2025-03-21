@@ -1,11 +1,8 @@
-import { Document, Schema, model } from "mongoose";
+import { Schema, model } from "mongoose";
+import { IStudentStatus } from "./interfaces/student.interface";
 
 const DOCUMENT_NAME = "StudentStatus";
 const COLLECTION_NAME = "studentStatus";
-
-export interface IStudentStatus extends Document {
-	type: string;
-}
 
 const studentStatusSchema = new Schema<IStudentStatus>({
 	type: {

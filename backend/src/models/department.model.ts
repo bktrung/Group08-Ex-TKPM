@@ -1,11 +1,9 @@
-import { model, Schema, Document } from "mongoose";
+import { model, Schema } from "mongoose";
+import { IDepartment } from "./interfaces/department.interface";
+import { registerDepartmentLoggerHooks } from "./hooks/department.hook";
 
 const DOCUMENT_NAME = "Department";
 const COLLECTION_NAME = "departments";
-
-export interface IDepartment extends Document {
-	name: string;
-}
 
 const departmentSchema = new Schema<IDepartment>({
 	name: {
@@ -18,5 +16,7 @@ const departmentSchema = new Schema<IDepartment>({
 	timestamps: true,
 	collection: COLLECTION_NAME
 });
+
+registerDepartmentLoggerHooks(departmentSchema);
 
 export default model<IDepartment>(DOCUMENT_NAME, departmentSchema);

@@ -1,11 +1,8 @@
-import { model, Schema, Document } from "mongoose";
+import { model, Schema } from "mongoose";
+import { IProgram } from "./interfaces/program.interface";
 
 const DOCUMENT_NAME = "Program";
 const COLLECTION_NAME = "programs";
-
-export interface IProgram extends Document {
-	name: string;
-}
 
 const programSchema = new Schema<IProgram>({
 	name: {

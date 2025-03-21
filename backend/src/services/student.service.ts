@@ -11,7 +11,7 @@ import {
 	getStudentStatus,
 	findStudentStatusById,
 } from '../models/repositories/student.repo';
-import { IStudent } from '../models/student.model';
+import { IStudent } from '../models/interfaces/student.interface';
 import { BadRequestError, NotFoundError } from '../responses/error.responses';
 import { CreateStudentDto } from '../dto/student';
 import { PaginationResult } from '../utils';

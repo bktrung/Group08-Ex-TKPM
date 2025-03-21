@@ -1,4 +1,5 @@
-import Student, { IStudent } from "../student.model";
+import Student from "../student.model";
+import { IStudent } from "../interfaces/student.interface";
 import { CreateStudentDto, UpdateStudentDto } from "../../dto/student";
 import { getAllDocuments, PaginationResult, SearchOptions } from "../../utils";
 import StudentStatus from "../studentStatus.model";

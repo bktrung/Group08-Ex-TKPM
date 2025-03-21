@@ -1,5 +1,5 @@
 import Joi from "joi";
-import { Gender, IdentityDocumentType } from "../../models/student.model";
+import { Gender, IdentityDocumentType } from "../../models/interfaces/student.interface";
 import { validateRequest } from "../../middlewares/validation.middleware";
 import { addressSchema } from "./add-student.validator";
 
