@@ -67,27 +67,38 @@ class StudentService {
 	}
 
 	static async updateStudent(studentId: string, studentData: CreateStudentDto): Promise<IStudent> {
-		// Check if student with same phoneNumber or email already exists
-		const existingEmailStudent = await findStudent({ email: studentData.email });
-		if (existingEmailStudent && existingEmailStudent.studentId !== studentId) {
-			throw new BadRequestError('Email đã được sử dụng bởi sinh viên khác');
-		}
-
-		const existingPhoneStudent = await findStudent({ phoneNumber: studentData.phoneNumber });
-		if (existingPhoneStudent && existingPhoneStudent.studentId !== studentId) {
-			throw new BadRequestError('Số điện thoại đã được sử dụng bởi sinh viên khác');
-		}
-
-		const existingIdentityDocumentStudent = await findStudent({ 'identityDocument.number': studentData.identityDocument.number });
-		if (existingIdentityDocumentStudent && existingIdentityDocumentStudent.studentId !== studentId) {
-			throw new BadRequestError('Số CMND/CCCD/Passport đã được sử dụng bởi sinh viên khác');
-		}
-
-		const updatedStudent = await updateStudent(studentId, studentData);
-		if (!updatedStudent) {
+		const existingStudent = await findStudent({ studentId });
+		if (!existingStudent) {
 			throw new NotFoundError('Không tìm thấy sinh viên');
 		}
 
+		// Check email uniqueness
+		if (studentData.email) {
+			const existingEmailStudent = await findStudent({ email: studentData.email });
+			if (existingEmailStudent && existingEmailStudent.studentId !== studentId) {
+				throw new BadRequestError('Email đã được sử dụng bởi sinh viên khác');
+			}
+		}
+
+		// Check phone number uniqueness
+		if (studentData.phoneNumber) {
+			const existingPhoneStudent = await findStudent({ phoneNumber: studentData.phoneNumber });
+			if (existingPhoneStudent && existingPhoneStudent.studentId !== studentId) {
+				throw new BadRequestError('Số điện thoại đã được sử dụng bởi sinh viên khác');
+			}
+		}
+
+		// Check identity document uniqueness
+		if (studentData.identityDocument?.number) {
+			const existingIdentityDocumentStudent = await findStudent({
+				'identityDocument.number': studentData.identityDocument.number
+			});
+			if (existingIdentityDocumentStudent && existingIdentityDocumentStudent.studentId !== studentId) {
+				throw new BadRequestError('Số CMND/CCCD/Passport đã được sử dụng bởi sinh viên khác');
+			}
+		}
+
+		// Validate status reference
 		if (studentData.status) {
 			const status = await findStudentStatusById(studentData.status);
 			if (!status) {
@@ -95,6 +106,7 @@ class StudentService {
 			}
 		}
 
+		// Validate department reference
 		if (studentData.department) {
 			const department = await findDepartmentById(studentData.department);
 			if (!department) {
@@ -102,6 +114,7 @@ class StudentService {
 			}
 		}
 
+		// Validate program reference
 		if (studentData.program) {
 			const program = await findProgramById(studentData.program);
 			if (!program) {
@@ -109,16 +122,23 @@ class StudentService {
 			}
 		}
 
+		// 4. Perform the update after all validations pass
+		const updatedStudent = await updateStudent(studentId, studentData);
+		if (!updatedStudent) {
+			throw new NotFoundError('Không tìm thấy sinh viên');
+		}
+
 		return updatedStudent;
 	}
 
 	static async deleteStudent(studentId: string): Promise<IStudent> {
+		throw new Error('Method not implemented');
 		const deletedStudent = await deleteStudent(studentId);
 		if (!deletedStudent) {
 			throw new NotFoundError('Không tìm thấy sinh viên');
 		}
 
-		return deletedStudent;
+		// return deletedStudent;
 	}
 
 	static async searchStudents(options: SearchOptions): Promise<PaginationResult<IStudent>> {

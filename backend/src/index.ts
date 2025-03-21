@@ -6,6 +6,7 @@ import morgan from "morgan";
 import { NotFoundError } from "./responses/error.responses";
 import routes from "./routes";
 import cors from "cors";
+import { errorLogger } from "./middlewares/error-logger.middleware";
 
 config();
 
@@ -31,6 +32,8 @@ app.use(routes);
 app.use((req: Request, res: Response, next: NextFunction) => {
 	next(new NotFoundError("API endpoint not found"));
 });
+
+app.use(errorLogger);
 
 const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
     const statusCode = err.status || 500;

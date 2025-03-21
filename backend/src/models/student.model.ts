@@ -1,4 +1,5 @@
 import { Schema, model, Document, Types } from "mongoose";
+import { registerStudentLoggerHooks } from "./hooks/student.hooks";
 
 const DOCUMENT_NAME = "Student";
 const COLLECTION_NAME = "students";
@@ -163,5 +164,7 @@ studentSchema.index(
 		name: "StudentTextIndex"
 	}
 );
+
+registerStudentLoggerHooks(studentSchema);
 
 export default model<IStudent>(DOCUMENT_NAME, studentSchema);

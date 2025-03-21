@@ -381,9 +381,15 @@ class ImportService {
 
 	constructor() {
 		this.strategies = new Map();
+
+		const tempDir = path.join(process.cwd(), 'temp');
+		fs.mkdir(tempDir, { recursive: true })
+			.catch(err => console.error('Failed to create temp directory:', err));
+
+		
 		this.storage = multer.diskStorage({
 			destination: (req, file, cb) => {
-				cb(null, path.join(process.cwd(), 'temp'));
+				cb(null, tempDir);
 			},
 			filename: (req, file, cb) => {
 				const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
