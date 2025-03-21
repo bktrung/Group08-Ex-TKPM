@@ -163,8 +163,10 @@ function populateTable() {
         <td>${student.phoneNumber}</td>
         <td>${statusType}</td>
         <td class="text-center">
-            <button class="btn btn-warning btn-sm me-1" onclick="editStudent('${student.studentId}')">Sửa</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteStudent('${student.studentId}')">Xóa</button>
+            <div class="d-flex justify-content-center gap-1">
+                <button class="btn btn-warning btn-sm" onclick="editStudent('${student.studentId}')">Sửa</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteStudent('${student.studentId}')">Xóa</button>
+            </div>
         </td>
     </tr>
 `;

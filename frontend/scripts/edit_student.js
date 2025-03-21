@@ -109,6 +109,7 @@ async function fetchCountries() {
         
         if (!data || !data.metadata || !data.metadata.countries) {
             console.warn('API trả về dữ liệu không đúng cấu trúc cho countries');
+            setDefaultCountries();
             return;
         }
         
@@ -116,6 +117,7 @@ async function fetchCountries() {
         
         if (!Array.isArray(countries) || countries.length === 0) {
             console.warn('Không có dữ liệu quốc gia');
+            setDefaultCountries();
             return;
         }
         
@@ -128,9 +130,28 @@ async function fetchCountries() {
             'passport-country'
         ];
         
+        let vietnamExists = false;
+        for (const country of countries) {
+            if (country.countryName && 
+                (country.countryName === "Vietnam" || 
+                 country.countryName === "Viet Nam" || 
+                 country.countryName.toLowerCase().includes("viet"))) {
+                vietnamExists = true;
+                break;
+            }
+        }
+        
         countrySelects.forEach(selectId => {
             const select = document.getElementById(selectId);
             select.innerHTML = '<option value="">-- Chọn quốc gia --</option>';
+            
+            if (!vietnamExists) {
+                const vietOption = document.createElement("option");
+                vietOption.value = "Vietnam";
+                vietOption.textContent = "Vietnam";
+                vietOption.setAttribute('data-geonameid', '1562822');
+                select.appendChild(vietOption);
+            }
             
             countries.forEach(country => {
                 if (!country || !country.countryName) return;
@@ -147,7 +168,7 @@ async function fetchCountries() {
         
     } catch (error) {
         console.error("Lỗi khi lấy danh sách quốc gia:", error);
-        showErrorModal("Không thể lấy danh sách quốc gia: " + error.message);
+        setDefaultCountries();
     }
 }
 
@@ -557,10 +578,48 @@ function loadAddressData(addressData, addressType) {
     try {
         document.getElementById(`${addressType}-housestreet`).value = addressData.houseNumberStreet || '';
         
-        // Set direct values for the select fields
         if (addressData.country) {
             const countrySelect = document.getElementById(`${addressType}-country`);
-            countrySelect.value = addressData.country;
+            
+            let found = false;
+            for (let i = 0; i < countrySelect.options.length; i++) {
+                if (countrySelect.options[i].value === addressData.country) {
+                    countrySelect.selectedIndex = i;
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (!found) {
+                const countryLower = addressData.country.toLowerCase();
+                for (let i = 0; i < countrySelect.options.length; i++) {
+                    if (countrySelect.options[i].value.toLowerCase() === countryLower) {
+                        countrySelect.selectedIndex = i;
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (!found && addressData.country === "Vietnam") {
+                for (let i = 0; i < countrySelect.options.length; i++) {
+                    const optionValue = countrySelect.options[i].value.toLowerCase();
+                    if (optionValue.includes("viet") || optionValue.includes("nam")) {
+                        countrySelect.selectedIndex = i;
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            
+            if (!found) {
+                const option = document.createElement("option");
+                option.value = addressData.country;
+                option.textContent = addressData.country;
+                countrySelect.appendChild(option);
+                countrySelect.value = addressData.country;
+            }
+            
             countrySelect.disabled = false;
         }
         
