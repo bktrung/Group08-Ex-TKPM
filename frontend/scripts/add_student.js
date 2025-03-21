@@ -1,18 +1,16 @@
 document.addEventListener("DOMContentLoaded", async function () {
-    const urlParams = new URLSearchParams(window.location.search);
 
     setupIdentityTypeHandler();
     setupGeographicDropdowns();
 
     await Promise.all([
         fetchCountries(),
-       // fetchNationalities(),
+        fetchNationalities(),
         fetchDepartments(),
         fetchPrograms(),
         fetchStatusTypes()
     ]);
 
-    //window.addEventListener('load', restoreAddressData);
 });
 
 // Thiết lập xử lý sự kiện cho loại giấy tờ tùy thân
@@ -20,6 +18,9 @@ function setupIdentityTypeHandler() {
     const identityTypeSelect = document.getElementById('identity-type');
     const cccdChipContainer = document.getElementById('cccd-chip-container');
     const passportContainer = document.getElementById('passport-container');
+
+
+    identityTypeSelect.value = "CCCD"; 
 
     identityTypeSelect.addEventListener('change', function() {
         if (this.value === 'CCCD') {
@@ -135,7 +136,6 @@ async function fetchCountries() {
             select.innerHTML = '<option value="">-- Chọn quốc gia --</option>';
             
             countries.forEach(country => {
-                // Kiểm tra dữ liệu quốc gia
                 if (!country || !country.countryName) return;
                 
                 const option = document.createElement("option");
@@ -147,7 +147,6 @@ async function fetchCountries() {
                 select.appendChild(option);
             });
             
-            // Không còn tự động chọn Việt Nam làm mặc định
         });
         
     } catch (error) {
@@ -271,7 +270,6 @@ async function fetchWardCommunes(geonameId, addressType) {
         
     } catch (error) {
         console.error(`Lỗi khi lấy danh sách phường/xã cho ${addressType}:`, error);
-        // Không hiển thị modal lỗi
     }
 }
 
@@ -567,7 +565,7 @@ document.getElementById('add-student-form').addEventListener('submit', async fun
             phoneNumber: phoneInput.value,
             status: document.getElementById('student-status').value,
             identityDocument: identityDocument,
-            nationality: "Vietnamese" //document.getElementById('student-nationality').value""
+            nationality: document.getElementById('student-nationality').value
         };
 
         console.log("Dữ liệu cập nhật:", student);
@@ -582,7 +580,6 @@ document.getElementById('add-student-form').addEventListener('submit', async fun
             student.temporaryAddress = temporaryAddress;
         }
 
-        console.log("Dữ liệu cập nhật:", student);
 
         // Gửi yêu cầu cập nhật lên API
         const response = await fetch(`http://127.0.0.1:3456/v1/api/students`, {
