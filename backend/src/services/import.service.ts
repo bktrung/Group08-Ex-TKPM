@@ -4,6 +4,8 @@ import path from "path";
 import fs from "fs/promises";
 import { createReadStream } from "fs";
 import csv from "csv-parser";
+import { XMLParser } from 'fast-xml-parser';
+import * as xlsx from 'xlsx';
 import { BadRequestError } from "../responses/error.responses";
 import { importStudentSchema } from "../validators/student/import-student.validator";
 import { findDepartmentByName } from "../models/repositories/department.repo";
@@ -374,6 +376,590 @@ class CsvImportStrategy extends BaseImportStrategy {
 	}
 }
 
+class XmlImportStrategy extends BaseImportStrategy {
+	constructor() {
+		super('application/xml');
+	}
+
+	async importData(filePath: string): Promise<ImportDataResult> {
+		const result: ImportDataResult = {
+			totalRecords: 0,
+			successCount: 0,
+			failedCount: 0,
+			errors: []
+		};
+
+		try {
+			// Read the XML file
+			const xmlData = await fs.readFile(filePath, 'utf-8');
+
+			// Parse XML to JS object
+			const parser = new XMLParser({
+				ignoreAttributes: false,
+				attributeNamePrefix: "_",
+				isArray: (name) => name === 'record'
+			});
+			const parsedData = parser.parse(xmlData);
+
+			if (!parsedData.data || !parsedData.data.record) {
+				throw new Error('Invalid XML structure: missing data or records');
+			}
+
+			const records = Array.isArray(parsedData.data.record)
+				? parsedData.data.record
+				: [parsedData.data.record];
+
+			result.totalRecords = records.length;
+
+			// Process each record
+			for (let i = 0; i < records.length; i++) {
+				try {
+					const transformedRecord = this.transformXmlRecord(records[i]);
+					const processedData = this.preprocessData(transformedRecord);
+					const validation = await this.validateData(processedData);
+
+					if (validation.isValid && validation.validatedData) {
+						await this.saveData(validation.validatedData);
+						result.successCount++;
+					} else if (validation.errors) {
+						this.addError(result, validation.errors.join(', '), i + 1);
+					}
+				} catch (error) {
+					this.addError(result, (error as Error).message, i + 1);
+				}
+			}
+
+			return result;
+		} catch (error) {
+			throw new Error(`Error processing XML file: ${(error as Error).message}`);
+		}
+	}
+
+	protected transformXmlRecord(record: any): any {
+		// Handle nested structure conversion
+		const transformed: any = {};
+
+		// Map simple fields
+		const simpleFields = [
+			'studentId', 'fullName', 'dateOfBirth', 'gender', 'department',
+			'schoolYear', 'program', 'email', 'status', 'nationality'
+		];
+
+		simpleFields.forEach(field => {
+			if (record[field] !== undefined) {
+				transformed[field] = record[field];
+			}
+		});
+
+		// Handle phone number - Format as Vietnamese phone number
+		if (record.phoneNumber) {
+			let phoneNumber = String(record.phoneNumber);
+
+			// Ensure it follows Vietnamese phone format
+			// Strip non-numeric characters first
+			phoneNumber = phoneNumber.replace(/\D/g, '');
+
+			// Ensure it starts with 0
+			if (phoneNumber.startsWith('84') && phoneNumber.length >= 10) {
+				phoneNumber = '0' + phoneNumber.substring(2);
+			} else if (!phoneNumber.startsWith('0')) {
+				phoneNumber = '0' + phoneNumber;
+			}
+
+			transformed.phoneNumber = phoneNumber;
+		}
+
+		// Map nested objects
+		if (record.mailingAddress) {
+			transformed.mailingAddress = {
+				houseNumberStreet: record.mailingAddress.houseNumberStreet,
+				wardCommune: record.mailingAddress.wardCommune || 'None', // Default value if missing
+				districtCounty: record.mailingAddress.districtCounty,
+				provinceCity: record.mailingAddress.provinceCity,
+				country: record.mailingAddress.country,
+			};
+		}
+
+		// Handle identity document properly based on type
+		if (record.identityDocument) {
+			// Start with common fields
+			transformed.identityDocument = {
+				type: record.identityDocument.type,
+				number: String(record.identityDocument.number),
+				issueDate: record.identityDocument.issueDate,
+				issuedBy: record.identityDocument.issuedBy,
+				expiryDate: record.identityDocument.expiryDate,
+			};
+
+			// Handle type-specific fields
+			if (record.identityDocument.type === 'CCCD') {
+				// For CCCD, hasChip is required
+				if (typeof record.identityDocument.hasChip === 'string') {
+					transformed.identityDocument.hasChip =
+						record.identityDocument.hasChip.toLowerCase() === 'true';
+				} else {
+					transformed.identityDocument.hasChip = !!record.identityDocument.hasChip;
+				}
+			} else if (record.identityDocument.type === 'PASSPORT') {
+				// For Passport, issuingCountry is required
+				transformed.identityDocument.issuingCountry =
+					record.identityDocument.issuingCountry || 'Vietnam';
+			}
+		}
+
+		return transformed;
+	}
+
+	protected preprocessData(data: any): any {
+		// Make a deep copy to avoid modifying the original
+		const processed = JSON.parse(JSON.stringify(data));
+
+		// Ensure studentId is a string
+		if (processed.studentId) {
+			processed.studentId = String(processed.studentId);
+		}
+
+		// Format phone number to ensure it matches the required pattern
+		if (processed.phoneNumber) {
+			let phoneNumber = String(processed.phoneNumber);
+
+			// Strip all non-numeric characters
+			phoneNumber = phoneNumber.replace(/\D/g, '');
+
+			// Ensure it starts with 0
+			if (phoneNumber.startsWith('84') && phoneNumber.length >= 10) {
+				phoneNumber = '0' + phoneNumber.substring(2);
+			} else if (!phoneNumber.startsWith('0')) {
+				phoneNumber = '0' + phoneNumber;
+			}
+
+			processed.phoneNumber = phoneNumber;
+		}
+
+		// Ensure correct identity document structure based on type
+		if (processed.identityDocument) {
+			// Ensure number is a string
+			if (processed.identityDocument.number) {
+				processed.identityDocument.number = String(processed.identityDocument.number);
+			}
+
+			// Handle type-specific validations
+			if (processed.identityDocument.type === 'CCCD') {
+				// Ensure hasChip is boolean
+				if (processed.identityDocument.hasChip === undefined) {
+					processed.identityDocument.hasChip = false;
+				} else if (typeof processed.identityDocument.hasChip === 'string') {
+					processed.identityDocument.hasChip =
+						processed.identityDocument.hasChip.toLowerCase() === 'true';
+				} else {
+					processed.identityDocument.hasChip = !!processed.identityDocument.hasChip;
+				}
+
+				// Ensure CCCD number is exactly 12 digits
+				if (processed.identityDocument.number) {
+					// Keep only digits
+					const digitsOnly = processed.identityDocument.number.replace(/\D/g, '');
+					if (digitsOnly.length !== 12) {
+						// Pad or truncate to exactly 12 digits
+						processed.identityDocument.number =
+							digitsOnly.padStart(12, '0').substring(0, 12);
+					} else {
+						processed.identityDocument.number = digitsOnly;
+					}
+				}
+			} else if (processed.identityDocument.type === 'CMND') {
+				// Ensure CMND number is exactly 9 digits
+				if (processed.identityDocument.number) {
+					// Keep only digits
+					const digitsOnly = processed.identityDocument.number.replace(/\D/g, '');
+					if (digitsOnly.length !== 9) {
+						// Pad or truncate to exactly 9 digits
+						processed.identityDocument.number =
+							digitsOnly.padStart(9, '0').substring(0, 9);
+					} else {
+						processed.identityDocument.number = digitsOnly;
+					}
+				}
+			} else if (processed.identityDocument.type === 'PASSPORT') {
+				// Ensure issuingCountry is present
+				if (!processed.identityDocument.issuingCountry) {
+					processed.identityDocument.issuingCountry = 'Vietnam';
+				}
+
+				// Format passport number (should be 1 uppercase letter followed by 8 digits)
+				if (processed.identityDocument.number) {
+					// Extract first letter and digits
+					const firstLetter = processed.identityDocument.number.match(/[A-Za-z]/)
+						? processed.identityDocument.number.match(/[A-Za-z]/)[0].toUpperCase()
+						: 'A';
+
+					const digitsOnly = processed.identityDocument.number.replace(/\D/g, '');
+					processed.identityDocument.number =
+						firstLetter + digitsOnly.padStart(8, '0').substring(0, 8);
+				}
+			}
+		}
+
+		// Handle dates
+		const dateFields = [
+			'dateOfBirth',
+			'identityDocument.issueDate',
+			'identityDocument.expiryDate'
+		];
+
+		dateFields.forEach(field => {
+			const parts = field.split('.');
+			let obj = processed;
+
+			// Navigate to the object containing the date field
+			for (let i = 0; i < parts.length - 1; i++) {
+				if (!obj || !obj[parts[i]]) return;
+				obj = obj[parts[i]];
+			}
+
+			// Get the actual field name (last part)
+			const dateField = parts[parts.length - 1];
+
+			// Convert to Date object if it exists
+			if (obj && obj[dateField]) {
+				try {
+					// Handle different date formats
+					if (typeof obj[dateField] === 'string') {
+						// Parse the date
+						obj[dateField] = new Date(obj[dateField]);
+
+						// Ensure valid date - if invalid, set to a reasonable default
+						if (isNaN(obj[dateField].getTime())) {
+							console.warn(`Invalid date format: ${obj[dateField]}`);
+
+							// Set reasonable defaults based on the field
+							if (dateField === 'dateOfBirth') {
+								// Default to 18 years ago
+								const defaultDate = new Date();
+								defaultDate.setFullYear(defaultDate.getFullYear() - 18);
+								obj[dateField] = defaultDate;
+							} else if (dateField === 'issueDate') {
+								// Default to 5 years ago
+								const defaultDate = new Date();
+								defaultDate.setFullYear(defaultDate.getFullYear() - 5);
+								obj[dateField] = defaultDate;
+							} else if (dateField === 'expiryDate') {
+								// Default to 10 years in future
+								const defaultDate = new Date();
+								defaultDate.setFullYear(defaultDate.getFullYear() + 10);
+								obj[dateField] = defaultDate;
+							}
+						}
+					}
+				} catch (e) {
+					console.warn(`Failed to parse date: ${obj[dateField]}`);
+				}
+			}
+		});
+
+		// Handle schoolYear as number
+		if (processed.schoolYear && typeof processed.schoolYear === 'string') {
+			processed.schoolYear = parseInt(processed.schoolYear, 10);
+		}
+
+		return processed;
+	}
+}
+
+class ExcelImportStrategy extends BaseImportStrategy {
+	constructor() {
+		super('application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+	}
+
+	async importData(filePath: string): Promise<ImportDataResult> {
+		const result: ImportDataResult = {
+			totalRecords: 0,
+			successCount: 0,
+			failedCount: 0,
+			errors: []
+		};
+
+		try {
+			// Read the Excel file
+			const workbook = xlsx.readFile(filePath);
+			const firstSheetName = workbook.SheetNames[0];
+			const worksheet = workbook.Sheets[firstSheetName];
+
+			// Convert to JSON
+			const records = xlsx.utils.sheet_to_json(worksheet);
+
+			result.totalRecords = records.length;
+
+			// Process each record
+			for (let i = 0; i < records.length; i++) {
+				try {
+					const transformedRecord = this.transformExcelRecord(records[i]);
+					const processedData = this.preprocessData(transformedRecord);
+					const validation = await this.validateData(processedData);
+
+					if (validation.isValid && validation.validatedData) {
+						await this.saveData(validation.validatedData);
+						result.successCount++;
+					} else if (validation.errors) {
+						this.addError(result, validation.errors.join(', '), i + 1);
+					}
+				} catch (error) {
+					this.addError(result, (error as Error).message, i + 1);
+				}
+			}
+
+			return result;
+		} catch (error) {
+			throw new Error(`Error processing Excel file: ${(error as Error).message}`);
+		}
+	}
+
+	protected transformExcelRecord(record: any): any {
+		// Handle nested structure conversion
+		const transformed: any = {};
+
+		// First, extract mailing address fields and create a nested object
+		const mailingAddress: any = {};
+		const addressFields = [
+			'mailingAddress.houseNumberStreet',
+			'mailingAddress.wardCommune',
+			'mailingAddress.districtCounty',
+			'mailingAddress.provinceCity',
+			'mailingAddress.country'
+		];
+
+		addressFields.forEach(field => {
+			const fieldName = field.split('.')[1];
+			if (record[field] !== undefined) {
+				mailingAddress[fieldName] = record[field];
+			}
+		});
+
+		if (Object.keys(mailingAddress).length > 0) {
+			transformed.mailingAddress = mailingAddress;
+		}
+
+		// Handle identity document fields - create a nested object
+		const identityDoc: any = {};
+		const identityFields = [
+			'identityDocument.type',
+			'identityDocument.hasChip',
+			'identityDocument.number',
+			'identityDocument.issueDate',
+			'identityDocument.issuedBy',
+			'identityDocument.expiryDate'
+		];
+
+		identityFields.forEach(field => {
+			const fieldName = field.split('.')[1];
+			if (record[field] !== undefined) {
+				identityDoc[fieldName] = record[field];
+			}
+		});
+
+		if (Object.keys(identityDoc).length > 0) {
+			transformed.identityDocument = identityDoc;
+
+			// Convert hasChip to boolean if it exists
+			if (transformed.identityDocument.hasChip !== undefined) {
+				const chipValue = String(transformed.identityDocument.hasChip).toLowerCase();
+				transformed.identityDocument.hasChip =
+					chipValue === 'true' || chipValue === '1' || chipValue === 'yes';
+			}
+		}
+
+		// Map simple fields
+		const simpleFields = [
+			'studentId', 'fullName', 'dateOfBirth', 'gender', 'department',
+			'schoolYear', 'program', 'email', 'phoneNumber', 'status', 'nationality'
+		];
+
+		simpleFields.forEach(field => {
+			if (record[field] !== undefined) {
+				transformed[field] = record[field];
+			}
+		});
+
+		return transformed;
+	}
+
+	protected preprocessData(data: any): any {
+		// Make a deep copy to avoid modifying the original
+		const processed = JSON.parse(JSON.stringify(data));
+
+		// Ensure studentId is a string
+		if (processed.studentId) {
+			processed.studentId = String(processed.studentId);
+		}
+
+		// Format phone number to ensure it matches the required pattern
+		if (processed.phoneNumber) {
+			let phoneNumber = String(processed.phoneNumber);
+
+			// Strip all non-numeric characters
+			phoneNumber = phoneNumber.replace(/\D/g, '');
+
+			// Ensure it starts with 0
+			if (phoneNumber.startsWith('84') && phoneNumber.length >= 10) {
+				phoneNumber = '0' + phoneNumber.substring(2);
+			} else if (!phoneNumber.startsWith('0')) {
+				phoneNumber = '0' + phoneNumber;
+			}
+
+			processed.phoneNumber = phoneNumber;
+		}
+
+		// Ensure correct identity document structure based on type
+		if (processed.identityDocument) {
+			// Ensure number is a string
+			if (processed.identityDocument.number) {
+				processed.identityDocument.number = String(processed.identityDocument.number);
+			}
+
+			// Handle type-specific validations
+			if (processed.identityDocument.type === 'CCCD') {
+				// Ensure hasChip is boolean
+				if (processed.identityDocument.hasChip === undefined) {
+					processed.identityDocument.hasChip = false;
+				} else if (typeof processed.identityDocument.hasChip === 'string') {
+					const chipValue = processed.identityDocument.hasChip.toLowerCase();
+					processed.identityDocument.hasChip =
+						chipValue === 'true' || chipValue === '1' || chipValue === 'yes';
+				} else {
+					processed.identityDocument.hasChip = !!processed.identityDocument.hasChip;
+				}
+
+				// Ensure CCCD number is exactly 12 digits
+				if (processed.identityDocument.number) {
+					// Keep only digits
+					const digitsOnly = processed.identityDocument.number.replace(/\D/g, '');
+					if (digitsOnly.length !== 12) {
+						// Pad or truncate to exactly 12 digits
+						processed.identityDocument.number =
+							digitsOnly.padStart(12, '0').substring(0, 12);
+					} else {
+						processed.identityDocument.number = digitsOnly;
+					}
+				}
+			} else if (processed.identityDocument.type === 'CMND') {
+				// Ensure CMND number is exactly 9 digits
+				if (processed.identityDocument.number) {
+					// Keep only digits
+					const digitsOnly = processed.identityDocument.number.replace(/\D/g, '');
+					if (digitsOnly.length !== 9) {
+						// Pad or truncate to exactly 9 digits
+						processed.identityDocument.number =
+							digitsOnly.padStart(9, '0').substring(0, 9);
+					} else {
+						processed.identityDocument.number = digitsOnly;
+					}
+				}
+			} else if (processed.identityDocument.type === 'PASSPORT') {
+				// Ensure issuingCountry is present
+				if (!processed.identityDocument.issuingCountry) {
+					processed.identityDocument.issuingCountry = 'Vietnam';
+				}
+
+				// Format passport number (should be 1 uppercase letter followed by 8 digits)
+				if (processed.identityDocument.number) {
+					// Extract first letter and digits
+					const firstLetter = processed.identityDocument.number.match(/[A-Za-z]/)
+						? processed.identityDocument.number.match(/[A-Za-z]/)[0].toUpperCase()
+						: 'A';
+
+					const digitsOnly = processed.identityDocument.number.replace(/\D/g, '');
+					processed.identityDocument.number =
+						firstLetter + digitsOnly.padStart(8, '0').substring(0, 8);
+				}
+			}
+		}
+
+		// Handle dates - Excel often outputs dates as numbers or in various formats
+		const dateFields = [
+			'dateOfBirth',
+			'identityDocument.issueDate',
+			'identityDocument.expiryDate'
+		];
+
+		dateFields.forEach(field => {
+			const parts = field.split('.');
+			let obj = processed;
+
+			// Navigate to the object containing the date field
+			for (let i = 0; i < parts.length - 1; i++) {
+				if (!obj || !obj[parts[i]]) return;
+				obj = obj[parts[i]];
+			}
+
+			// Get the actual field name (last part)
+			const dateField = parts[parts.length - 1];
+
+			// Convert to Date object if it exists
+			if (obj && obj[dateField] !== undefined) {
+				try {
+					// Handle date formats from Excel (could be string, number, or Date)
+					if (typeof obj[dateField] === 'string') {
+						// Try to parse date from a string
+						// Handle various date formats
+						const dateValue = obj[dateField];
+
+						// Check for MM/DD/YYYY format
+						if (/^\d{1,2}\/\d{1,2}\/\d{4}$/.test(dateValue)) {
+							const [month, day, year] = dateValue.split('/').map(Number);
+							obj[dateField] = new Date(year, month - 1, day);
+						} else if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(dateValue)) {
+							// Check for MM-DD-YYYY format
+							const [month, day, year] = dateValue.split('-').map(Number);
+							obj[dateField] = new Date(year, month - 1, day);
+						} else {
+							// Try standard date parsing
+							obj[dateField] = new Date(dateValue);
+						}
+					} else if (typeof obj[dateField] === 'number') {
+						// Excel stores dates as serial numbers
+						// Convert Excel serial date to JavaScript date
+						const excelEpoch = new Date(1899, 11, 30);
+						const msPerDay = 24 * 60 * 60 * 1000;
+						obj[dateField] = new Date(excelEpoch.getTime() + obj[dateField] * msPerDay);
+					}
+
+					// Ensure valid date - if invalid, set to a reasonable default
+					if (isNaN(obj[dateField].getTime())) {
+						console.warn(`Invalid date format: ${obj[dateField]}`);
+
+						// Set reasonable defaults based on the field
+						if (dateField === 'dateOfBirth') {
+							// Default to 18 years ago
+							const defaultDate = new Date();
+							defaultDate.setFullYear(defaultDate.getFullYear() - 18);
+							obj[dateField] = defaultDate;
+						} else if (dateField === 'issueDate') {
+							// Default to 5 years ago
+							const defaultDate = new Date();
+							defaultDate.setFullYear(defaultDate.getFullYear() - 5);
+							obj[dateField] = defaultDate;
+						} else if (dateField === 'expiryDate') {
+							// Default to 10 years in future
+							const defaultDate = new Date();
+							defaultDate.setFullYear(defaultDate.getFullYear() + 10);
+							obj[dateField] = defaultDate;
+						}
+					}
+				} catch (e) {
+					console.warn(`Failed to parse date: ${obj[dateField]}`);
+				}
+			}
+		});
+
+		// Handle schoolYear as number
+		if (processed.schoolYear && typeof processed.schoolYear === 'string') {
+			processed.schoolYear = parseInt(processed.schoolYear, 10);
+		}
+
+		return processed;
+	}
+}
+
 class ImportService {
 	private strategies: Map<string, ImportStrategy>;
 	private storage: multer.StorageEngine;
@@ -451,5 +1037,7 @@ const importService = new ImportService();
 
 importService.registerStrategy('json', new JsonImportStrategy());
 importService.registerStrategy('csv', new CsvImportStrategy());
+importService.registerStrategy('xml', new XmlImportStrategy());
+importService.registerStrategy('xlsx', new ExcelImportStrategy());
 
 export default importService;
