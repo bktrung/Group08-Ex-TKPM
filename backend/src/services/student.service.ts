@@ -132,13 +132,12 @@ class StudentService {
 	}
 
 	static async deleteStudent(studentId: string): Promise<IStudent> {
-		throw new Error('Method not implemented');
 		const deletedStudent = await deleteStudent(studentId);
 		if (!deletedStudent) {
 			throw new NotFoundError('Không tìm thấy sinh viên');
 		}
 
-		// return deletedStudent;
+		return deletedStudent;
 	}
 
 	static async searchStudents(options: SearchOptions): Promise<PaginationResult<IStudent>> {
