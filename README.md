@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/1f222d36-9f83-45db-a281-a6bc808ff9e2)# Quản Lý Sinh Viên
+
 
 ## Cấu trúc source code
 ```
