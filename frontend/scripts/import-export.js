@@ -1,4 +1,4 @@
-let importExportDepartments = [];
+let departments = [];
 
 async function fetchDepartments() {
     try {
@@ -8,14 +8,14 @@ async function fetchDepartments() {
         }
 
         const data = await response.json();
-        importExportDepartments = data.metadata.departments;
+        departments = data.metadata.departments;
         
         // Cập nhật dropdown danh sách khoa
         const departmentSelect = document.getElementById('departmentSelect');
         if (departmentSelect) {
             departmentSelect.innerHTML = '<option value="">-- Chọn khoa --</option>';
             
-            importExportDepartments.forEach(dept => {
+            departments.forEach(dept => {
                 const option = document.createElement('option');
                 option.value = dept._id;
                 option.textContent = dept.name;
