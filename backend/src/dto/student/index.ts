@@ -1,4 +1,4 @@
-import { Gender, IdentityDocumentType, IdentityDocument, IAddress } from "../../models/student.model";
+import { Gender, IdentityDocumentType, IdentityDocument, IAddress } from "../../models/interfaces/student.interface";
 import { Types } from "mongoose";
 
 export interface CreateStudentDto {

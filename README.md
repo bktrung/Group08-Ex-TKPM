@@ -68,7 +68,7 @@ PORT=3456
 DB_HOST=mongodb
 DB_PORT=27017
 DB_NAME=qlsv
-NODE_ENV=dev
+NODE_ENV=pro
 ```
 
 #### 2. Chạy chương trình:
@@ -86,7 +86,7 @@ PORT=3456
 DB_HOST=YOUR_MONGODB_HOST
 DB_PORT=YOUR_MONGODB_PORT
 DB_NAME=qlsv
-NODE_ENV=dev
+NODE_ENV=pro
 ```
 
 Note: thay `YOUR_MONGODB_HOST` và `YOUR_MONGODB_PORT` thành host và port của MongoDB và sử dụng default setting.
