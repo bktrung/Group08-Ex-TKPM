@@ -1,4 +1,4 @@
-let departments = [];
+let importExportDepartments = [];
 
 async function fetchDepartments() {
     try {
@@ -8,14 +8,14 @@ async function fetchDepartments() {
         }
 
         const data = await response.json();
-        departments = data.metadata.departments;
+        importExportDepartments = data.metadata.departments;
         
         // Cập nhật dropdown danh sách khoa
         const departmentSelect = document.getElementById('departmentSelect');
         if (departmentSelect) {
             departmentSelect.innerHTML = '<option value="">-- Chọn khoa --</option>';
             
-            departments.forEach(dept => {
+            importExportDepartments.forEach(dept => {
                 const option = document.createElement('option');
                 option.value = dept._id;
                 option.textContent = dept.name;
@@ -27,7 +27,7 @@ async function fetchDepartments() {
     }
 }
 
-function exportData(format) {
+window.exportData = function(format) {
     const url = `http://127.0.0.1:3456/v1/api/export/students?format=${format}`;
     window.open(url, '_blank');
 }
@@ -163,6 +163,19 @@ function downloadJSONTemplate() {
 // Hàm khởi tạo tất cả các sự kiện cho import/export
 function initImportExport() {
     fetchDepartments();
+
+    document.getElementById('export-json').addEventListener('click', function() {
+        exportData('json');
+    });
+    document.getElementById('export-csv').addEventListener('click', function() {
+        exportData('csv');
+    });
+    document.getElementById('export-xml').addEventListener('click', function() {
+        exportData('xml');
+    });
+    document.getElementById('export-excel').addEventListener('click', function() {
+        exportData('excel');
+    });
     
     // Xử lý sự kiện checkbox lọc theo khoa
     const filterCheckbox = document.getElementById('filterByDepartment');
