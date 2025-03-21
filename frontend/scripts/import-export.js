@@ -1,6 +1,7 @@
-let departments = [];
+// Use a local variable instead of a global one to avoid conflicts with index.js
+let importExportDepartments = [];
 
-async function fetchDepartments() {
+async function fetchDepartmentsForImportExport() {
     try {
         const response = await fetch('http://127.0.0.1:3456/v1/api/departments');
         if (!response.ok) {
@@ -8,14 +9,14 @@ async function fetchDepartments() {
         }
 
         const data = await response.json();
-        departments = data.metadata.departments;
+        importExportDepartments = data.metadata.departments;
         
         // Cập nhật dropdown danh sách khoa
         const departmentSelect = document.getElementById('departmentSelect');
         if (departmentSelect) {
             departmentSelect.innerHTML = '<option value="">-- Chọn khoa --</option>';
             
-            departments.forEach(dept => {
+            importExportDepartments.forEach(dept => {
                 const option = document.createElement('option');
                 option.value = dept._id;
                 option.textContent = dept.name;
@@ -162,7 +163,7 @@ function downloadJSONTemplate() {
 
 // Hàm khởi tạo tất cả các sự kiện cho import/export
 function initImportExport() {
-    fetchDepartments();
+    fetchDepartmentsForImportExport(); // Changed function name
 
     document.getElementById('export-json').addEventListener('click', function() {
         exportData('json');
@@ -236,8 +237,6 @@ function initImportExport() {
 
 // Khởi tạo sự kiện khi trang đã tải xong
 document.addEventListener("DOMContentLoaded", () => {
-    // Kiểm tra xem UI đã được tải chưa
-    // Nếu không được gọi qua hàm initImportExport, thì tự khởi tạo
     if (document.getElementById('importButton')) {
         initImportExport();
     }
