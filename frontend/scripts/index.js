@@ -1,11 +1,13 @@
-let students = []; // Mảng lưu danh sách sinh viên từ API
+let students = [];
 let currentPage = 1;
-const studentsPerPage = 10; // Số sinh viên trên mỗi trang
-let totalPages = 1; // Tổng số trang từ API
-let isSearchMode = false; // Flag để theo dõi chế độ tìm kiếm
-let lastSearchQuery = ''; // Lưu trữ truy vấn tìm kiếm cuối cùng
+const studentsPerPage = 10;
+let totalPages = 1; 
+let isSearchMode = false;
+let lastSearchQuery = '';
+let departments = [];
+let selectedDepartment = '';
 
-// Hàm gọi API để lấy danh sách sinh viên có phân trang
+
 async function fetchStudents(page = 1) {
     try {
         const response = await fetch(`http://127.0.0.1:3456/v1/api/students?page=${page}&limit=${studentsPerPage}`);
@@ -15,27 +17,52 @@ async function fetchStudents(page = 1) {
 
         const data = await response.json();
 
-        students = data.metadata.students; // Lấy danh sách sinh viên từ API
-        totalPages = data.metadata.pagination.totalPages; // Tổng số trang từ API
+        students = data.metadata.students;
+        totalPages = data.metadata.pagination.totalPages;
 
-        currentPage = page; // Cập nhật trang hiện tại
+        currentPage = page; 
         populateTable();
         
-        // Ẩn thông báo không tìm thấy kết quả
         document.getElementById('no-results').classList.add('d-none');
     } catch (error) {
         console.error("Lỗi khi lấy danh sách sinh viên:", error);
     }
 }
 
-// Hàm tìm kiếm sinh viên
+async function fetchDepartments() {
+    try {
+        const response = await fetch('http://127.0.0.1:3456/v1/api/departments');
+        if (!response.ok) {
+            throw new Error(`Lỗi mạng: ${response.status}`);
+        }
+
+        const data = await response.json();
+        departments = data.metadata.departments;
+        
+        populateDepartmentDropdown();
+    } catch (error) {
+        console.error("Lỗi khi lấy danh sách khoa:", error);
+    }
+}
+
+function populateDepartmentDropdown() {
+    const departmentSelect = document.getElementById('department-select');
+    
+    departmentSelect.innerHTML = '<option value="">Tất cả khoa</option>';
+    
+    // Sắp xếp khoa theo tên
+    departments.sort((a, b) => a.name.localeCompare(b.name));
+    
+    departments.forEach(department => {
+        departmentSelect.innerHTML += `<option value="${department._id}">${department.name}</option>`;
+    });
+}
+
 async function searchStudents(query, page = 1) {
     try {
-        // Hiển thị thông báo đang tìm kiếm (nếu cần)
         const searchInput = document.getElementById('search-input');
         
-        if (!query || query.trim() === '') {
-
+        if (!query && !selectedDepartment) {
             isSearchMode = false;
             fetchStudents(1);
             return;
@@ -44,7 +71,51 @@ async function searchStudents(query, page = 1) {
         isSearchMode = true;
         lastSearchQuery = query;
         
-        const response = await fetch(`http://127.0.0.1:3456/v1/api/students/search?q=${encodeURIComponent(query)}&page=${page}&limit=${studentsPerPage}`);
+        let url;
+        
+        if (selectedDepartment && !query) {
+            // Tìm kiếm chỉ theo khoa
+            url = `http://127.0.0.1:3456/v1/api/students/department/${selectedDepartment}?page=${page}&limit=${studentsPerPage}`;
+        } else if (query && selectedDepartment) {
+            // Lấy sinh viên theo khoa trước
+            const studentsInDept = await fetch(`http://127.0.0.1:3456/v1/api/students/department/${selectedDepartment}?page=1&limit=1000`);
+            if (!studentsInDept.ok) {
+                throw new Error(`Lỗi mạng: ${studentsInDept.status}`);
+            }
+            
+            const deptData = await studentsInDept.json();
+            const deptStudents = deptData.metadata.students || [];
+            
+            // Lọc theo tên/MSSV từ danh sách sinh viên của khoa
+            const filteredStudents = deptStudents.filter(student => 
+                student.fullName.toLowerCase().includes(query.toLowerCase()) || 
+                student.studentId.toLowerCase().includes(query.toLowerCase())
+            );
+            
+            // Tạo phân trang
+            const totalItems = filteredStudents.length;
+            const totalPages = Math.ceil(totalItems / studentsPerPage);
+            const startIdx = (page - 1) * studentsPerPage;
+            const endIdx = Math.min(startIdx + studentsPerPage, totalItems);
+            
+            students = filteredStudents.slice(startIdx, endIdx);
+            currentPage = page;
+            
+            if (students.length === 0) {
+                document.getElementById('no-results').classList.remove('d-none');
+            } else {
+                document.getElementById('no-results').classList.add('d-none');
+            }
+            
+            populateTable();
+            updatePagination();
+            return;
+        } else if (query) {
+            // Chỉ tìm kiếm theo query
+            url = `http://127.0.0.1:3456/v1/api/students/search?q=${encodeURIComponent(query)}&page=${page}&limit=${studentsPerPage}`;
+        }
+        
+        const response = await fetch(url);
         
         if (!response.ok) {
             throw new Error(`Lỗi mạng: ${response.status}`);
@@ -52,12 +123,11 @@ async function searchStudents(query, page = 1) {
         
         const data = await response.json();
         
-        students = data.metadata.students || []; // Lấy danh sách sinh viên từ kết quả tìm kiếm
-        totalPages = data.metadata.pagination.totalPages || 1; // Tổng số trang từ API
+        students = data.metadata.students || [];
+        totalPages = data.metadata.pagination.totalPages || 1;
         
-        currentPage = page; // Cập nhật trang hiện tại
+        currentPage = page;
         
-        // Kiểm tra nếu không có kết quả
         if (students.length === 0) {
             document.getElementById('no-results').classList.remove('d-none');
         } else {
@@ -70,28 +140,33 @@ async function searchStudents(query, page = 1) {
     }
 }
 
-// Hàm hiển thị dữ liệu lên bảng
 function populateTable() {
     const tableBody = document.getElementById('student-table-body');
     tableBody.innerHTML = '';
 
     students.forEach(student => {
+        const departmentName = typeof student.department === 'object' ? student.department.name : student.department;
+        const programName = typeof student.program === 'object' ? student.program.name : student.program;
+        const statusType = typeof student.status === 'object' ? student.status.type : student.status;
+        
         const row = `
     <tr id="row-${student.studentId}">
         <td>${student.studentId}</td>
         <td>${student.fullName}</td>
         <td>${new Date(student.dateOfBirth).toLocaleDateString()}</td>
         <td>${student.gender}</td>
-        <td>${student.department}</td>
+        <td>${departmentName}</td>
         <td>${student.schoolYear}</td>
-        <td>${student.program}</td>
-        <td>${student.address}</td>
+        <td>${programName}</td>
+        <td>${formatAddress(student.mailingAddress)}</td>
         <td>${student.email}</td>
         <td>${student.phoneNumber}</td>
-        <td>${student.status}</td>
+        <td>${statusType}</td>
         <td class="text-center">
-            <button class="btn btn-warning btn-sm me-1" onclick="editStudent('${student.studentId}')">Sửa</button>
-            <button class="btn btn-danger btn-sm" onclick="deleteStudent('${student.studentId}')">Xóa</button>
+            <div class="d-flex justify-content-center gap-1">
+                <button class="btn btn-warning btn-sm" onclick="editStudent('${student.studentId}')">Sửa</button>
+                <button class="btn btn-danger btn-sm" onclick="deleteStudent('${student.studentId}')">Xóa</button>
+            </div>
         </td>
     </tr>
 `;
@@ -101,53 +176,94 @@ function populateTable() {
     updatePagination();
 }
 
-// Hàm cập nhật phân trang
+function formatAddress(address) {
+    if (!address) return '';
+    return `${address.houseNumberStreet}, ${address.wardCommune}, ${address.districtCounty}, ${address.provinceCity}`;
+}
+
 function updatePagination() {
     const pagination = document.getElementById('pagination');
     pagination.innerHTML = '';
+    
+    if (totalPages === 0) {
+        return;
+    }
 
     pagination.innerHTML += `
 <li class="page-item ${currentPage === 1 ? 'disabled' : ''}">
-    <a class="page-link" href="#" onclick="changePage(${currentPage - 1})">Trước</a>
+    <a class="page-link" href="#" onclick="changePage(${currentPage - 1}); return false;">Trước</a>
 </li>`;
 
-    for (let i = 1; i <= totalPages; i++) {
+    // Hiển thị tối đa 5 trang nếu có nhiều trang
+    let startPage = Math.max(1, currentPage - 2);
+    let endPage = Math.min(totalPages, startPage + 4);
+    
+    // Điều chỉnh lại nếu không đủ 5 trang
+    if (endPage - startPage < 4) {
+        startPage = Math.max(1, endPage - 4);
+    }
+    
+    // Hiển thị trang đầu tiên nếu không nằm trong khoảng hiển thị
+    if (startPage > 1) {
+        pagination.innerHTML += `
+        <li class="page-item">
+            <a class="page-link" href="#" onclick="changePage(1); return false;">1</a>
+        </li>`;
+        
+        if (startPage > 2) {
+            pagination.innerHTML += `
+            <li class="page-item disabled">
+                <span class="page-link">...</span>
+            </li>`;
+        }
+    }
+
+    for (let i = startPage; i <= endPage; i++) {
         pagination.innerHTML += `
     <li class="page-item ${i === currentPage ? 'active' : ''}">
-        <a class="page-link" href="#" onclick="changePage(${i})">${i}</a>
+        <a class="page-link" href="#" onclick="changePage(${i}); return false;">${i}</a>
     </li>`;
+    }
+    
+    // Hiển thị trang cuối nếu không nằm trong khoảng hiển thị
+    if (endPage < totalPages) {
+        if (endPage < totalPages - 1) {
+            pagination.innerHTML += `
+            <li class="page-item disabled">
+                <span class="page-link">...</span>
+            </li>`;
+        }
+        
+        pagination.innerHTML += `
+        <li class="page-item">
+            <a class="page-link" href="#" onclick="changePage(${totalPages}); return false;">${totalPages}</a>
+        </li>`;
     }
 
     pagination.innerHTML += `
 <li class="page-item ${currentPage === totalPages ? 'disabled' : ''}">
-    <a class="page-link" href="#" onclick="changePage(${currentPage + 1})">Sau</a>
+    <a class="page-link" href="#" onclick="changePage(${currentPage + 1}); return false;">Sau</a>
 </li>`;
 }
 
-// Hàm thay đổi trang
 function changePage(page) {
     if (page >= 1 && page <= totalPages) {
         if (isSearchMode) {
-            // Nếu đang ở chế độ tìm kiếm, gọi tìm kiếm với trang mới
             searchStudents(lastSearchQuery, page);
         } else {
-            // Nếu không, gọi lấy tất cả sinh viên
             fetchStudents(page);
         }
     }
 }
 
-let selectedStudentId = null; // Lưu studentId cần xóa
+let selectedStudentId = null;
 
-const deleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
-
-// Hiển thị modal xác nhận xóa
 function deleteStudent(studentId) {
-    selectedStudentId = studentId; // Lưu ID của sinh viên cần xóa
-    const student = students.find(s => s.studentId === studentId); // Tìm thông tin sinh viên
-    document.getElementById("deleteStudentName").textContent = student.fullName; // Hiển thị tên sinh viên trong modal
+    selectedStudentId = studentId;
+    const student = students.find(s => s.studentId === studentId);
+    document.getElementById("deleteStudentName").textContent = student.fullName;
 
-    // Hiển thị modal xác nhận
+    const deleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
     deleteModal.show();
 }
 
@@ -155,8 +271,17 @@ function editStudent(studentId) {
     window.location.href = `./pages/edit_student.html?id=${studentId}`;
 }
 
-// Xử lý khi nhấn "Xóa" trong modal
+function performSearch() {
+    const query = document.getElementById('search-input').value.trim();
+    selectedDepartment = document.getElementById('department-select').value;
+    
+    searchStudents(query);
+}
+
 document.addEventListener("DOMContentLoaded", () => {
+    fetchStudents(currentPage);
+    fetchDepartments();
+    
     const confirmDeleteBtn = document.getElementById("confirmDeleteBtn");
     if (confirmDeleteBtn) {
         confirmDeleteBtn.addEventListener("click", async function () {
@@ -169,9 +294,9 @@ document.addEventListener("DOMContentLoaded", () => {
                 });
 
                 if (response.ok) {
+                    const deleteModal = bootstrap.Modal.getInstance(document.getElementById('confirmDeleteModal'));
                     deleteModal.hide();
                     
-                    // Kiểm tra xem đang ở chế độ tìm kiếm hay không
                     if (isSearchMode) {
                         searchStudents(lastSearchQuery, currentPage);
                     } else {
@@ -184,40 +309,34 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.error("Lỗi mạng:", error);
             }
         });
-    } else {
-        console.error("Không tìm thấy nút confirmDeleteBtn");
     }
     
-    // Thêm sự kiện cho nút tìm kiếm
     const searchButton = document.getElementById("search-button");
     const searchInput = document.getElementById("search-input");
+    const departmentSelect = document.getElementById("department-select");
     
     if (searchButton && searchInput) {
-        // Xử lý khi nhấn nút tìm kiếm
-        searchButton.addEventListener("click", function() {
-            const query = searchInput.value.trim();
-            searchStudents(query);
-        });
+        searchButton.addEventListener("click", performSearch);
         
-        // Xử lý khi nhấn Enter trong ô tìm kiếm
         searchInput.addEventListener("keyup", function(event) {
             if (event.key === "Enter") {
-                const query = searchInput.value.trim();
-                searchStudents(query);
+                performSearch();
             }
         });
         
-        // Xử lý nút đặt lại
+        if (departmentSelect) {
+            departmentSelect.addEventListener("change", performSearch);
+        }
+        
         const resetButton = document.getElementById("reset-button");
         if (resetButton) {
             resetButton.addEventListener("click", function() {
                 searchInput.value = "";
+                departmentSelect.value = "";
+                selectedDepartment = "";
                 isSearchMode = false;
                 fetchStudents(1);
             });
         }
     }
 });
-
-// Gọi API khi tải trang
-document.addEventListener("DOMContentLoaded", () => fetchStudents(currentPage));
