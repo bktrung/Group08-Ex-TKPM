@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     let statuses = [];
     let editingStatusId = null;
+    const modalInstance = new bootstrap.Modal(document.getElementById("statusModal"));
 
     async function fetchStatuses() {
         try {
@@ -27,31 +28,31 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("Vui lòng nhập tình trạng sinh viên!");
             return;
         }
-    
+
         try {
             let url = "http://127.0.0.1:3456/v1/api/students/status-types";
             let method = "POST";
             let bodyData = { type };
-    
+
             if (editingStatusId) {
                 url = `http://127.0.0.1:3456/v1/api/students/status-types/${editingStatusId}`;
                 method = "PUT";
             }
-    
+
             const response = await fetch(url, {
                 method,
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(bodyData),
             });
-    
+
             const data = await response.json();
 
             if (!response.ok) {
                 alert(data.message || "Có lỗi xảy ra khi lưu tình trạng sinh viên!");
                 return;
             }
-    
-            bootstrap.Modal.getInstance(document.getElementById("statusModal")).hide();
+
+            modalInstance.hide();
             fetchStatuses();
         } catch (error) {
             alert("Lỗi kết nối đến máy chủ!");
@@ -71,11 +72,12 @@ document.addEventListener("DOMContentLoaded", function () {
         `).join("");
     }
 
-    window.openModal = function () {
+    function addStatus() {
         document.getElementById("modalTitle").innerText = "Thêm Tình trạng";
         document.getElementById("statusType").value = "";
         editingStatusId = null;
-    };
+        modalInstance.show();
+    }
 
     window.editStatus = function (id) {
         const status = statuses.find(s => s.id === id);
@@ -83,12 +85,12 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("modalTitle").innerText = "Chỉnh sửa Tình trạng";
             document.getElementById("statusType").value = status.type;
             editingStatusId = id;
-            new bootstrap.Modal(document.getElementById("statusModal")).show();
+            modalInstance.show();
         }
     };
 
     document.getElementById("saveStatusBtn").addEventListener("click", saveStatus);
+    document.getElementById("addStatusBtn").addEventListener("click", addStatus);
 
     fetchStatuses();
 });
-

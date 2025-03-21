@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
     let programs = [];
     let editingProgramId = null;
+    const modalInstance = new bootstrap.Modal(document.getElementById("programModal"));
 
     async function fetchPrograms() {
         try {
@@ -27,37 +28,36 @@ document.addEventListener("DOMContentLoaded", function () {
             alert("Vui lòng nhập tên chương trình đào tạo!");
             return;
         }
-    
+
         try {
             let url = "http://127.0.0.1:3456/v1/api/programs";
             let method = "POST";
             let bodyData = { name };
-    
+
             if (editingProgramId) {
                 url = `http://127.0.0.1:3456/v1/api/programs/${editingProgramId}`;
                 method = "PATCH";
             }
-    
+
             const response = await fetch(url, {
                 method,
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify(bodyData),
             });
-    
+
             const data = await response.json();
 
             if (!response.ok) {
                 alert(data.message || "Có lỗi xảy ra khi lưu chương trình đào tạo!");
                 return;
             }
-    
-            bootstrap.Modal.getInstance(document.getElementById("programModal")).hide();
+
+            modalInstance.hide();
             fetchPrograms();
         } catch (error) {
             alert("Lỗi kết nối đến máy chủ!");
         }
     }
-    
 
     function renderTable() {
         const tbody = document.getElementById("program-table-body");
@@ -72,11 +72,12 @@ document.addEventListener("DOMContentLoaded", function () {
         `).join("");
     }
 
-    window.openModal = function () {
+    function addProgram() {
         document.getElementById("modalTitle").innerText = "Thêm Chương trình đào tạo";
         document.getElementById("programName").value = "";
         editingProgramId = null;
-    };
+        modalInstance.show();
+    }
 
     window.editProgram = function (id) {
         const program = programs.find(p => p.id === id);
@@ -84,11 +85,12 @@ document.addEventListener("DOMContentLoaded", function () {
             document.getElementById("modalTitle").innerText = "Chỉnh sửa Chương trình đào tạo";
             document.getElementById("programName").value = program.name;
             editingProgramId = id;
-            new bootstrap.Modal(document.getElementById("programModal")).show();
+            modalInstance.show();
         }
     };
 
     document.getElementById("saveProgramBtn").addEventListener("click", saveProgram);
+    document.getElementById("addProgramBtn").addEventListener("click", addProgram);
 
     fetchPrograms();
 });
