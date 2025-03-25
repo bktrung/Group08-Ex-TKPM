@@ -4,7 +4,10 @@ import { CreateStudentDto, UpdateStudentDto } from "../../dto/student";
 import { getAllDocuments, PaginationResult, SearchOptions } from "../../utils";
 import StudentStatus from "../studentStatus.model";
 import { Types } from "mongoose";
+import StudentStatusTransition from "../studentStatusTransition.model";
 
+
+/// Student Repo
 export const findStudent = async (query: any): Promise<IStudent | null> => {
 	return Student.findOne(query)
 		.populate("department")
@@ -74,7 +77,9 @@ export const getAllStudents = async (page: number = 1, limit: number = 10, filte
 		]
 	});
 }
+/// End Student Repo
 
+/// Student Status Repo
 export const findStudentStatus = async (statusType: string): Promise<any> => {
 	return await StudentStatus.findOne({
 		type: statusType
@@ -99,4 +104,20 @@ export const updateStudentStatus = async (statusId: string, StatusType: string):
 
 export const getStudentStatus = async (): Promise<any> => {
 	return await StudentStatus.find({}, { createdAt: 0, updatedAt: 0, __v: 0 }).lean();
+}
+/// End Student Status Repo
+
+/// Student Status Transition Repo
+export const addStudentStatusTransition = async (fromStatus: string, toStatus: string): Promise<any> => {
+	return await StudentStatusTransition.create({ fromStatus, toStatus });
+}
+
+export const findStudentStatusTransition = async (
+	fromStatus: string | Types.ObjectId,
+	toStatus: string | Types.ObjectId
+): Promise<any> => {
+	return await StudentStatusTransition.findOne({
+		fromStatus,
+		toStatus
+	}).lean();
 }

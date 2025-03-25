@@ -103,6 +103,15 @@ class StudentController {
 			metadata: result
 		}).send(res);
 	}
+
+	addStudentStatusTransition = async (req: Request, res: Response, next: NextFunction) => {
+		const { fromStatus, toStatus } = req.body;
+		const newTransition = await StudentService.addStudentStatusTransition(fromStatus, toStatus);
+		return new CREATED({
+			message: 'Student status transition added',
+			metadata: newTransition
+		}).send(res);
+	}
 }
 
 export default new StudentController();

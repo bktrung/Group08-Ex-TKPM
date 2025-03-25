@@ -10,6 +10,8 @@ import {
 	updateStudentStatus,
 	getStudentStatus,
 	findStudentStatusById,
+	addStudentStatusTransition,
+	findStudentStatusTransition,
 } from '../models/repositories/student.repo';
 import { IStudent } from '../models/interfaces/student.interface';
 import { BadRequestError, NotFoundError } from '../responses/error.responses';
@@ -70,6 +72,16 @@ class StudentService {
 		const existingStudent = await findStudent({ studentId });
 		if (!existingStudent) {
 			throw new NotFoundError('Không tìm thấy sinh viên');
+		}
+
+		// Validate status transition rule
+		if (studentData.status) {
+			const fromStatus = existingStudent.status;
+			const toStatus = studentData.status;
+			const transition = await findStudentStatusTransition(fromStatus, toStatus);
+			if (!transition) {
+				throw new BadRequestError('Không thể chuyển từ trạng thái hiện tại sang trạng thái mong muốn');
+			}
 		}
 
 		// Check email uniqueness
@@ -200,6 +212,29 @@ class StudentService {
 
 	static async getStudentByDepartment(departmentId: string, page: number, limit: number): Promise<PaginationResult<IStudent>> {
 		return await getAllStudents(page, limit, { department: departmentId });
+	}
+
+	static async addStudentStatusTransition(fromStatus: string, toStatus: string): Promise<any> {
+		const from = await findStudentStatusById(fromStatus);
+		if (!from) {
+			throw new BadRequestError('Trạng thái gốc không tồn tại');
+		}
+
+		const to = await findStudentStatusById(toStatus);
+		if (!to) {
+			throw new BadRequestError('Trạng thái đích không tồn tại');
+		}
+
+		if (from._id === to._id) {
+			throw new BadRequestError('Trạng thái gốc và trạng thái đích không thể giống nhau');
+		}
+
+		const existingTransition = await findStudentStatusTransition(fromStatus, toStatus);
+		if (existingTransition) {
+			throw new BadRequestError('Quy tắc đã tồn tại');
+		}
+
+		return await addStudentStatusTransition(fromStatus, toStatus);
 	}
 }
 

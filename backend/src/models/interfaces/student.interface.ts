@@ -65,3 +65,8 @@ export interface IStudent extends Document {
 export interface IStudentStatus extends Document {
 	type: string;
 }
+
+export interface IStudentStatusTransition extends Document {
+	fromStatus: Types.ObjectId | string;
+	toStatus: Types.ObjectId | string;
+}

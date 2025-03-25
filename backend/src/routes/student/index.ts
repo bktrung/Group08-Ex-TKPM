@@ -14,5 +14,6 @@ router.get('/status-types', asyncHandler(StudentController.getStudentStatusType)
 router.post('/status-types', asyncHandler(StudentController.addStudentStatusType));
 router.put('/status-types/:statusId', asyncHandler(StudentController.modifyStudentStatusType));
 router.get('/department/:departmentId', asyncHandler(StudentController.getStudentByDepartment));
+router.post('/status-transitions', asyncHandler(StudentController.addStudentStatusTransition));
 
 export default router;
