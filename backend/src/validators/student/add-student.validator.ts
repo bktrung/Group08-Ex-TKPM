@@ -1,6 +1,50 @@
 import Joi from "joi";
 import { Gender, IdentityDocumentType } from "../../models/interfaces/student.interface";
 import { validateRequest } from "../../middlewares/validation.middleware";
+import configService from "../../configs/init.config";
+
+// Get configuration values
+const getAllowedEmailDomains = () => configService.get<string[]>("allowedEmailDomains");
+const getPhoneFormats = () => configService.get<Record<string, string>>("phoneFormats");
+
+// Create email validation helper
+export const isAllowedEmailDomain = (value: string, helpers: Joi.CustomHelpers) => {
+	const domain = value.split('@')[1];
+	const allowedDomains = getAllowedEmailDomains(); // Get latest config
+
+	if (!allowedDomains.includes(domain)) {
+		return helpers.error('string.emailDomain', { domains: allowedDomains.join(', ') });
+	}
+	return value;
+};
+
+// Create phone validation helper that checks against all configured formats
+export const isValidPhoneNumber = (value: string, helpers: Joi.CustomHelpers) => {
+	const phoneFormats = getPhoneFormats(); // Get latest config
+
+	// If no phone formats are configured, use a default pattern for VN
+	if (!phoneFormats || Object.keys(phoneFormats).length === 0) {
+		const defaultVNPattern = new RegExp(/^(\+84|84|0)[3|5|7|8|9][0-9]{8}$/);
+		if (!defaultVNPattern.test(value)) {
+			return helpers.error('string.phoneFormat', { formats: 'VN (default)' });
+		}
+		return value;
+	}
+
+	// Try to match with any of the configured phone formats
+	for (const [country, pattern] of Object.entries(phoneFormats)) {
+		const regex = new RegExp(pattern);
+		if (regex.test(value)) {
+			// console.log(`[VALIDATION] Phone number matches ${country} format`);
+			return value; // Valid for this country format
+		}
+	}
+
+	// If we get here, the phone number didn't match any configured format
+	return helpers.error('string.phoneFormat', {
+		formats: Object.keys(phoneFormats).join(', ')
+	});
+};
 
 const baseIdentityDocumentSchema = {
 	issueDate: Joi.date().required().max('now').messages({
@@ -167,16 +211,24 @@ export const addStudentSchema = Joi.object({
 	mailingAddress: addressSchema.required().messages({
 		'any.required': 'Địa chỉ nhận thư là trường bắt buộc'
 	}),
-	email: Joi.string().email().required().messages({
-		'string.email': 'Email không hợp lệ',
-		'string.empty': 'Email không được để trống',
-		'any.required': 'Email là trường bắt buộc'
-	}),
-	phoneNumber: Joi.string().pattern(/^(\+84|84|0)[3|5|7|8|9][0-9]{8}$/).required().messages({
-		'string.pattern.base': 'Số điện thoại không hợp lệ (phải là số điện thoại Việt Nam)',
-		'string.empty': 'Số điện thoại không được để trống',
-		'any.required': 'Số điện thoại là trường bắt buộc'
-	}),
+	email: Joi.string()
+		.email()
+		.required()
+		.custom(isAllowedEmailDomain)
+		.messages({
+			'string.email': 'Email không hợp lệ',
+			'string.empty': 'Email không được để trống',
+			'any.required': 'Email là trường bắt buộc',
+			'string.emailDomain': `Email phải thuộc một trong các tên miền được chấp nhận: {#domains}`
+		}),
+	phoneNumber: Joi.string()
+		.required()
+		.custom(isValidPhoneNumber)
+		.messages({
+			'string.empty': 'Số điện thoại không được để trống',
+			'any.required': 'Số điện thoại là trường bắt buộc',
+			'string.phoneFormat': 'Số điện thoại không hợp lệ (được hỗ trợ: {#formats})'
+		}),
 	status: Joi.string()
 		.pattern(/^[0-9a-fA-F]{24}$/)
 		.required()

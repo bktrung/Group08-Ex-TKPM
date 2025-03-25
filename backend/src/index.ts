@@ -13,6 +13,9 @@ config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// load config
+import "./configs/init.config";
+
 app.use(morgan("dev"));
 app.use(helmet());
 app.use(compression());

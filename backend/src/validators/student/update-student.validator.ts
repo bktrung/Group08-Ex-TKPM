@@ -2,6 +2,7 @@ import Joi from "joi";
 import { Gender, IdentityDocumentType } from "../../models/interfaces/student.interface";
 import { validateRequest } from "../../middlewares/validation.middleware";
 import { addressSchema } from "./add-student.validator";
+import { isAllowedEmailDomain, isValidPhoneNumber } from "./add-student.validator";
 
 const baseUpdateIdentityDocumentSchema = {
 	issueDate: Joi.date().max('now').messages({
@@ -117,14 +118,20 @@ const updateStudentDto = Joi.object({
 	permanentAddress: addressSchema.optional(),
 	temporaryAddress: addressSchema.optional(),
 	mailingAddress: addressSchema.optional(),
-	email: Joi.string().email().messages({
-		'string.email': 'Email không hợp lệ',
-		'string.empty': 'Email không được để trống'
-	}),
-	phoneNumber: Joi.string().pattern(/^(\+84|84|0)[3|5|7|8|9][0-9]{8}$/).messages({
-		'string.pattern.base': 'Số điện thoại không hợp lệ (phải là số điện thoại Việt Nam)',
-		'string.empty': 'Số điện thoại không được để trống'
-	}),
+	email: Joi.string()
+		.email()
+		.custom(isAllowedEmailDomain)
+		.messages({
+			'string.email': 'Email không hợp lệ',
+			'string.empty': 'Email không được để trống',
+			'string.emailDomain': `Email phải thuộc một trong các tên miền được chấp nhận: {#domains}`
+		}),
+	phoneNumber: Joi.string()
+		.custom(isValidPhoneNumber)
+		.messages({
+			'string.empty': 'Số điện thoại không được để trống',
+			'string.phoneFormat': 'Số điện thoại không hợp lệ (được hỗ trợ: {#formats})'
+		}),
 	status: Joi.string()
 		.pattern(/^[0-9a-fA-F]{24}$/)
 		.messages({
