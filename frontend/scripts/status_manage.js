@@ -1,13 +1,15 @@
 document.addEventListener("DOMContentLoaded", function () {
+    const API_BASE_URL = "http://127.0.0.1:3456/v1/api";
     let statuses = [];
     let editingStatusId = null;
     const modalInstance = new bootstrap.Modal(document.getElementById("statusModal"));
 
     async function fetchStatuses() {
         try {
-            const response = await fetch("http://127.0.0.1:3456/v1/api/students/status-types");
+            const response = await fetch(`${API_BASE_URL}/students/status-types`);
+            if (!response.ok) throw new Error("Lỗi khi lấy danh sách trạng thái!");
+            
             const data = await response.json();
-
             if (data.status === 200 && Array.isArray(data.metadata)) {
                 statuses = data.metadata.map(status => ({
                     id: status._id,
@@ -30,23 +32,18 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
-            let url = "http://127.0.0.1:3456/v1/api/students/status-types";
-            let method = "POST";
-            let bodyData = { type };
-
-            if (editingStatusId) {
-                url = `http://127.0.0.1:3456/v1/api/students/status-types/${editingStatusId}`;
-                method = "PUT";
-            }
-
+            const isEditing = Boolean(editingStatusId);
+            const url = isEditing 
+                ? `${API_BASE_URL}/students/status-types/${editingStatusId}`
+                : `${API_BASE_URL}/students/status-types`;
+            
             const response = await fetch(url, {
-                method,
+                method: isEditing ? "PUT" : "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(bodyData),
+                body: JSON.stringify({ type }),
             });
 
             const data = await response.json();
-
             if (!response.ok) {
                 alert(data.message || "Có lỗi xảy ra khi lưu tình trạng sinh viên!");
                 return;
@@ -61,6 +58,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function renderTable() {
         const tbody = document.getElementById("status-table-body");
+        if (!tbody) return;
+        
         tbody.innerHTML = statuses.map((status, index) => `
             <tr>
                 <td class="text-center">${index + 1}</td>
@@ -73,24 +72,32 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function addStatus() {
-        document.getElementById("modalTitle").innerText = "Thêm Tình trạng";
-        document.getElementById("statusType").value = "";
-        editingStatusId = null;
+        resetModalForm("Thêm Tình trạng");
         modalInstance.show();
     }
 
-    window.editStatus = function (id) {
+    function editStatus(id) {
         const status = statuses.find(s => s.id === id);
-        if (status) {
-            document.getElementById("modalTitle").innerText = "Chỉnh sửa Tình trạng";
-            document.getElementById("statusType").value = status.type;
-            editingStatusId = id;
-            modalInstance.show();
-        }
-    };
+        if (!status) return;
+        
+        resetModalForm("Chỉnh sửa Tình trạng", status.type);
+        editingStatusId = id;
+        modalInstance.show();
+    }
+    
+    function resetModalForm(title, value = "") {
+        document.getElementById("modalTitle").innerText = title;
+        document.getElementById("statusType").value = value;
+        if (!value) editingStatusId = null;
+    }
 
-    document.getElementById("saveStatusBtn").addEventListener("click", saveStatus);
-    document.getElementById("addStatusBtn").addEventListener("click", addStatus);
+    function initEventListeners() {
+        document.getElementById("saveStatusBtn").addEventListener("click", saveStatus);
+        document.getElementById("addStatusBtn").addEventListener("click", addStatus);
+    }
 
+    window.editStatus = editStatus;
+
+    initEventListeners();
     fetchStatuses();
 });

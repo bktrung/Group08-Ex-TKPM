@@ -1,26 +1,37 @@
 document.addEventListener("DOMContentLoaded", function () {
-    let scriptElement = document.currentScript;
-    let sidebarPath = scriptElement.getAttribute("data-path"); // Lấy đường dẫn sidebar từ tham số
+    const scriptElement = document.currentScript;
+    const sidebarPath = scriptElement.getAttribute("data-path");
+    const sidebarContainer = document.getElementById('sidebar-container');
+    
+    if (!sidebarPath || !sidebarContainer) return;
 
-    fetch(sidebarPath)
-        .then(response => response.text())
-        .then(html => {
-            document.getElementById('sidebar-container').innerHTML = html;
-
-            // Tính toán basePath dựa vào vị trí hiện tại
-            let currentPath = window.location.pathname;
-            let depth = (currentPath.match(/\//g) || []).length - 1; // Đếm số dấu "/" trong đường dẫn
-            let basePath = depth > 1 ? "../".repeat(depth - 1) : "";
-
-            // Chỉnh sửa đường dẫn các thẻ <a> trong sidebar
-            let links = document.querySelectorAll("#sidebar a");
-            links.forEach(link => {
-                let href = link.getAttribute("href");
-                if (!href.startsWith("http")) { // Không chỉnh sửa URL tuyệt đối
-                    link.setAttribute("href", basePath + href);
-                }
-            });
-        })
-        .catch(error => console.error("Lỗi khi tải sidebar:", error));
+    loadSidebar(sidebarPath, sidebarContainer);
 });
 
+async function loadSidebar(sidebarPath, container) {
+    try {
+        const response = await fetch(sidebarPath);
+        if (!response.ok) throw new Error(`Failed to load sidebar: ${response.status}`);
+        
+        const html = await response.text();
+        container.innerHTML = html;
+        
+        updateSidebarLinks();
+    } catch (error) {
+        console.error("Lỗi khi tải sidebar:", error);
+    }
+}
+
+function updateSidebarLinks() {
+    const currentPath = window.location.pathname;
+    const depth = (currentPath.match(/\//g) || []).length - 1;
+    const basePath = depth > 1 ? "../".repeat(depth - 1) : "";
+    
+    const links = document.querySelectorAll("#sidebar a");
+    links.forEach(link => {
+        const href = link.getAttribute("href");
+        if (href && !href.startsWith("http")) {
+            link.setAttribute("href", basePath + href);
+        }
+    });
+}
