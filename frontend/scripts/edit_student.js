@@ -649,7 +649,7 @@ document.getElementById('edit-student-form').addEventListener('submit', async fu
     e.preventDefault();
 
     const requiredFields = [
-        'student-name', 'student-dob', 'student-course', 
+        'student-id', 'student-name', 'student-dob', 'student-course', 
         'student-email', 'student-phone',
         'mailing-housestreet', 
         'identity-number', 'identity-issue-date', 'identity-expiry-date', 'identity-issued-by'
@@ -720,10 +720,10 @@ document.getElementById('edit-student-form').addEventListener('submit', async fu
         
         const mailingAddress = {
             houseNumberStreet: document.getElementById('mailing-housestreet').value,
-            wardCommune: document.getElementById('mailing-wardcommune').value || "Sam", // Default if not selected
-            districtCounty: document.getElementById('mailing-district').value || "Teton County", // Default if not selected
-            provinceCity: document.getElementById('mailing-province').value || "Idaho", // Default if not selected
-            country: document.getElementById('mailing-country').value || "United States" // Default if not selected
+            wardCommune: document.getElementById('mailing-wardcommune').value || "Sam", 
+            districtCounty: document.getElementById('mailing-district').value || "Teton County",
+            provinceCity: document.getElementById('mailing-province').value || "Idaho",
+            country: document.getElementById('mailing-country').value || "United States" 
         };
         
         let permanentAddress = null;
@@ -770,6 +770,7 @@ document.getElementById('edit-student-form').addEventListener('submit', async fu
         }
         
         const student = {
+            studentId: document.getElementById('student-id').value,
             fullName: document.getElementById('student-name').value,
             dateOfBirth: document.getElementById('student-dob').value,
             gender: document.getElementById('student-gender').value,
