@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Set the API base URL
-API_BASE="http://127.0.0.1:3456/v1/api"
+API_BASE=${API_BASE_URL:-"http://localhost:3456/v1/api"}
 
 echo "Setting up initial data..."
 
