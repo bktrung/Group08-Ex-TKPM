@@ -1,13 +1,15 @@
 document.addEventListener("DOMContentLoaded", function () {
+    const API_BASE_URL = "http://127.0.0.1:3456/v1/api";
     let programs = [];
     let editingProgramId = null;
     const modalInstance = new bootstrap.Modal(document.getElementById("programModal"));
 
     async function fetchPrograms() {
         try {
-            const response = await fetch("http://127.0.0.1:3456/v1/api/programs");
+            const response = await fetch(`${API_BASE_URL}/programs`);
+            if (!response.ok) throw new Error("Lỗi khi lấy danh sách chương trình!");
+            
             const data = await response.json();
-
             if (data.status === 200 && Array.isArray(data.metadata.programs)) {
                 programs = data.metadata.programs.map(prog => ({
                     id: prog._id,
@@ -30,23 +32,18 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
-            let url = "http://127.0.0.1:3456/v1/api/programs";
-            let method = "POST";
-            let bodyData = { name };
-
-            if (editingProgramId) {
-                url = `http://127.0.0.1:3456/v1/api/programs/${editingProgramId}`;
-                method = "PATCH";
-            }
-
+            const isEditing = Boolean(editingProgramId);
+            const url = isEditing 
+                ? `${API_BASE_URL}/programs/${editingProgramId}`
+                : `${API_BASE_URL}/programs`;
+            
             const response = await fetch(url, {
-                method,
+                method: isEditing ? "PATCH" : "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(bodyData),
+                body: JSON.stringify({ name }),
             });
 
             const data = await response.json();
-
             if (!response.ok) {
                 alert(data.message || "Có lỗi xảy ra khi lưu chương trình đào tạo!");
                 return;
@@ -61,6 +58,8 @@ document.addEventListener("DOMContentLoaded", function () {
 
     function renderTable() {
         const tbody = document.getElementById("program-table-body");
+        if (!tbody) return;
+        
         tbody.innerHTML = programs.map((program, index) => `
             <tr>
                 <td class="text-center">${index + 1}</td>
@@ -73,24 +72,32 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function addProgram() {
-        document.getElementById("modalTitle").innerText = "Thêm Chương trình đào tạo";
-        document.getElementById("programName").value = "";
-        editingProgramId = null;
+        resetModalForm("Thêm Chương trình đào tạo");
         modalInstance.show();
     }
 
-    window.editProgram = function (id) {
+    function editProgram(id) {
         const program = programs.find(p => p.id === id);
-        if (program) {
-            document.getElementById("modalTitle").innerText = "Chỉnh sửa Chương trình đào tạo";
-            document.getElementById("programName").value = program.name;
-            editingProgramId = id;
-            modalInstance.show();
-        }
-    };
+        if (!program) return;
+        
+        resetModalForm("Chỉnh sửa Chương trình đào tạo", program.name);
+        editingProgramId = id;
+        modalInstance.show();
+    }
+    
+    function resetModalForm(title, value = "") {
+        document.getElementById("modalTitle").innerText = title;
+        document.getElementById("programName").value = value;
+        if (!value) editingProgramId = null;
+    }
 
-    document.getElementById("saveProgramBtn").addEventListener("click", saveProgram);
-    document.getElementById("addProgramBtn").addEventListener("click", addProgram);
+    function initEventListeners() {
+        document.getElementById("saveProgramBtn").addEventListener("click", saveProgram);
+        document.getElementById("addProgramBtn").addEventListener("click", addProgram);
+    }
 
+    window.editProgram = editProgram;
+
+    initEventListeners();
     fetchPrograms();
 });

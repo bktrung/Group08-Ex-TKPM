@@ -1,12 +1,12 @@
-
 document.addEventListener("DOMContentLoaded", function () {
+    const API_BASE_URL = "http://127.0.0.1:3456/v1/api";
     let faculties = [];
     let editingFacultyId = null;
-    let modalInstance = new bootstrap.Modal(document.getElementById("facultyModal")); // ✅ Tạo modal một lần
+    let modalInstance = new bootstrap.Modal(document.getElementById("facultyModal"));
 
     async function fetchFaculties() {
         try {
-            const response = await fetch("http://127.0.0.1:3456/v1/api/departments");
+            const response = await fetch(`${API_BASE_URL}/departments`);
             if (!response.ok) throw new Error("Lỗi khi lấy danh sách khoa!");
 
             const data = await response.json();
@@ -32,12 +32,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
-            let url = "http://127.0.0.1:3456/v1/api/departments";
+            let url = `${API_BASE_URL}/departments`;
             let method = "POST";
             let bodyData = { name };
 
             if (editingFacultyId) {
-                url = `http://127.0.0.1:3456/v1/api/departments/${editingFacultyId}`;
+                url = `${API_BASE_URL}/departments/${editingFacultyId}`;
                 method = "PATCH";
             }
 
@@ -53,8 +53,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 return;
             }
 
-            closeModal(); // ✅ Đóng modal sau khi lưu thành công
-            fetchFaculties(); // ✅ Cập nhật danh sách khoa
+            closeModal();
+            fetchFaculties();
         } catch (error) {
             alert("Lỗi kết nối đến máy chủ!");
         }
@@ -76,33 +76,37 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function addFaculty() {
-        document.getElementById("modalTitle").innerText = "Thêm Khoa";
-        document.getElementById("facultyName").value = ""; // ✅ Đặt lại giá trị
-        editingFacultyId = null; // ✅ Đảm bảo không ở chế độ chỉnh sửa
-
-        modalInstance.show(); // ✅ Mở modal
+        resetModalForm("Thêm Khoa");
+        modalInstance.show();
     }
 
     function editFaculty(id) {
         const faculty = faculties.find(f => f.id === id);
-        if (faculty) {
-            document.getElementById("modalTitle").innerText = "Chỉnh sửa Khoa";
-            document.getElementById("facultyName").value = faculty.name;
-            editingFacultyId = id;
+        if (!faculty) return;
+        
+        resetModalForm("Chỉnh sửa Khoa", faculty.name);
+        editingFacultyId = id;
+        modalInstance.show();
+    }
 
-            modalInstance.show();
-        }
+    function resetModalForm(title, value = "") {
+        document.getElementById("modalTitle").innerText = title;
+        document.getElementById("facultyName").value = value;
+        if (!value) editingFacultyId = null;
     }
 
     function closeModal() {
-        modalInstance.hide(); // ✅ Chỉ đóng modal, không dispose
+        modalInstance.hide();
     }
 
-    document.getElementById("saveFacultyBtn").addEventListener("click", saveFaculty);
-    document.getElementById("addFacultyBtn").addEventListener("click", addFaculty);
+    function initEventListeners() {
+        document.getElementById("saveFacultyBtn").addEventListener("click", saveFaculty);
+        document.getElementById("addFacultyBtn").addEventListener("click", addFaculty);
+    }
 
-    window.addFaculty = addFaculty; // ✅ Gán hàm vào window để gọi từ HTML
+    window.addFaculty = addFaculty;
     window.editFaculty = editFaculty;
 
+    initEventListeners();
     fetchFaculties();
 });

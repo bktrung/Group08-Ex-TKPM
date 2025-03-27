@@ -179,18 +179,29 @@ async function fetchProvinces(geonameId, addressType) {
 
         const data = await response.json();
         
-        if (!data || !data.metadata || !data.metadata.children || !data.metadata.children.geonames) {
+        console.log(`API response for ${addressType}:`, data);
+        
+        if (!data || !data.metadata || !data.metadata.children) {
             console.warn(`API trả về dữ liệu không đúng cấu trúc cho ${addressType}`);
             return;
         }
         
-        const provinces = data.metadata.children.geonames;
+        let provinces = [];
+        
+        if (data.metadata.children.geonames) {
+            provinces = data.metadata.children.geonames;
+        } else if (Array.isArray(data.metadata.children)) {
+            provinces = data.metadata.children;
+        } else {
+            console.warn(`Không thể xác định cấu trúc dữ liệu tỉnh/thành phố cho ${addressType}`);
+            return;
+        }
         
         const provinceSelect = document.getElementById(`${addressType}-province`);
         provinceSelect.innerHTML = '<option value="">-- Chọn tỉnh/thành phố --</option>';
         provinceSelect.disabled = false;
         
-        if (!Array.isArray(provinces) || provinces.length === 0) {
+        if (provinces.length === 0) {
             console.warn(`Không có dữ liệu tỉnh/thành phố cho ${addressType}`);
             return;
         }
@@ -217,18 +228,27 @@ async function fetchDistricts(geonameId, addressType) {
 
         const data = await response.json();
         
-        if (!data || !data.metadata || !data.metadata.children || !data.metadata.children.geonames) {
+        if (!data || !data.metadata || !data.metadata.children) {
             console.warn(`API trả về dữ liệu không đúng cấu trúc cho ${addressType}`);
             return;
         }
         
-        const districts = data.metadata.children.geonames;
+        let districts = [];
+        
+        if (data.metadata.children.geonames) {
+            districts = data.metadata.children.geonames;
+        } else if (Array.isArray(data.metadata.children)) {
+            districts = data.metadata.children;
+        } else {
+            console.warn(`Không thể xác định cấu trúc dữ liệu quận/huyện cho ${addressType}`);
+            return;
+        }
         
         const districtSelect = document.getElementById(`${addressType}-district`);
         districtSelect.innerHTML = '<option value="">-- Chọn quận/huyện --</option>';
         districtSelect.disabled = false;
         
-        if (!Array.isArray(districts) || districts.length === 0) {
+        if (districts.length === 0) {
             console.warn(`Không có dữ liệu quận/huyện cho ${addressType}`);
             return;
         }
@@ -255,18 +275,27 @@ async function fetchWardCommunes(geonameId, addressType) {
 
         const data = await response.json();
         
-        if (!data || !data.metadata || !data.metadata.children || !data.metadata.children.geonames) {
+        if (!data || !data.metadata || !data.metadata.children) {
             console.warn(`API trả về dữ liệu không đúng cấu trúc cho ${addressType}`);
             return;
         }
         
-        const wardCommunes = data.metadata.children.geonames;
+        let wardCommunes = [];
+        
+        if (data.metadata.children.geonames) {
+            wardCommunes = data.metadata.children.geonames;
+        } else if (Array.isArray(data.metadata.children)) {
+            wardCommunes = data.metadata.children;
+        } else {
+            console.warn(`Không thể xác định cấu trúc dữ liệu phường/xã cho ${addressType}`);
+            return;
+        }
         
         const wardCommuneSelect = document.getElementById(`${addressType}-wardcommune`);
         wardCommuneSelect.innerHTML = '<option value="">-- Chọn phường/xã --</option>';
         wardCommuneSelect.disabled = false;
         
-        if (!Array.isArray(wardCommunes) || wardCommunes.length === 0) {
+        if (wardCommunes.length === 0) {
             console.warn(`Không có dữ liệu phường/xã cho ${addressType}`);
             return;
         }
@@ -649,7 +678,7 @@ document.getElementById('edit-student-form').addEventListener('submit', async fu
     e.preventDefault();
 
     const requiredFields = [
-        'student-name', 'student-dob', 'student-course', 
+        'student-id', 'student-name', 'student-dob', 'student-course', 
         'student-email', 'student-phone',
         'mailing-housestreet', 
         'identity-number', 'identity-issue-date', 'identity-expiry-date', 'identity-issued-by'
@@ -720,10 +749,10 @@ document.getElementById('edit-student-form').addEventListener('submit', async fu
         
         const mailingAddress = {
             houseNumberStreet: document.getElementById('mailing-housestreet').value,
-            wardCommune: document.getElementById('mailing-wardcommune').value || "Sam", // Default if not selected
-            districtCounty: document.getElementById('mailing-district').value || "Teton County", // Default if not selected
-            provinceCity: document.getElementById('mailing-province').value || "Idaho", // Default if not selected
-            country: document.getElementById('mailing-country').value || "United States" // Default if not selected
+            wardCommune: document.getElementById('mailing-wardcommune').value || "Sam", 
+            districtCounty: document.getElementById('mailing-district').value || "Teton County",
+            provinceCity: document.getElementById('mailing-province').value || "Idaho",
+            country: document.getElementById('mailing-country').value || "United States" 
         };
         
         let permanentAddress = null;
@@ -770,6 +799,7 @@ document.getElementById('edit-student-form').addEventListener('submit', async fu
         }
         
         const student = {
+            studentId: document.getElementById('student-id').value,
             fullName: document.getElementById('student-name').value,
             dateOfBirth: document.getElementById('student-dob').value,
             gender: document.getElementById('student-gender').value,

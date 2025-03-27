@@ -33,5 +33,24 @@ services:
       - backend
     restart: unless-stopped
 
+  init-service:
+    image: alpine:3.21.3
+    volumes:
+      - ./backend:/app
+    working_dir: /app
+    env_file:
+      - .env.docker
+    depends_on:
+      - backend
+    command: >
+      sh -c "
+        apk add --no-cache curl &&
+        echo 'Waiting for backend to be ready...' &&
+        sleep 5 &&
+        chmod +x ./setup_initial_data.sh &&
+        sh ./setup_initial_data.sh
+      "
+    restart: "no"
+
 volumes:
   mongo-data:
