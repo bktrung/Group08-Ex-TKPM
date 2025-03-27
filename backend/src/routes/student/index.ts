@@ -7,6 +7,9 @@ const router = Router();
 
 router.post('', addStudentValidator, asyncHandler(StudentController.addStudent));
 router.get('', asyncHandler(StudentController.getAllStudents));
+router.post('/status-transitions', asyncHandler(StudentController.addStudentStatusTransition));
+router.get('/status-transitions', asyncHandler(StudentController.getStudentStatusTransition));
+router.delete('/status-transitions', asyncHandler(StudentController.deleteStudentStatusTransition));
 router.patch('/:studentId', updateStudentValidator, asyncHandler(StudentController.updateStudent));
 router.delete('/:studentId', asyncHandler(StudentController.deleteStudent));
 router.get('/search', asyncHandler(StudentController.searchStudents));
@@ -14,7 +17,5 @@ router.get('/status-types', asyncHandler(StudentController.getStudentStatusType)
 router.post('/status-types', asyncHandler(StudentController.addStudentStatusType));
 router.put('/status-types/:statusId', asyncHandler(StudentController.modifyStudentStatusType));
 router.get('/department/:departmentId', asyncHandler(StudentController.getStudentByDepartment));
-router.post('/status-transitions', asyncHandler(StudentController.addStudentStatusTransition));
-router.get('/status-transitions', asyncHandler(StudentController.getStudentStatusTransition));
 
 export default router;

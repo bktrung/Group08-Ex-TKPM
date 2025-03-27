@@ -119,6 +119,15 @@ class StudentController {
 			metadata: await StudentService.getStudentStatusTransition()
 		}).send(res);
 	}
+
+	deleteStudentStatusTransition = async (req: Request, res: Response, next: NextFunction) => {
+		const { fromStatus, toStatus } = req.body;
+		const deletedTransition = await StudentService.deleteStudentStatusTransition(fromStatus, toStatus);
+		return new OK({
+			message: 'Student status transition deleted',
+			metadata: deletedTransition
+		}).send(res);
+	}
 }
 
 export default new StudentController();

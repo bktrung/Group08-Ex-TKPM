@@ -159,8 +159,12 @@ export const getTransitionRules = async (): Promise<any[]> => {
 		{
 			$group: {
 				_id: '$fromStatusDetails.type', // Group by type instead of ID
+				fromStatusId: { $first: '$fromStatusDetails._id' }, // Keep the ID
 				toStatus: {
-					$addToSet: '$toStatusDetails.type' // Just collect the status types
+					$addToSet: {
+						type: '$toStatusDetails.type',
+						_id: '$toStatusDetails._id'
+					} // Collect both type and ID
 				}
 			}
 		},
@@ -174,6 +178,7 @@ export const getTransitionRules = async (): Promise<any[]> => {
 		{
 			$project: {
 				fromStatus: '$_id',
+				fromStatusId: 1,
 				toStatus: 1,
 				_id: 0 // Exclude _id field from results
 			}
@@ -183,4 +188,11 @@ export const getTransitionRules = async (): Promise<any[]> => {
 			$sort: { fromStatus: 1 }
 		}
 	]);
+}
+
+export const deleteStudentStatusTransition = async (fromStatus: string, toStatus: string): Promise<any> => {
+	return await StudentStatusTransition.findOneAndDelete({
+		fromStatus,
+		toStatus
+	}).lean();
 }

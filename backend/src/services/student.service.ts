@@ -13,6 +13,7 @@ import {
 	addStudentStatusTransition,
 	findStudentStatusTransition,
 	getTransitionRules,
+	deleteStudentStatusTransition,
 } from '../models/repositories/student.repo';
 import { IStudent } from '../models/interfaces/student.interface';
 import { BadRequestError, NotFoundError } from '../responses/error.responses';
@@ -240,6 +241,14 @@ class StudentService {
 
 	static async getStudentStatusTransition(): Promise<any> {
 		return await getTransitionRules();
+	}
+
+	static async deleteStudentStatusTransition(fromStatus: string, toStatus: string): Promise<any> {
+		const transition = await deleteStudentStatusTransition(fromStatus, toStatus);
+		if (!transition) {
+			throw new NotFoundError('Không tìm thấy quy tắc chuyển trạng thái sinh viên');
+		}
+		return transition;
 	}
 }
 
