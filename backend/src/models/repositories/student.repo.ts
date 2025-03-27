@@ -121,3 +121,66 @@ export const findStudentStatusTransition = async (
 		toStatus
 	}).lean();
 }
+
+export const getTransitionRules = async (): Promise<any[]> => {
+	// Check actual collection names
+	const statusCollection = StudentStatus.collection.name; // This will get the actual collection name
+
+	return await StudentStatusTransition.aggregate([
+		// Lookup to get fromStatus details
+		{
+			$lookup: {
+				from: statusCollection,  // Use the actual collection name
+				localField: 'fromStatus',
+				foreignField: '_id',
+				as: 'fromStatusDetails'
+			}
+		},
+		// Lookup to get toStatus details
+		{
+			$lookup: {
+				from: statusCollection,  // Use the actual collection name
+				localField: 'toStatus',
+				foreignField: '_id',
+				as: 'toStatusDetails'
+			}
+		},
+		// Add a match stage to filter out records with missing status details
+		{
+			$match: {
+				'fromStatusDetails': { $ne: [] },
+				'toStatusDetails': { $ne: [] }
+			}
+		},
+		// Unwind arrays created by lookup
+		{ $unwind: '$fromStatusDetails' },
+		{ $unwind: '$toStatusDetails' },
+		// Group by fromStatus type (not ID)
+		{
+			$group: {
+				_id: '$fromStatusDetails.type', // Group by type instead of ID
+				toStatus: {
+					$addToSet: '$toStatusDetails.type' // Just collect the status types
+				}
+			}
+		},
+		// Filter out entries with empty toStatus arrays
+		{
+			$match: {
+				'toStatus.0': { $exists: true } // Only include documents where toStatus has at least one element
+			}
+		},
+		// Final projection to format output
+		{
+			$project: {
+				fromStatus: '$_id',
+				toStatus: 1,
+				_id: 0 // Exclude _id field from results
+			}
+		},
+		// Sort by fromStatus for consistent results
+		{
+			$sort: { fromStatus: 1 }
+		}
+	]);
+}

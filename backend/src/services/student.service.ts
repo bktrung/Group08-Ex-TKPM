@@ -12,6 +12,7 @@ import {
 	findStudentStatusById,
 	addStudentStatusTransition,
 	findStudentStatusTransition,
+	getTransitionRules,
 } from '../models/repositories/student.repo';
 import { IStudent } from '../models/interfaces/student.interface';
 import { BadRequestError, NotFoundError } from '../responses/error.responses';
@@ -235,6 +236,10 @@ class StudentService {
 		}
 
 		return await addStudentStatusTransition(fromStatus, toStatus);
+	}
+
+	static async getStudentStatusTransition(): Promise<any> {
+		return await getTransitionRules();
 	}
 }
 

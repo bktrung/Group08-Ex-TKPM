@@ -112,6 +112,13 @@ class StudentController {
 			metadata: newTransition
 		}).send(res);
 	}
+
+	getStudentStatusTransition = async (req: Request, res: Response, next: NextFunction) => {
+		return new OK({
+			message: 'Student status transitions',
+			metadata: await StudentService.getStudentStatusTransition()
+		}).send(res);
+	}
 }
 
 export default new StudentController();

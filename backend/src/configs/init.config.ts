@@ -40,7 +40,7 @@ class ConfigService extends EventEmitter {
 
 	private watchConfig() {
 		let debounceTimer: NodeJS.Timeout | null = null;
-		const DEBOUNCE_DELAY = 10000; // 10 seconds in milliseconds
+		const DEBOUNCE_DELAY = 5000; // 5 seconds in milliseconds
 
 		try {
 			const watcher = fs.watch(this.configPath, (eventType) => {
