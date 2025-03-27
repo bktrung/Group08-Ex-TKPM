@@ -155,7 +155,6 @@ async function fetchCountries() {
     }
 }
 
-// Lấy danh sách tỉnh/thành phố từ API
 async function fetchProvinces(geonameId, addressType) {
     try {
         const response = await fetch(`http://127.0.0.1:3456/v1/api/address/children/${geonameId}`);
@@ -163,18 +162,27 @@ async function fetchProvinces(geonameId, addressType) {
 
         const data = await response.json();
         
-        if (!data || !data.metadata || !data.metadata.children || !data.metadata.children.geonames) {
+        if (!data || !data.metadata || !data.metadata.children) {
             console.warn(`API trả về dữ liệu không đúng cấu trúc cho ${addressType}`);
             return;
         }
         
-        const provinces = data.metadata.children.geonames;
+        let provinces = [];
+        
+        if (data.metadata.children.geonames) {
+            provinces = data.metadata.children.geonames;
+        } else if (Array.isArray(data.metadata.children)) {
+            provinces = data.metadata.children;
+        } else {
+            console.warn(`Không thể xác định cấu trúc dữ liệu tỉnh/thành phố cho ${addressType}`);
+            return;
+        }
         
         const provinceSelect = document.getElementById(`${addressType}-province`);
         provinceSelect.innerHTML = '<option value="">-- Chọn tỉnh/thành phố --</option>';
         provinceSelect.disabled = false;
         
-        if (!Array.isArray(provinces) || provinces.length === 0) {
+        if (provinces.length === 0) {
             console.warn(`Không có dữ liệu tỉnh/thành phố cho ${addressType}`);
             return;
         }
@@ -194,7 +202,6 @@ async function fetchProvinces(geonameId, addressType) {
     }
 }
 
-// Lấy danh sách quận/huyện từ API
 async function fetchDistricts(geonameId, addressType) {
     try {
         const response = await fetch(`http://127.0.0.1:3456/v1/api/address/children/${geonameId}`);
@@ -202,18 +209,27 @@ async function fetchDistricts(geonameId, addressType) {
 
         const data = await response.json();
         
-        if (!data || !data.metadata || !data.metadata.children || !data.metadata.children.geonames) {
+        if (!data || !data.metadata || !data.metadata.children) {
             console.warn(`API trả về dữ liệu không đúng cấu trúc cho ${addressType}`);
             return;
         }
         
-        const districts = data.metadata.children.geonames;
+        let districts = [];
+        
+        if (data.metadata.children.geonames) {
+            districts = data.metadata.children.geonames;
+        } else if (Array.isArray(data.metadata.children)) {
+            districts = data.metadata.children;
+        } else {
+            console.warn(`Không thể xác định cấu trúc dữ liệu quận/huyện cho ${addressType}`);
+            return;
+        }
         
         const districtSelect = document.getElementById(`${addressType}-district`);
         districtSelect.innerHTML = '<option value="">-- Chọn quận/huyện --</option>';
         districtSelect.disabled = false;
         
-        if (!Array.isArray(districts) || districts.length === 0) {
+        if (districts.length === 0) {
             console.warn(`Không có dữ liệu quận/huyện cho ${addressType}`);
             return;
         }
@@ -230,11 +246,9 @@ async function fetchDistricts(geonameId, addressType) {
         
     } catch (error) {
         console.error(`Lỗi khi lấy danh sách quận/huyện cho ${addressType}:`, error);
-        // Không hiển thị modal lỗi
     }
 }
 
-// Lấy danh sách phường/xã từ API
 async function fetchWardCommunes(geonameId, addressType) {
     try {
         const response = await fetch(`http://127.0.0.1:3456/v1/api/address/children/${geonameId}`);
@@ -242,18 +256,27 @@ async function fetchWardCommunes(geonameId, addressType) {
 
         const data = await response.json();
         
-        if (!data || !data.metadata || !data.metadata.children || !data.metadata.children.geonames) {
+        if (!data || !data.metadata || !data.metadata.children) {
             console.warn(`API trả về dữ liệu không đúng cấu trúc cho ${addressType}`);
             return;
         }
         
-        const wardCommunes = data.metadata.children.geonames;
+        let wardCommunes = [];
+        
+        if (data.metadata.children.geonames) {
+            wardCommunes = data.metadata.children.geonames;
+        } else if (Array.isArray(data.metadata.children)) {
+            wardCommunes = data.metadata.children;
+        } else {
+            console.warn(`Không thể xác định cấu trúc dữ liệu phường/xã cho ${addressType}`);
+            return;
+        }
         
         const wardCommuneSelect = document.getElementById(`${addressType}-wardcommune`);
         wardCommuneSelect.innerHTML = '<option value="">-- Chọn phường/xã --</option>';
         wardCommuneSelect.disabled = false;
         
-        if (!Array.isArray(wardCommunes) || wardCommunes.length === 0) {
+        if (wardCommunes.length === 0) {
             console.warn(`Không có dữ liệu phường/xã cho ${addressType}`);
             return;
         }
