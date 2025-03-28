@@ -239,45 +239,45 @@ Note:
 
    ![Screenshot 2025-03-21 214205](https://github.com/user-attachments/assets/7138afd2-491b-4ce4-b36c-2bfbb5629d4e)
 
- 9.  Logging mechanism để troubleshooting production issue & audit purposes.
+  #### 9.Logging mechanism để troubleshooting production issue & audit purposes.
+  
+  Vào thư mục "log" của trong thư mục "backend" để xem issue và adit purpose.
+  
+  ![Screenshot 2025-03-21 215131](https://github.com/user-attachments/assets/7b86e4cf-6daf-4c07-8dff-a695782b2cb5)
+  
+  Trong backend:
+  
+  ![Screenshot 2025-03-21 215152](https://github.com/user-attachments/assets/16553f9d-cfa0-4f43-aae5-89b57fb388ba)
+  
+  ![Screenshot 2025-03-21 215226](https://github.com/user-attachments/assets/1aa4c2be-564d-484d-b5a0-aa566348130d)
+  
+  Xem error:
+  
+  ![Screenshot 2025-03-21 215246](https://github.com/user-attachments/assets/c9857cfe-4cac-45c5-8e6a-eb2fe75daa5c)
+  
+  ![Screenshot 2025-03-21 215305](https://github.com/user-attachments/assets/650eb7c7-0473-4e12-bcbf-a01264ebdff6)
+  
+  Xem info:
+  
+  ![Screenshot 2025-03-21 215410](https://github.com/user-attachments/assets/57f4c241-12e9-4e40-a118-2d1804862cf0)
+  
+  ![Screenshot 2025-03-21 215426](https://github.com/user-attachments/assets/fea54db6-451b-4af5-a387-362163014123)
 
-     Vào thư mục "log" của trong thư mục "backend" để xem issue và adit purpose.
-     
-     ![Screenshot 2025-03-21 215131](https://github.com/user-attachments/assets/7b86e4cf-6daf-4c07-8dff-a695782b2cb5)
-     
-     Trong backend:
+#### 11. Export file CSV, JSON, EXCEL, XML
 
-     ![Screenshot 2025-03-21 215152](https://github.com/user-attachments/assets/16553f9d-cfa0-4f43-aae5-89b57fb388ba)
+  ![Screenshot 2025-03-21 215607](https://github.com/user-attachments/assets/4f778779-3f93-4df2-a718-591d0693cea1)
+  
+  ![Screenshot 2025-03-21 215626](https://github.com/user-attachments/assets/54d3845e-d9d6-43f6-8698-8f5e7585a5c7)
+  
+  ![Screenshot 2025-03-21 215641](https://github.com/user-attachments/assets/a0e43a4d-722b-4837-80c9-ee1a7d6993bf)
 
-     ![Screenshot 2025-03-21 215226](https://github.com/user-attachments/assets/1aa4c2be-564d-484d-b5a0-aa566348130d)
+#### 12. Import file CSV, JSON, EXCEL, XML
 
-     Xem error:
+  ![Screenshot 2025-03-21 215708](https://github.com/user-attachments/assets/7c984aa6-0492-438e-a09c-aa47f13c4e0e)
+  
+  ![Screenshot 2025-03-21 215731](https://github.com/user-attachments/assets/29fcf10a-8936-4aab-b1cf-c44c1f140e1d)
 
-     ![Screenshot 2025-03-21 215246](https://github.com/user-attachments/assets/c9857cfe-4cac-45c5-8e6a-eb2fe75daa5c)
-
-     ![Screenshot 2025-03-21 215305](https://github.com/user-attachments/assets/650eb7c7-0473-4e12-bcbf-a01264ebdff6)
-
-     Xem info:
-
-     ![Screenshot 2025-03-21 215410](https://github.com/user-attachments/assets/57f4c241-12e9-4e40-a118-2d1804862cf0)
-
-     ![Screenshot 2025-03-21 215426](https://github.com/user-attachments/assets/fea54db6-451b-4af5-a387-362163014123)
-
-10. Export file CSV, JSON, EXCEL, XML
-
-    ![Screenshot 2025-03-21 215607](https://github.com/user-attachments/assets/4f778779-3f93-4df2-a718-591d0693cea1)
-    
-    ![Screenshot 2025-03-21 215626](https://github.com/user-attachments/assets/54d3845e-d9d6-43f6-8698-8f5e7585a5c7)
-    
-    ![Screenshot 2025-03-21 215641](https://github.com/user-attachments/assets/a0e43a4d-722b-4837-80c9-ee1a7d6993bf)
-
-11. Import file CSV, JSON, EXCEL, XML
-
-    ![Screenshot 2025-03-21 215708](https://github.com/user-attachments/assets/7c984aa6-0492-438e-a09c-aa47f13c4e0e)
-    
-    ![Screenshot 2025-03-21 215731](https://github.com/user-attachments/assets/29fcf10a-8936-4aab-b1cf-c44c1f140e1d)
-
-12. Tình trạng sinh viên chỉ có thể thay đổi theo một số quy tắc
+#### 13. Tình trạng sinh viên chỉ có thể thay đổi theo một số quy tắc
 
    Nhấn vào "quy tắc chuyển trạng thái" bên thanh taskbar để xem các quy tắc chuyển trạng thái sinh viên
    
