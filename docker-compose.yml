@@ -44,6 +44,8 @@ services:
       - backend
     command: >
       sh -c "
+        echo 'Waiting for backend to be ready...' &&
+        sleep 3
         apk add --no-cache curl &&
         chmod +x ./setup_initial_data.sh &&
         sh ./setup_initial_data.sh
