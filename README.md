@@ -126,8 +126,9 @@ PORT=3456
 DB_HOST=mongodb
 DB_PORT=27017
 DB_NAME=qlsv
-NODE_ENV=pro
+NODE_ENV=dev
 GEONAMES_USERNAME=bktrung
+API_BASE_URL=http://backend:3456/v1/api
 API_BASE_URL=http://backend:3456/v1/api
 ```
 
@@ -251,24 +252,13 @@ Note:
     ![Screenshot 2025-03-21 215626](https://github.com/user-attachments/assets/54d3845e-d9d6-43f6-8698-8f5e7585a5c7)
     ![Screenshot 2025-03-21 215641](https://github.com/user-attachments/assets/a0e43a4d-722b-4837-80c9-ee1a7d6993bf)
 
-14. Import file CSV, JSON
+13. Import file CSV, JSON, EXCEL, XML
     ![Screenshot 2025-03-21 215708](https://github.com/user-attachments/assets/7c984aa6-0492-438e-a09c-aa47f13c4e0e)
     ![Screenshot 2025-03-21 215731](https://github.com/user-attachments/assets/29fcf10a-8936-4aab-b1cf-c44c1f140e1d)
-    
 
-
-
-
-
-
-
-
-     
-
-
-
-
-
-
-
-
+14. Tình trạng sinh viên chỉ có thể thay đổi theo một số quy tắc
+   Nhấn vào "quy tắc chuyển trạng thái" bên thanh taskbar để xem các quy tắc chuyển trạng thái sinh viên
+   Để tạo quy tắc chuyển trạng thái, chọn trạng thái đầu và đích, sau đó chọn "Thêm quy tắc"
+   Để xóa quy tắc chuyển trạng thái, chọn nút xóa ở dòng của quy tắc muốn xóa
+   ![image](https://github.com/user-attachments/assets/dcfaf01d-7cb0-42c8-ade5-586c6b8032df)
+   ![image](https://github.com/user-attachments/assets/100d0672-1e65-4541-b975-1970660628f2)
