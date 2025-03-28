@@ -1,3 +1,7 @@
+window.toast = new bootstrap.Toast(document.getElementById('toast'));
+window.statusTransitionRules = [];
+window.currentStudentStatus = null;
+
 document.addEventListener("DOMContentLoaded", async function () {
     const urlParams = new URLSearchParams(window.location.search);
     const studentId = urlParams.get('id');
@@ -18,7 +22,8 @@ document.addEventListener("DOMContentLoaded", async function () {
         fetchNationalities(),
         fetchDepartments(),
         fetchPrograms(),
-        fetchStatusTypes()
+        fetchStatusTypes(),
+        fetchStatusTransitionRules()
     ]);
 
     await fetchStudentData(studentId);
@@ -552,6 +557,8 @@ async function fetchStudentData(studentId) {
                 statusSelect.appendChild(newOption);
                 statusSelect.value = statusId;
             }
+
+            filterStatusOptions(statusId);
         }
         
         if (student.permanentAddress) {
@@ -678,7 +685,7 @@ document.getElementById('edit-student-form').addEventListener('submit', async fu
     e.preventDefault();
 
     const requiredFields = [
-        'student-id', 'student-name', 'student-dob', 'student-course', 
+        'student-name', 'student-dob', 'student-course', 
         'student-email', 'student-phone',
         'mailing-housestreet', 
         'identity-number', 'identity-issue-date', 'identity-expiry-date', 'identity-issued-by'
@@ -742,6 +749,14 @@ document.getElementById('edit-student-form').addEventListener('submit', async fu
 
     if (!isValid) {
         return;
+    }
+    
+    const newStatusId = document.getElementById('student-status').value;
+    if (window.currentStudentStatus && newStatusId !== window.currentStudentStatus) {
+        if (!isValidStatusTransition(window.currentStudentStatus, newStatusId)) {
+            showToast("Lỗi", "Không thể chuyển từ trạng thái hiện tại sang trạng thái đã chọn", "error");
+            return;
+        }
     }
 
     try {
@@ -857,17 +872,113 @@ function showSuccessModal() {
     });
 }
 
-// Hàm hỗ trợ định dạng ngày tháng thành YYYY-MM-DD
 function formatDate(dateString) {
     if (!dateString) return '';
     const date = new Date(dateString);
     return date.toISOString().split('T')[0];
 }
 
-// Kiểm tra dữ liệu của API trả về
 function checkAPIResponse(data, key) {
     if (data && data.metadata && data.metadata[key]) {
         return data.metadata[key];
     }
     return [];
+}
+
+async function fetchStatusTransitionRules() {
+    try {
+        const response = await fetch("http://127.0.0.1:3456/v1/api/students/status-transitions");
+        if (!response.ok) throw new Error(`Lỗi API: ${response.status}`);
+
+        const data = await response.json();
+        if (data && data.metadata) {
+            window.statusTransitionRules = data.metadata;
+        } else {
+            window.statusTransitionRules = [];
+        }
+    } catch (error) {
+        console.error("Lỗi khi lấy quy tắc chuyển trạng thái:", error);
+        showToast("Lỗi", "Không thể lấy quy tắc chuyển trạng thái: " + error.message, "error");
+    }
+}
+
+function filterStatusOptions(currentStatusId) {
+    const statusSelect = document.getElementById('student-status');
+    const statusHelp = document.getElementById('status-help');
+    
+    window.currentStudentStatus = currentStatusId;
+    
+    const transitionRule = window.statusTransitionRules.find(rule => 
+        rule.fromStatusId === currentStatusId
+    );
+    
+    console.log("Current status ID:", currentStatusId);
+    console.log("Found transition rule:", transitionRule);
+    
+    const options = Array.from(statusSelect.options);
+    
+    let hasDisabledOptions = false;
+    
+    const currentStatusOption = options.find(opt => opt.value === currentStatusId);
+    let currentStatusText = "Current Status";
+    if (currentStatusOption) {
+        currentStatusText = currentStatusOption.textContent;
+    }
+    
+    statusSelect.innerHTML = '';
+    
+    const newCurrentOption = document.createElement('option');
+    newCurrentOption.value = currentStatusId;
+    newCurrentOption.textContent = currentStatusText;
+    statusSelect.appendChild(newCurrentOption);
+    
+    if (transitionRule && transitionRule.toStatus && transitionRule.toStatus.length > 0) {
+        transitionRule.toStatus.forEach(status => {
+            const option = document.createElement('option');
+            option.value = status._id;
+            option.textContent = status.type;
+            statusSelect.appendChild(option);
+        });
+    }
+    
+    statusSelect.value = currentStatusId;
+    
+    statusHelp.classList.remove('d-none');
+}
+
+function isValidStatusTransition(fromStatusId, toStatusId) {
+    if (fromStatusId === toStatusId) return true;
+    
+    const transitionRule = window.statusTransitionRules.find(rule => 
+        rule.fromStatusId === fromStatusId
+    );
+    
+    if (!transitionRule) return false;
+    
+    return transitionRule.toStatus.some(status => 
+        status._id === toStatusId
+    );
+}
+
+function showToast(title, message, type = 'info') {
+    const toastTitle = document.getElementById('toast-title');
+    const toastMessage = document.getElementById('toast-message');
+    const toastHeader = document.getElementById('toast-header');
+    
+    toastTitle.textContent = title;
+    toastMessage.textContent = message;
+    
+    toastHeader.className = 'toast-header';
+    
+    if (type === 'success') {
+        toastHeader.classList.add('bg-success', 'text-white');
+    } else if (type === 'error') {
+        toastHeader.classList.add('bg-danger', 'text-white');
+    } else if (type === 'warning') {
+        toastHeader.classList.add('bg-warning', 'text-white');
+    } else {
+        toastHeader.classList.add('bg-info', 'text-white');
+    }
+    
+    window.toast.show();
 }

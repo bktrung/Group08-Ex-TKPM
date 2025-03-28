@@ -38,6 +38,21 @@
             border-radius: 5px;
             font-weight: bold;
         }
+        
+        /* Style for disabled options */
+        select option:disabled {
+            color: #999;
+            font-style: italic;
+        }
+        
+        /* Toast styles */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            min-width: 300px;
+            z-index: 1060;
+        }
     </style>
 </head>
 
@@ -113,6 +128,9 @@
                 <label class="form-label">Tình trạng</label>
                 <select id="student-status" class="form-select" required>
                 </select>
+                <small id="status-help" class="form-text text-muted d-none">
+                    Một số trạng thái bị vô hiệu hóa vì không thể chuyển từ trạng thái hiện tại sang trạng thái đó.
+                </small>
             </div>
 
             <div class="section-title">Thông tin địa chỉ</div>
@@ -128,13 +146,11 @@
                     <div class="col-md-4">
                         <select id="permanent-country" class="form-select">
                             <option value="">-- Chọn quốc gia --</option>
-                            <!-- Will be filled by JavaScript -->
                         </select>
                     </div>
                     <div class="col-md-4">
                         <select id="permanent-province" class="form-select" disabled>
                             <option value="">-- Chọn tỉnh/thành phố --</option>
-                            <!-- Will be filled by JavaScript -->
                         </select>
                     </div>
                     <div class="col-md-4">
@@ -281,7 +297,16 @@
 
     <script src="../scripts/edit_student.js"></script>
 
-    <!-- Modal báo lỗi -->
+    <div class="toast" id="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header" id="toast-header">
+            <strong class="me-auto" id="toast-title">Thông báo</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toast-message">
+            Nội dung thông báo sẽ xuất hiện ở đây.
+        </div>
+    </div>
+
     <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">
@@ -299,7 +324,6 @@
         </div>
     </div>
 
-    <!-- Modal thành công -->
     <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
         <div class="modal-dialog">
             <div class="modal-content">

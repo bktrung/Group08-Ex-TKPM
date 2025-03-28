@@ -13,7 +13,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const toast = new bootstrap.Toast(document.getElementById('toast'));
     const confirmDeleteModal = new bootstrap.Modal(document.getElementById('confirmDeleteModal'));
     
-    // Fetch all status types
     async function fetchStatusTypes() {
         try {
             const response = await fetch(`${API_URL}/students/status-types`);
@@ -28,7 +27,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Fetch all transition rules
     async function fetchTransitionRules() {
         try {
             const response = await fetch(`${API_URL}/students/status-transitions`);
@@ -43,13 +41,10 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Populate status dropdowns
     function populateStatusDropdowns() {
-        // Clear existing options except the default one
         fromStatusSelect.innerHTML = '<option value="">-- Chọn trạng thái --</option>';
         toStatusSelect.innerHTML = '<option value="">-- Chọn trạng thái --</option>';
         
-        // Add options for each status
         statuses.forEach(status => {
             const fromOption = document.createElement('option');
             fromOption.value = status._id;
@@ -132,7 +127,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // Add new transition rule
     async function addTransitionRule(fromStatusId, toStatusId) {
         try {
             const response = await fetch(`${API_URL}/students/status-transitions`, {
@@ -159,7 +153,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Delete transition rule
     async function deleteTransitionRule(fromStatusId, toStatusId) {
         try {
             const response = await fetch(`${API_URL}/students/status-transitions`, {
@@ -186,7 +179,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
     
-    // Show delete confirmation modal
     function showDeleteConfirmation(fromId, toId, fromName, toName) {
         document.getElementById('deleteFromStatus').textContent = fromName;
         document.getElementById('deleteToStatus').textContent = toName;
@@ -199,7 +191,6 @@ document.addEventListener('DOMContentLoaded', function() {
         confirmDeleteModal.show();
     }
     
-    // Show toast notification
     function showToast(title, message, type = 'info') {
         const toastTitle = document.getElementById('toast-title');
         const toastMessage = document.getElementById('toast-message');
@@ -208,10 +199,8 @@ document.addEventListener('DOMContentLoaded', function() {
         toastTitle.textContent = title;
         toastMessage.textContent = message;
         
-        // Reset classes
         toastHeader.className = 'toast-header';
         
-        // Add appropriate color class
         if (type === 'success') {
             toastHeader.classList.add('bg-success', 'text-white');
         } else if (type === 'error') {
@@ -223,7 +212,6 @@ document.addEventListener('DOMContentLoaded', function() {
         toast.show();
     }
     
-    // Event Listeners
     addTransitionForm.addEventListener('submit', function(event) {
         event.preventDefault();
         
@@ -243,13 +231,11 @@ document.addEventListener('DOMContentLoaded', function() {
         addTransitionRule(fromStatusId, toStatusId);
     });
     
-    // Confirm delete button
     document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
         deleteTransitionRule(deleteTransitionData.fromStatus, deleteTransitionData.toStatus);
         confirmDeleteModal.hide();
     });
     
-    // Initialize
     fetchStatusTypes();
     fetchTransitionRules();
 });
