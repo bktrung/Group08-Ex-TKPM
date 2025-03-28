@@ -288,3 +288,25 @@ Note:
    ![image](https://github.com/user-attachments/assets/dcfaf01d-7cb0-42c8-ade5-586c6b8032df)
    
    ![image](https://github.com/user-attachments/assets/100d0672-1e65-4541-b975-1970660628f2)
+
+#### 13. MSSV phải là duy nhất  
+
+    Khi tạo thêm sinh viên có MSSV đã tồn tại (ví dụ 22120401 như trong hình), thông báo lỗi xuất hiện  
+    
+    ![image](https://github.com/user-attachments/assets/5974b144-8b15-4d0f-80fb-7562ae042d1e)
+    
+    ![image](https://github.com/user-attachments/assets/6d3913df-8020-4d9b-89fe-a2eaf96a32c1)
+
+#### 14. Email phải thuộc một tên miền nhất định và có thể cấu hình động (configurable)
+
+    ![image](https://github.com/user-attachments/assets/3c87cc05-8834-44fa-a540-bd9bc08ccc46)
+    
+    ![image](https://github.com/user-attachments/assets/3ea0da76-50f0-4325-94bf-5177cca98fd8)
+
+#### 15. Số điện thoại phải có định dạng hợp lệ theo quốc gia (configurable)
+
+    ![image](https://github.com/user-attachments/assets/bbad0cbe-0675-466e-9930-a97619d483b6)
+    
+    ![image](https://github.com/user-attachments/assets/8bfba3ff-cf00-47bb-8ac1-80a2aeafad18)
+    
+    ![image](https://github.com/user-attachments/assets/e33eff82-5666-4981-93b6-c78cda9a06c8)
