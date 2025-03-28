@@ -185,6 +185,7 @@ Note:
 #### 3. Thêm sinh viên.
    
    Ở trang danh sách sinh viên, chọn Thêm sinh viên, sau đó chuyển tới màn hình thêm sinh viên và điền các trường yêu cầu
+   
    ![Screenshot 2025-03-21 214615](https://github.com/user-attachments/assets/4358020b-8237-434d-9392-50ecd74b8b32)
 
    ![Screenshot 2025-03-21 214657](https://github.com/user-attachments/assets/526410cc-bdc3-42be-a03f-8e1a52cf2e65)
@@ -289,7 +290,7 @@ Note:
    
    ![image](https://github.com/user-attachments/assets/100d0672-1e65-4541-b975-1970660628f2)
 
-13. MSSV phải là duy nhất  
+#### 14. MSSV phải là duy nhất  
 
    Khi tạo thêm sinh viên có MSSV đã tồn tại (ví dụ 22120401 như trong hình), thông báo lỗi xuất hiện  
 
@@ -297,13 +298,13 @@ Note:
 
    ![image](https://github.com/user-attachments/assets/6d3913df-8020-4d9b-89fe-a2eaf96a32c1)
 
-#### 14. Email phải thuộc một tên miền nhất định và có thể cấu hình động (configurable)
+#### 15. Email phải thuộc một tên miền nhất định và có thể cấu hình động (configurable)
 
    ![image](https://github.com/user-attachments/assets/3c87cc05-8834-44fa-a540-bd9bc08ccc46)
     
    ![image](https://github.com/user-attachments/assets/3ea0da76-50f0-4325-94bf-5177cca98fd8)
 
-#### 15. Số điện thoại phải có định dạng hợp lệ theo quốc gia (configurable)
+#### 16. Số điện thoại phải có định dạng hợp lệ theo quốc gia (configurable)
 
    ![image](https://github.com/user-attachments/assets/bbad0cbe-0675-466e-9930-a97619d483b6)
     
