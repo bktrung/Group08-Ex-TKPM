@@ -7,14 +7,17 @@ bktrung-group08-ex-tkpm/
 ├── docker-compose.yml
 ├── backend/
 │   ├── Dockerfile
+│   ├── config.json
 │   ├── package-lock.json
 │   ├── package.json
+│   ├── setup_initial_data.sh
 │   ├── tsconfig.json
 │   ├── .gitignore
 │   └── src/
 │       ├── index.ts
 │       ├── configs/
-│       │   └── config.mongodb.ts
+│       │   ├── config.mongodb.ts
+│       │   └── init.config.ts
 │       ├── controllers/
 │       │   ├── address.controller.ts
 │       │   ├── department.controller.ts
@@ -40,6 +43,7 @@ bktrung-group08-ex-tkpm/
 │       │   ├── program.model.ts
 │       │   ├── student.model.ts
 │       │   ├── studentStatus.model.ts
+│       │   ├── studentStatusTransition.model.ts
 │       │   ├── hooks/
 │       │   │   ├── department.hook.ts
 │       │   │   ├── program.hook.ts
@@ -95,7 +99,8 @@ bktrung-group08-ex-tkpm/
 	│   ├── import_export.html
 	│   ├── program_manage.html
 	│   ├── sidebar.html
-	│   └── status_manage.html
+	│   ├── status_manage.html
+	│   └── status_transition.html
 	└── scripts/
 		├── add_student.js
 		├── department_manage.js
@@ -104,14 +109,15 @@ bktrung-group08-ex-tkpm/
 		├── index.js
 		├── program_manage.js
 		├── sidebar.js
-		└── status_manage.js
+		├── status_manage.js
+		└── status_transition.js
 ```
 
 ## Hướng dẫn cài đặt & chạy chương trình
-## Setup data
-./setup_initial_data.sh
 
 ### Sử dụng Docker
+
+**Note:** File `.\setup_initial_data.sh` bị lỗi không chạy tự động cùng với docker được trên window, chỉ chạy được trên linux nên cần phải chạy thủ công file này giống **Chạy trên local**
 
 #### 1. Chuẩn bị môi trường 
 Tạo file `.env.docker` trong thư mục gốc với nội dung:
@@ -122,6 +128,7 @@ DB_PORT=27017
 DB_NAME=qlsv
 NODE_ENV=pro
 GEONAMES_USERNAME=bktrung
+API_BASE_URL=http://backend:3456/v1/api
 ```
 
 #### 2. Chạy chương trình:
@@ -157,7 +164,9 @@ Note:
 #### 3. Chạy chương trình
 1. Mở terminal, di chuyển đến thư mục backend
 2. Chạy lệnh sau `npm run start`
-3. Mở file `index.html` trong thư mục frontend bằng trình duyệt web
+3. Mở git bash console, di chuyển đến thư mục backend
+4. Chạy file bash `.\setup_initial_data.sh` để tạo dữ liệu ban đầu
+5. Mở file `index.html` trong thư mục frontend bằng trình duyệt web
 
 ## Hướng dẫn sử dụng các chức năng
 1. Tìm kiếm theo khoa
