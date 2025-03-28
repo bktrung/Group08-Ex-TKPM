@@ -6,11 +6,11 @@ let isSearchMode = false;
 let lastSearchQuery = '';
 let departments = [];
 let selectedDepartment = '';
-
+const API_BASE_URL = 'http://127.0.0.1:3456';
 
 async function fetchStudents(page = 1) {
     try {
-        const response = await fetch(`http://127.0.0.1:3456/v1/api/students?page=${page}&limit=${studentsPerPage}`);
+        const response = await fetch(`${API_BASE_URL}/v1/api/students?page=${page}&limit=${studentsPerPage}`);
         if (!response.ok) {
             throw new Error(`Lỗi mạng: ${response.status}`);
         }
@@ -31,7 +31,7 @@ async function fetchStudents(page = 1) {
 
 async function fetchDepartments() {
     try {
-        const response = await fetch('http://127.0.0.1:3456/v1/api/departments');
+        const response = await fetch(`${API_BASE_URL}/v1/api/departments`);
         if (!response.ok) {
             throw new Error(`Lỗi mạng: ${response.status}`);
         }
@@ -75,10 +75,10 @@ async function searchStudents(query, page = 1) {
         
         if (selectedDepartment && !query) {
             // Tìm kiếm chỉ theo khoa
-            url = `http://127.0.0.1:3456/v1/api/students/department/${selectedDepartment}?page=${page}&limit=${studentsPerPage}`;
+            url = `${API_BASE_URL}/v1/api/students/department/${selectedDepartment}?page=${page}&limit=${studentsPerPage}`;
         } else if (query && selectedDepartment) {
             // Lấy sinh viên theo khoa trước
-            const studentsInDept = await fetch(`http://127.0.0.1:3456/v1/api/students/department/${selectedDepartment}?page=1&limit=1000`);
+            const studentsInDept = await fetch(`${API_BASE_URL}/v1/api/students/department/${selectedDepartment}?page=1&limit=1000`);
             if (!studentsInDept.ok) {
                 throw new Error(`Lỗi mạng: ${studentsInDept.status}`);
             }
@@ -112,7 +112,7 @@ async function searchStudents(query, page = 1) {
             return;
         } else if (query) {
             // Chỉ tìm kiếm theo query
-            url = `http://127.0.0.1:3456/v1/api/students/search?q=${encodeURIComponent(query)}&page=${page}&limit=${studentsPerPage}`;
+            url = `${API_BASE_URL}/v1/api/students/search?q=${encodeURIComponent(query)}&page=${page}&limit=${studentsPerPage}`;
         }
         
         const response = await fetch(url);
@@ -288,7 +288,7 @@ document.addEventListener("DOMContentLoaded", () => {
             if (!selectedStudentId) return;
 
             try {
-                const response = await fetch(`http://127.0.0.1:3456/v1/api/students/${selectedStudentId}`, {
+                const response = await fetch(`${API_BASE_URL}/v1/api/students/${selectedStudentId}`, {
                     method: "DELETE",
                     headers: { "Content-Type": "application/json" }
                 });

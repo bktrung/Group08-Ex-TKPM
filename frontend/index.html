@@ -41,12 +41,12 @@
                 </li>
                 <li>
                     <a href="./pages/department_manage.html" class="nav-link text-dark">
-                         Danh sách khoa
+                        Danh sách khoa
                     </a>
                 </li>
                 <li>
                     <a href="./pages/status_manage.html" class="nav-link text-dark">
-                         Danh sách tình trạng sinh viên
+                        Danh sách tình trạng sinh viên
                     </a>
                 </li>
                 <li>
@@ -150,13 +150,13 @@
    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script src="./scripts/index.js"></script>
-    <script src="./scripts/import-export.js"></script>
+    <script src="./scripts/import_export.js"></script>
    
 
     <!-- Script để tải UI import/export -->
     <script>
         document.addEventListener("DOMContentLoaded", function () {
-            fetch('./pages/import-export.html')
+            fetch('./pages/import_export.html')
                 .then(response => response.text())
                 .then(html => {
                     document.getElementById('import-export-container').innerHTML = html;

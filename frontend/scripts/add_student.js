@@ -1,5 +1,6 @@
-document.addEventListener("DOMContentLoaded", async function () {
+const API_BASE_URL = "http://127.0.0.1:3456";
 
+document.addEventListener("DOMContentLoaded", async function () {
     setupIdentityTypeHandler();
     setupGeographicDropdowns();
 
@@ -10,32 +11,20 @@ document.addEventListener("DOMContentLoaded", async function () {
         fetchPrograms(),
         fetchStatusTypes()
     ]);
-
 });
 
-// Thiết lập xử lý sự kiện cho loại giấy tờ tùy thân
 function setupIdentityTypeHandler() {
     const identityTypeSelect = document.getElementById('identity-type');
     const cccdChipContainer = document.getElementById('cccd-chip-container');
     const passportContainer = document.getElementById('passport-container');
 
-
     identityTypeSelect.value = "CCCD"; 
 
     identityTypeSelect.addEventListener('change', function() {
-        if (this.value === 'CCCD') {
-            cccdChipContainer.style.display = 'block';
-            passportContainer.style.display = 'none';
-        } else if (this.value === 'PASSPORT') {
-            cccdChipContainer.style.display = 'none';
-            passportContainer.style.display = 'block';
-        } else {
-            cccdChipContainer.style.display = 'none';
-            passportContainer.style.display = 'none';
-        }
+        cccdChipContainer.style.display = this.value === 'CCCD' ? 'block' : 'none';
+        passportContainer.style.display = this.value === 'PASSPORT' ? 'block' : 'none';
     });
 
-    // Thiết lập ban đầu
     if (identityTypeSelect.value === 'CCCD') {
         cccdChipContainer.style.display = 'block';
     } else if (identityTypeSelect.value === 'PASSPORT') {
@@ -43,12 +32,9 @@ function setupIdentityTypeHandler() {
     }
 }
 
-// Thiết lập các sự kiện cho dropdown địa lý
 function setupGeographicDropdowns() {
-    // Các loại địa chỉ
     const addressTypes = ['permanent', 'temporary', 'mailing'];
     
-    // Thiết lập sự kiện cho từng loại địa chỉ
     addressTypes.forEach(type => {
         const countrySelect = document.getElementById(`${type}-country`);
         countrySelect.addEventListener('change', function() {
@@ -64,7 +50,6 @@ function setupGeographicDropdowns() {
             }
         });
         
-        // Khi chọn tỉnh/thành phố, tải các quận/huyện
         const provinceSelect = document.getElementById(`${type}-province`);
         provinceSelect.addEventListener('change', function() {
             if (this.selectedIndex <= 0) return;
@@ -73,13 +58,11 @@ function setupGeographicDropdowns() {
             const geonameId = selectedProvince.getAttribute('data-geonameid');
             if (geonameId) {
                 fetchDistricts(geonameId, type);
-                // Reset dropdown con
                 resetDropdown(`${type}-district`);
                 resetDropdown(`${type}-wardcommune`);
             }
         });
         
-        // Khi chọn quận/huyện, tải các phường/xã
         const districtSelect = document.getElementById(`${type}-district`);
         districtSelect.addEventListener('change', function() {
             if (this.selectedIndex <= 0) return;
@@ -88,29 +71,26 @@ function setupGeographicDropdowns() {
             const geonameId = selectedDistrict.getAttribute('data-geonameid');
             if (geonameId) {
                 fetchWardCommunes(geonameId, type);
-                // Reset dropdown con
                 resetDropdown(`${type}-wardcommune`);
             }
         });
     });
 }
 
-// Reset dropdown và thêm option mặc định
 function resetDropdown(selectId) {
     const select = document.getElementById(selectId);
     select.innerHTML = '<option value="">-- Chọn --</option>';
     select.disabled = true;
 }
 
-// Lấy danh sách quốc gia từ API
 async function fetchCountries() {
     try {
-        const response = await fetch("http://127.0.0.1:3456/v1/api/address/countries");
+        const response = await fetch(`${API_BASE_URL}/v1/api/address/countries`);
         if (!response.ok) throw new Error(`Lỗi API: ${response.status}`);
 
         const data = await response.json();
         
-        if (!data || !data.metadata || !data.metadata.countries) {
+        if (!data?.metadata?.countries) {
             console.warn('API trả về dữ liệu không đúng cấu trúc cho countries');
             return;
         }
@@ -136,7 +116,7 @@ async function fetchCountries() {
             select.innerHTML = '<option value="">-- Chọn quốc gia --</option>';
             
             countries.forEach(country => {
-                if (!country || !country.countryName) return;
+                if (!country?.countryName) return;
                 
                 const option = document.createElement("option");
                 option.value = country.countryName;
@@ -146,9 +126,7 @@ async function fetchCountries() {
                 }
                 select.appendChild(option);
             });
-            
         });
-        
     } catch (error) {
         console.error("Lỗi khi lấy danh sách quốc gia:", error);
         showErrorModal("Không thể lấy danh sách quốc gia: " + error.message);
@@ -157,12 +135,12 @@ async function fetchCountries() {
 
 async function fetchProvinces(geonameId, addressType) {
     try {
-        const response = await fetch(`http://127.0.0.1:3456/v1/api/address/children/${geonameId}`);
+        const response = await fetch(`${API_BASE_URL}/v1/api/address/children/${geonameId}`);
         if (!response.ok) throw new Error(`Lỗi API: ${response.status}`);
 
         const data = await response.json();
         
-        if (!data || !data.metadata || !data.metadata.children) {
+        if (!data?.metadata?.children) {
             console.warn(`API trả về dữ liệu không đúng cấu trúc cho ${addressType}`);
             return;
         }
@@ -196,7 +174,6 @@ async function fetchProvinces(geonameId, addressType) {
             }
             provinceSelect.appendChild(option);
         });
-        
     } catch (error) {
         console.error(`Lỗi khi lấy danh sách tỉnh/thành phố cho ${addressType}:`, error);
     }
@@ -209,7 +186,7 @@ async function fetchDistricts(geonameId, addressType) {
 
         const data = await response.json();
         
-        if (!data || !data.metadata || !data.metadata.children) {
+        if (!data?.metadata?.children) {
             console.warn(`API trả về dữ liệu không đúng cấu trúc cho ${addressType}`);
             return;
         }
@@ -243,7 +220,6 @@ async function fetchDistricts(geonameId, addressType) {
             }
             districtSelect.appendChild(option);
         });
-        
     } catch (error) {
         console.error(`Lỗi khi lấy danh sách quận/huyện cho ${addressType}:`, error);
     }
@@ -256,7 +232,7 @@ async function fetchWardCommunes(geonameId, addressType) {
 
         const data = await response.json();
         
-        if (!data || !data.metadata || !data.metadata.children) {
+        if (!data?.metadata?.children) {
             console.warn(`API trả về dữ liệu không đúng cấu trúc cho ${addressType}`);
             return;
         }
@@ -290,23 +266,21 @@ async function fetchWardCommunes(geonameId, addressType) {
             }
             wardCommuneSelect.appendChild(option);
         });
-        
     } catch (error) {
         console.error(`Lỗi khi lấy danh sách phường/xã cho ${addressType}:`, error);
     }
 }
 
-// Lấy danh sách quốc tịch từ API
 async function fetchNationalities() {
     try {
-        const response = await fetch("http://127.0.0.1:3456/v1/api/address/nationalities");
+        const response = await fetch(`${API_BASE_URL}/v1/api/address/nationalities`);
         if (!response.ok) {
             throw new Error(`Lỗi API: ${response.status}`);
         }
 
         const data = await response.json();
         
-        if (!data || !data.metadata || !data.metadata.nationalities) {
+        if (!data?.metadata?.nationalities) {
             console.warn('API trả về dữ liệu không đúng cấu trúc cho nationalities');
             setDefaultNationalities();
             return;
@@ -331,17 +305,15 @@ async function fetchNationalities() {
             option.textContent = nationality;
             nationalitySelect.appendChild(option);
         });
-        
     } catch (error) {
         console.error("Lỗi khi lấy danh sách quốc tịch:", error);
         setDefaultNationalities();
     }
 }
 
-// Lấy danh sách khoa từ API
 async function fetchDepartments() {
     try {
-        const response = await fetch("http://127.0.0.1:3456/v1/api/departments");
+        const response = await fetch(`${API_BASE_URL}/v1/api/departments`);
         if (!response.ok) throw new Error(`Lỗi API: ${response.status}`);
 
         const data = await response.json();
@@ -358,17 +330,15 @@ async function fetchDepartments() {
         });
 
         window.departmentsData = departments;
-
     } catch (error) {
         console.error("Lỗi khi lấy danh sách khoa:", error);
         showErrorModal("Không thể lấy danh sách khoa: " + error.message);
     }
 }
 
-// Lấy danh sách chương trình đào tạo từ API
 async function fetchPrograms() {
     try {
-        const response = await fetch("http://127.0.0.1:3456/v1/api/programs");
+        const response = await fetch(`${API_BASE_URL}/v1/api/programs`);
         if (!response.ok) throw new Error(`Lỗi API: ${response.status}`);
 
         const data = await response.json();
@@ -385,17 +355,15 @@ async function fetchPrograms() {
         });
 
         window.programsData = programs;
-
     } catch (error) {
         console.error("Lỗi khi lấy danh sách chương trình học:", error);
         showErrorModal("Không thể lấy danh sách chương trình học: " + error.message);
     }
 }
 
-// Lấy danh sách trạng thái sinh viên từ API
 async function fetchStatusTypes() {
     try {
-        const response = await fetch("http://127.0.0.1:3456/v1/api/students/status-types");
+        const response = await fetch(`${API_BASE_URL}/v1/api/students/status-types`);
         if (!response.ok) throw new Error(`Lỗi API: ${response.status}`);
 
         const data = await response.json();
@@ -412,19 +380,17 @@ async function fetchStatusTypes() {
         });
 
         window.statusTypesData = statusTypes;
-
     } catch (error) {
         console.error("Lỗi khi lấy danh sách tình trạng:", error);
         showErrorModal("Không thể lấy danh sách tình trạng: " + error.message);
     }
 }
 
-// Tìm geonameId cho một địa điểm dựa trên tên
 async function findGeonameId(name, parentGeonameId) {
     try {
         if (!name || !parentGeonameId) return null;
         
-        const response = await fetch(`http://127.0.0.1:3456/v1/api/address/children/${parentGeonameId}`);
+        const response = await fetch(`${API_BASE_URL}/v1/api/address/children/${parentGeonameId}`);
         if (!response.ok) throw new Error(`Lỗi API: ${response.status}`);
 
         const data = await response.json();
@@ -441,7 +407,6 @@ async function findGeonameId(name, parentGeonameId) {
         return null;
     }
 }
-
 
 document.getElementById('add-student-form').addEventListener('submit', async function (e) {
     e.preventDefault();
@@ -470,7 +435,6 @@ document.getElementById('add-student-form').addEventListener('submit', async fun
         }
     });
 
-    // Kiểm tra định dạng email và số điện thoại
     const emailInput = document.getElementById('student-email');
     const phoneInput = document.getElementById('student-phone');
     const DOB = document.getElementById('student-dob');
@@ -511,14 +475,11 @@ document.getElementById('add-student-form').addEventListener('submit', async fun
         isValid = false;
     }
 
-    // Nếu không hợp lệ, dừng xử lý
     if (!isValid) {
         return;
     }
 
     try {
-      
-        // Chuẩn bị đối tượng địa chỉ nhận thư (bắt buộc)
         const mailingAddress = {
             houseNumberStreet: document.getElementById('mailing-housestreet').value,
             wardCommune: document.getElementById('mailing-wardcommune').value,
@@ -527,7 +488,6 @@ document.getElementById('add-student-form').addEventListener('submit', async fun
             country: document.getElementById('mailing-country').value
         };
         
-        // Địa chỉ thường trú (tùy chọn) - chỉ tạo nếu có dữ liệu
         let permanentAddress = null;
         const permanentHouseStreet = document.getElementById('permanent-housestreet').value.trim();
         if (permanentHouseStreet) {
@@ -540,7 +500,6 @@ document.getElementById('add-student-form').addEventListener('submit', async fun
             };
         }
         
-        // Địa chỉ tạm trú (tùy chọn) - chỉ tạo nếu có dữ liệu
         let temporaryAddress = null;
         const temporaryHouseStreet = document.getElementById('temporary-housestreet').value.trim();
         if (temporaryHouseStreet) {
@@ -553,7 +512,6 @@ document.getElementById('add-student-form').addEventListener('submit', async fun
             };
         }
         
-        // Chuẩn bị đối tượng giấy tờ tùy thân dựa trên loại đã chọn
         const identityType = document.getElementById('identity-type').value;
         let identityDocument = {
             type: identityType,
@@ -563,7 +521,6 @@ document.getElementById('add-student-form').addEventListener('submit', async fun
             expiryDate: document.getElementById('identity-expiry-date').value
         };
         
-        // Bổ sung thông tin riêng cho từng loại giấy tờ
         if (identityType === 'CCCD') {
             identityDocument.hasChip = document.getElementById('cccd-has-chip').value === 'true';
         } else if (identityType === 'PASSPORT') {
@@ -574,7 +531,6 @@ document.getElementById('add-student-form').addEventListener('submit', async fun
             }
         }
         
-        // Chuẩn bị dữ liệu cập nhật sinh viên theo cấu trúc DTO của backend
         const student = {
             studentId: document.getElementById('student-id').value,
             fullName: document.getElementById('student-name').value,
@@ -593,8 +549,6 @@ document.getElementById('add-student-form').addEventListener('submit', async fun
 
         console.log("Dữ liệu cập nhật:", student);
 
-      
-        // Thêm các địa chỉ tùy chọn nếu có
         if (permanentAddress) {
             student.permanentAddress = permanentAddress;
         }
@@ -603,9 +557,7 @@ document.getElementById('add-student-form').addEventListener('submit', async fun
             student.temporaryAddress = temporaryAddress;
         }
 
-
-        // Gửi yêu cầu cập nhật lên API
-        const response = await fetch(`http://127.0.0.1:3456/v1/api/students`, {
+        const response = await fetch(`${API_BASE_URL}/v1/api/students`, {
             method: "POST",
             headers: {
                 "Content-Type": "application/json"
@@ -626,19 +578,17 @@ document.getElementById('add-student-form').addEventListener('submit', async fun
     }
 });
 
-// Hiển thị modal lỗi
 function showErrorModal(message) {
     document.getElementById('errorModalMessage').textContent = message;
     new bootstrap.Modal(document.getElementById('errorModal')).show();
 }
 
-// Hiển thị modal thành công
 function showSuccessModal() {
     const successModal = new bootstrap.Modal(document.getElementById('successModal'));
     successModal.show();
 
     document.getElementById('successModalClose').addEventListener('click', function () {
-        window.location.href = "../index.html"; // Chuyển trang sau khi đóng modal
+        window.location.href = "../index.html";
     });
 }
 
@@ -648,7 +598,6 @@ function formatDate(dateString) {
     return date.toISOString().split('T')[0];
 }
 
-// Kiểm tra dữ liệu của API trả về
 function checkAPIResponse(data, key) {
     if (data && data.metadata && data.metadata[key]) {
         return data.metadata[key];

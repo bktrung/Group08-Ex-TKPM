@@ -1,12 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const API_BASE_URL = "http://127.0.0.1:3456/v1/api";
+    const API_BASE_URL = "http://127.0.0.1:3456";
     let statuses = [];
     let editingStatusId = null;
     const modalInstance = new bootstrap.Modal(document.getElementById("statusModal"));
 
     async function fetchStatuses() {
         try {
-            const response = await fetch(`${API_BASE_URL}/students/status-types`);
+            const response = await fetch(`${API_BASE_URL}/v1/api/students/status-types`);
             if (!response.ok) throw new Error("Lỗi khi lấy danh sách trạng thái!");
             
             const data = await response.json();
@@ -34,8 +34,8 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             const isEditing = Boolean(editingStatusId);
             const url = isEditing 
-                ? `${API_BASE_URL}/students/status-types/${editingStatusId}`
-                : `${API_BASE_URL}/students/status-types`;
+                ? `${API_BASE_URL}/v1/api/students/status-types/${editingStatusId}`
+                : `${API_BASE_URL}/v1/api/students/status-types`;
             
             const response = await fetch(url, {
                 method: isEditing ? "PUT" : "POST",

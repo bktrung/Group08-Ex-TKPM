@@ -1,5 +1,5 @@
 document.addEventListener('DOMContentLoaded', function() {
-    const API_URL = 'http://localhost:3456/v1/api';
+    const API_BASE_URL = 'http://127.0.0.1:3456';
     const fromStatusSelect = document.getElementById('fromStatus');
     const toStatusSelect = document.getElementById('toStatus');
     const addTransitionForm = document.getElementById('addTransitionForm');
@@ -15,7 +15,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     async function fetchStatusTypes() {
         try {
-            const response = await fetch(`${API_URL}/students/status-types`);
+            const response = await fetch(`${API_BASE_URL}/v1/api/students/status-types`);
             const data = await response.json();
             
             if (data && data.metadata) {
@@ -29,7 +29,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     async function fetchTransitionRules() {
         try {
-            const response = await fetch(`${API_URL}/students/status-transitions`);
+            const response = await fetch(`${API_BASE_URL}/v1/api/students/status-transitions`);
             const data = await response.json();
             
             if (data && data.metadata) {
@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     async function addTransitionRule(fromStatusId, toStatusId) {
         try {
-            const response = await fetch(`${API_URL}/students/status-transitions`, {
+            const response = await fetch(`${API_BASE_URL}/v1/api/students/status-transitions`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
@@ -155,7 +155,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     async function deleteTransitionRule(fromStatusId, toStatusId) {
         try {
-            const response = await fetch(`${API_URL}/students/status-transitions`, {
+            const response = await fetch(`${API_BASE_URL}/v1/api/students/status-transitions`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'

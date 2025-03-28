@@ -92,7 +92,7 @@ bktrung-group08-ex-tkpm/
 	│   ├── add_student.html
 	│   ├── department_manage.html
 	│   ├── edit_student.html
-	│   ├── import-export.html
+	│   ├── import_export.html
 	│   ├── program_manage.html
 	│   ├── sidebar.html
 	│   └── status_manage.html
@@ -100,7 +100,7 @@ bktrung-group08-ex-tkpm/
 		├── add_student.js
 		├── department_manage.js
 		├── edit_student.js
-		├── import-export.js
+		├── import_export.js
 		├── index.js
 		├── program_manage.js
 		├── sidebar.js

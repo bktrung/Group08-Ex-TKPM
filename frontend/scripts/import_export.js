@@ -1,9 +1,9 @@
 let importExportDepartments = [];
-const API_BASE_URL = 'http://127.0.0.1:3456/v1/api';
+const API_BASE_URL = 'http://127.0.0.1:3456';
 
 async function fetchDepartmentsForImportExport() {
     try {
-        const response = await fetch(`${API_BASE_URL}/departments`);
+        const response = await fetch(`${API_BASE_URL}/v1/api/departments`);
         if (!response.ok) {
             throw new Error(`Lỗi mạng: ${response.status}`);
         }
@@ -32,7 +32,7 @@ function updateDepartmentDropdown() {
 }
 
 window.exportData = function(format) {
-    const url = `${API_BASE_URL}/export/students?format=${format}`;
+    const url = `${API_BASE_URL}/v1/api/export/students?format=${format}`;
     window.open(url, '_blank');
 }
 
@@ -52,7 +52,7 @@ async function importStudentData() {
     try {
         setImportButtonLoading(true);
         
-        const response = await fetch(`${API_BASE_URL}/import/students`, {
+        const response = await fetch(`${API_BASE_URL}/v1/api/import/students`, {
             method: 'POST',
             body: formData
         });

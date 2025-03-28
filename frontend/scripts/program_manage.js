@@ -1,12 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const API_BASE_URL = "http://127.0.0.1:3456/v1/api";
+    const API_BASE_URL = "http://127.0.0.1:3456";
     let programs = [];
     let editingProgramId = null;
     const modalInstance = new bootstrap.Modal(document.getElementById("programModal"));
 
     async function fetchPrograms() {
         try {
-            const response = await fetch(`${API_BASE_URL}/programs`);
+            const response = await fetch(`${API_BASE_URL}/v1/api/programs`);
             if (!response.ok) throw new Error("Lỗi khi lấy danh sách chương trình!");
             
             const data = await response.json();
@@ -34,8 +34,8 @@ document.addEventListener("DOMContentLoaded", function () {
         try {
             const isEditing = Boolean(editingProgramId);
             const url = isEditing 
-                ? `${API_BASE_URL}/programs/${editingProgramId}`
-                : `${API_BASE_URL}/programs`;
+                ? `${API_BASE_URL}/v1/api/programs/${editingProgramId}`
+                : `${API_BASE_URL}/v1/api/programs`;
             
             const response = await fetch(url, {
                 method: isEditing ? "PATCH" : "POST",

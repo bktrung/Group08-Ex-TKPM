@@ -1,12 +1,12 @@
 document.addEventListener("DOMContentLoaded", function () {
-    const API_BASE_URL = "http://127.0.0.1:3456/v1/api";
+    const API_BASE_URL = "http://127.0.0.1:3456";
     let faculties = [];
     let editingFacultyId = null;
     let modalInstance = new bootstrap.Modal(document.getElementById("facultyModal"));
 
     async function fetchFaculties() {
         try {
-            const response = await fetch(`${API_BASE_URL}/departments`);
+            const response = await fetch(`${API_BASE_URL}/v1/api/departments`);
             if (!response.ok) throw new Error("Lỗi khi lấy danh sách khoa!");
 
             const data = await response.json();
@@ -32,12 +32,12 @@ document.addEventListener("DOMContentLoaded", function () {
         }
 
         try {
-            let url = `${API_BASE_URL}/departments`;
+            let url = `${API_BASE_URL}/v1/api/departments`;
             let method = "POST";
             let bodyData = { name };
 
             if (editingFacultyId) {
-                url = `${API_BASE_URL}/departments/${editingFacultyId}`;
+                url = `${API_BASE_URL}/v1/api/departments/${editingFacultyId}`;
                 method = "PATCH";
             }
 
