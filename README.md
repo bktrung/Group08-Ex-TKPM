@@ -129,7 +129,6 @@ DB_NAME=qlsv
 NODE_ENV=dev
 GEONAMES_USERNAME=bktrung
 API_BASE_URL=http://backend:3456/v1/api
-API_BASE_URL=http://backend:3456/v1/api
 ```
 
 #### 2. Chạy chương trình:
