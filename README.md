@@ -264,7 +264,7 @@ Note:
   
   ![Screenshot 2025-03-21 215426](https://github.com/user-attachments/assets/fea54db6-451b-4af5-a387-362163014123)
 
-#### 11. Export file CSV, JSON, EXCEL, XML
+#### 10. Export file CSV, JSON, EXCEL, XML
 
   ![Screenshot 2025-03-21 215607](https://github.com/user-attachments/assets/4f778779-3f93-4df2-a718-591d0693cea1)
   
@@ -272,13 +272,13 @@ Note:
   
   ![Screenshot 2025-03-21 215641](https://github.com/user-attachments/assets/a0e43a4d-722b-4837-80c9-ee1a7d6993bf)
 
-#### 12. Import file CSV, JSON, EXCEL, XML
+#### 11. Import file CSV, JSON, EXCEL, XML
 
   ![Screenshot 2025-03-21 215708](https://github.com/user-attachments/assets/7c984aa6-0492-438e-a09c-aa47f13c4e0e)
   
   ![Screenshot 2025-03-21 215731](https://github.com/user-attachments/assets/29fcf10a-8936-4aab-b1cf-c44c1f140e1d)
 
-#### 13. Tình trạng sinh viên chỉ có thể thay đổi theo một số quy tắc
+#### 12. Tình trạng sinh viên chỉ có thể thay đổi theo một số quy tắc
 
    Nhấn vào "quy tắc chuyển trạng thái" bên thanh taskbar để xem các quy tắc chuyển trạng thái sinh viên
    
@@ -290,7 +290,7 @@ Note:
    
    ![image](https://github.com/user-attachments/assets/100d0672-1e65-4541-b975-1970660628f2)
 
-#### 14. MSSV phải là duy nhất  
+#### 13. MSSV phải là duy nhất  
 
    Khi tạo thêm sinh viên có MSSV đã tồn tại (ví dụ 22120401 như trong hình), thông báo lỗi xuất hiện  
 
@@ -298,13 +298,13 @@ Note:
 
    ![image](https://github.com/user-attachments/assets/6d3913df-8020-4d9b-89fe-a2eaf96a32c1)
 
-#### 15. Email phải thuộc một tên miền nhất định và có thể cấu hình động (configurable)
+#### 14. Email phải thuộc một tên miền nhất định và có thể cấu hình động (configurable)
 
    ![image](https://github.com/user-attachments/assets/3c87cc05-8834-44fa-a540-bd9bc08ccc46)
     
    ![image](https://github.com/user-attachments/assets/3ea0da76-50f0-4325-94bf-5177cca98fd8)
 
-#### 16. Số điện thoại phải có định dạng hợp lệ theo quốc gia (configurable)
+#### 15. Số điện thoại phải có định dạng hợp lệ theo quốc gia (configurable)
 
    ![image](https://github.com/user-attachments/assets/bbad0cbe-0675-466e-9930-a97619d483b6)
     
