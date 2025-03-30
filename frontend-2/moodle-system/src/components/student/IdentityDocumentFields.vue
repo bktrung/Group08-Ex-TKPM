@@ -93,7 +93,6 @@
           }
           identityDocument.value.issuedCountry = identityDocument.value.issuedCountry || 'Vietnam'
         } else {
-          // For CMND, remove both specific fields
           if ('hasChip' in identityDocument.value) {
             delete identityDocument.value.hasChip
           }
@@ -104,7 +103,6 @@
         }
       }
       
-      // Watch for changes in identity document
       watch(identityDocument, (newValue) => {
         emit('update:identityDocument', newValue)
       }, { deep: true })

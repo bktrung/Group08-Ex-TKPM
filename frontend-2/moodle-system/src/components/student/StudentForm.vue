@@ -1,6 +1,5 @@
 <template>
   <form @submit.prevent="handleSubmit" id="student-form">
-    <!-- Basic Information -->
     <div class="section-title">Thông tin cơ bản</div>
     <div class="row mb-2">
       <div class="col-md-6">
@@ -187,7 +186,6 @@
       </small>
     </div>
 
-    <!-- Address Information -->
     <AddressFields 
       v-model:mailingAddress="form.mailingAddress"
       v-model:permanentAddress="form.permanentAddress"
@@ -197,7 +195,6 @@
       @loadChildren="loadLocationChildren"
     />
 
-    <!-- Identity Document -->
     <IdentityDocumentFields 
       v-model:identityDocument="form.identityDocument"
       :countries="countries"
@@ -243,7 +240,6 @@ export default {
     const currentYear = new Date().getFullYear()
     const currentStatusId = ref(null)
     
-    // Form data
     const form = ref({
       studentId: '',
       fullName: '',
@@ -338,7 +334,6 @@ export default {
     
     const v$ = useVuelidate(rules, form)
     
-    // Computed properties
     const departments = computed(() => store.state.department.departments)
     const programs = computed(() => store.state.program.programs)
     const statusTypes = computed(() => store.state.status.statusTypes)
@@ -351,15 +346,12 @@ export default {
         return statusTypes.value
       }
       
-      // Filter status types based on transition rules
       const validTransitions = store.getters['status/getValidTransitionsForStatus'](currentStatusId.value)
       
-      // Include current status in the list
       const currentStatus = statusTypes.value.find(status => status._id === currentStatusId.value)
       return [currentStatus, ...validTransitions].filter(Boolean)
     })
     
-    // Methods
     const loadData = async () => {
       await Promise.all([
         store.dispatch('department/fetchDepartments'),
@@ -403,26 +395,41 @@ export default {
       emit('submit', studentData)
     }
     
-    // Watch for changes in props
     watch(() => props.studentData, (newValue) => {
       if (newValue && Object.keys(newValue).length > 0) {
-        // Populate form with student data
         form.value = { ...form.value, ...JSON.parse(JSON.stringify(newValue)) }
         
-        // Format date
+        // Format main date of birth
         if (newValue.dateOfBirth) {
           form.value.dateOfBirth = new Date(newValue.dateOfBirth).toISOString().split('T')[0]
         }
         
-        // Handle status for transitions
-        if (newValue.status) {
-          if (typeof newValue.status === 'object') {
-            currentStatusId.value = newValue.status._id
-            form.value.status = newValue.status._id
-          } else {
-            currentStatusId.value = newValue.status
-            form.value.status = newValue.status
+        if (newValue.identityDocument) {
+          if (newValue.identityDocument.issueDate) {
+            form.value.identityDocument.issueDate = new Date(newValue.identityDocument.issueDate).toISOString().split('T')[0]
           }
+          if (newValue.identityDocument.expiryDate) {
+            form.value.identityDocument.expiryDate = new Date(newValue.identityDocument.expiryDate).toISOString().split('T')[0]
+          }
+        }
+        
+        if (newValue.department) {
+          form.value.department = typeof newValue.department === 'object' 
+            ? newValue.department._id 
+            : newValue.department
+        }
+        
+        if (newValue.program) {
+          form.value.program = typeof newValue.program === 'object' 
+            ? newValue.program._id 
+            : newValue.program
+        }
+        
+        if (newValue.status) {
+          currentStatusId.value = typeof newValue.status === 'object' 
+            ? newValue.status._id 
+            : newValue.status
+          form.value.status = currentStatusId.value
         }
       }
     }, { immediate: true, deep: true })
