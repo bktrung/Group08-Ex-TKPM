@@ -192,7 +192,7 @@
       v-model:temporaryAddress="form.temporaryAddress"
       :countries="countries" 
       :loading="loading"
-      @loadChildren="loadLocationChildren"
+      :fetchLocationData="fetchLocationData"
     />
 
     <IdentityDocumentFields 
@@ -363,14 +363,16 @@ export default {
       ])
     }
     
-    const loadLocationChildren = async (geonameId, addressType, level) => {
+    // This is the function that will be passed to AddressFields component
+    const fetchLocationData = async (geonameId) => {
+      console.log(`Fetching location data for geonameId: ${geonameId}`)
       try {
-        const children = await store.dispatch('status/fetchLocationChildren', geonameId)
-        console.log("location:" + children)
-        return children
+        const response = await store.dispatch('status/fetchLocationChildren', geonameId)
+        console.log(`API response for location data:`, response)
+        return response
       } catch (error) {
-        console.error(`Error loading ${level} for ${addressType}:`, error)
-        return []
+        console.error(`Error fetching location data:`, error)
+        throw error
       }
     }
     
@@ -453,7 +455,7 @@ export default {
       currentYear,
       currentStatusId,
       handleSubmit,
-      loadLocationChildren,
+      fetchLocationData,
       isValidStatusTransition
     }
   }
