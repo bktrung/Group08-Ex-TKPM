@@ -366,6 +366,7 @@ export default {
     const loadLocationChildren = async (geonameId, addressType, level) => {
       try {
         const children = await store.dispatch('status/fetchLocationChildren', geonameId)
+        console.log("location:" + children)
         return children
       } catch (error) {
         console.error(`Error loading ${level} for ${addressType}:`, error)

@@ -1,6 +1,6 @@
 <template>
   <div class="d-flex">
-    <Sidebar />
+    <AppSidebar />
     <div class="content">
       <router-view />
     </div>
@@ -8,12 +8,12 @@
 </template>
 
 <script>
-import Sidebar from '@/components/layout/Sidebar.vue'
+import AppSidebar from '@/components/layout/AppSidebar.vue'
 
 export default {
   name: 'App',
   components: {
-    Sidebar
+    AppSidebar
   }
 }
 </script>
