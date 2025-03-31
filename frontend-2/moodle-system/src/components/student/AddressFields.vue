@@ -36,7 +36,7 @@
           <select 
             v-model="internalPermanentAddress.provinceCity" 
             class="form-select" 
-            :disabled="!permanentProvinces.length"
+            :disabled="permanentProvincesDisabled"
             @change="handleProvinceChange('permanent')"
           >
             <option value="">-- Chọn tỉnh/thành phố --</option>
@@ -54,7 +54,7 @@
           <select 
             v-model="internalPermanentAddress.districtCounty" 
             class="form-select" 
-            :disabled="!permanentDistricts.length"
+            :disabled="permanentDistrictsDisabled"
             @change="handleDistrictChange('permanent')"
           >
             <option value="">-- Chọn quận/huyện --</option>
@@ -74,7 +74,7 @@
           <select 
             v-model="internalPermanentAddress.wardCommune" 
             class="form-select" 
-            :disabled="!permanentWards.length"
+            :disabled="permanentWardsDisabled"
           >
             <option value="">-- Chọn phường/xã --</option>
             <option 
@@ -123,7 +123,7 @@
           <select 
             v-model="internalTemporaryAddress.provinceCity" 
             class="form-select" 
-            :disabled="!temporaryProvinces.length"
+            :disabled="temporaryProvincesDisabled"
             @change="handleProvinceChange('temporary')"
           >
             <option value="">-- Chọn tỉnh/thành phố --</option>
@@ -141,7 +141,7 @@
           <select 
             v-model="internalTemporaryAddress.districtCounty" 
             class="form-select" 
-            :disabled="!temporaryDistricts.length"
+            :disabled="temporaryDistrictsDisabled"
             @change="handleDistrictChange('temporary')"
           >
             <option value="">-- Chọn quận/huyện --</option>
@@ -161,7 +161,7 @@
           <select 
             v-model="internalTemporaryAddress.wardCommune" 
             class="form-select" 
-            :disabled="!temporaryWards.length"
+            :disabled="temporaryWardsDisabled"
           >
             <option value="">-- Chọn phường/xã --</option>
             <option 
@@ -212,7 +212,7 @@
           <select 
             v-model="internalMailingAddress.provinceCity" 
             class="form-select" 
-            :disabled="!mailingProvinces.length"
+            :disabled="mailingProvincesDisabled"
             @change="handleProvinceChange('mailing')"
             required
           >
@@ -231,7 +231,7 @@
           <select 
             v-model="internalMailingAddress.districtCounty" 
             class="form-select" 
-            :disabled="!mailingDistricts.length"
+            :disabled="mailingDistrictsDisabled"
             @change="handleDistrictChange('mailing')"
             required
           >
@@ -252,7 +252,7 @@
           <select 
             v-model="internalMailingAddress.wardCommune" 
             class="form-select" 
-            :disabled="!mailingWards.length"
+            :disabled="mailingWardsDisabled"
           >
             <option value="">-- Chọn phường/xã --</option>
             <option 
@@ -269,299 +269,452 @@
   </div>
 </template>
   
-  <script>
-  import { ref, toRefs, watch } from 'vue'
+<script>
+import { ref, toRefs, watch } from 'vue'
 
-  export default {
-    name: 'AddressFields',
-    props: {
-      mailingAddress: {
-        type: Object,
-        required: true
-      },
-      permanentAddress: {
-        type: Object,
-        required: true
-      },
-      temporaryAddress: {
-        type: Object,
-        required: true
-      },
-      countries: {
-        type: Array,
-        default: () => []
-      },
-      loading: {
-        type: Boolean,
-        default: false
-      }
+export default {
+  name: 'AddressFields',
+  props: {
+    mailingAddress: {
+      type: Object,
+      required: true
     },
-    emits: [
-      'update:mailingAddress',
-      'update:permanentAddress',
-      'update:temporaryAddress',
-      'loadChildren'
-    ],
-    setup(props, { emit }) {
-      const { mailingAddress, permanentAddress, temporaryAddress } = toRefs(props)
+    permanentAddress: {
+      type: Object,
+      required: true
+    },
+    temporaryAddress: {
+      type: Object,
+      required: true
+    },
+    countries: {
+      type: Array,
+      default: () => []
+    },
+    loading: {
+      type: Boolean,
+      default: false
+    },
+    fetchLocationData: {
+      type: Function,
+      required: true
+    }
+  },
+  emits: [
+    'update:mailingAddress',
+    'update:permanentAddress',
+    'update:temporaryAddress'
+  ],
+  setup(props, { emit }) {
+    const { mailingAddress, permanentAddress, temporaryAddress } = toRefs(props)
+    
+    // Create internal copies of the addresses to avoid direct prop mutation
+    const internalMailingAddress = ref({...mailingAddress.value})
+    const internalPermanentAddress = ref({...permanentAddress.value})
+    const internalTemporaryAddress = ref({...temporaryAddress.value})
+    
+    // State for location data
+    const mailingProvinces = ref([])
+    const mailingDistricts = ref([])
+    const mailingWards = ref([])
+    
+    const permanentProvinces = ref([])
+    const permanentDistricts = ref([])
+    const permanentWards = ref([])
+    
+    const temporaryProvinces = ref([])
+    const temporaryDistricts = ref([])
+    const temporaryWards = ref([])
+    
+    // State for controlling disabled status of dropdowns
+    const mailingProvincesDisabled = ref(true)
+    const mailingDistrictsDisabled = ref(true)
+    const mailingWardsDisabled = ref(true)
+    
+    const permanentProvincesDisabled = ref(true)
+    const permanentDistrictsDisabled = ref(true)
+    const permanentWardsDisabled = ref(true)
+    
+    const temporaryProvincesDisabled = ref(true)
+    const temporaryDistrictsDisabled = ref(true)
+    const temporaryWardsDisabled = ref(true)
+    
+    // Event handlers
+    const handleCountryChange = async (type) => {
+      // Get the internal address object for this type
+      const addressObj = type === 'mailing' ? internalMailingAddress.value : 
+                       type === 'permanent' ? internalPermanentAddress.value :
+                       internalTemporaryAddress.value
+                       
+      // Find the country name from the address
+      const countryName = addressObj.country
       
-      // Create internal copies of the addresses to avoid direct prop mutation
-      const internalMailingAddress = ref({...mailingAddress.value})
-      const internalPermanentAddress = ref({...permanentAddress.value})
-      const internalTemporaryAddress = ref({...temporaryAddress.value})
+      // Find the country object from the countries prop
+      const country = props.countries.find(c => c.countryName === countryName)
       
-      // State for location data
-      const mailingProvinces = ref([])
-      const mailingDistricts = ref([])
-      const mailingWards = ref([])
+      // Get the geonameId from the country object
+      const geonameId = country ? country.geonameId : null
       
-      const permanentProvinces = ref([])
-      const permanentDistricts = ref([])
-      const permanentWards = ref([])
-      
-      const temporaryProvinces = ref([])
-      const temporaryDistricts = ref([])
-      const temporaryWards = ref([])
-      
-      // Event handlers
-      const handleCountryChange = async (type) => {
-        const geonameId = getGeonameIdFromElement(`select[v-model="internal${type}Address.country"]`)
-        
-        if (!geonameId) return
-        
-        // Reset dependent dropdowns
-        resetProvincesByType(type)
-        resetDistrictsByType(type)
-        resetWardsByType(type)
-        
-        // Load provinces
-        const children = await emit('loadChildren', geonameId, type, 'province')
-        if (!children) return
-        
-        const provinces = children.geonames || children
-        setProvincesByType(type, provinces)
-        
-        // Update the parent
-        updateAddressByType(type)
+      if (!geonameId) {
+        console.error(`Could not find geonameId for country: ${countryName}`)
+        return
       }
       
-      const handleProvinceChange = async (type) => {
-        const geonameId = getGeonameIdFromElement(`select[v-model="internal${type}Address.provinceCity"]`)
-        
-        if (!geonameId) return
-        
-        // Reset dependent dropdowns
-        resetDistrictsByType(type)
-        resetWardsByType(type)
-        
-        // Load districts
-        const children = await emit('loadChildren', geonameId, type, 'district')
-        if (!children) return
-        
-        const districts = children.geonames || children
-        setDistrictsByType(type, districts)
-        
-        // Update the parent
-        updateAddressByType(type)
-      }
+      console.log(`Found geonameId ${geonameId} for country ${countryName}`)
       
-      const handleDistrictChange = async (type) => {
-        const geonameId = getGeonameIdFromElement(`select[v-model="internal${type}Address.districtCounty"]`)
-        
-        if (!geonameId) return
-        
-        // Reset ward dropdown
-        resetWardsByType(type)
-        
-        const children = await emit('loadChildren', geonameId, type, 'ward')
-        if (!children) return
-        
-        const wards = children.geonames || children
-        setWardsByType(type, wards)
-        
-        // Update the parent
-        updateAddressByType(type)
-      }
+      // Reset dependent dropdowns
+      resetProvincesByType(type)
+      resetDistrictsByType(type)
+      resetWardsByType(type)
       
-      const getGeonameIdFromElement = (selector) => {
-        const element = document.querySelector(selector)
-        if (!element) return null
+      try {
+        // Use the fetchLocationData prop function to get the data directly
+        const result = await props.fetchLocationData(geonameId)
+        console.log(`Received children for ${type}:`, result)
         
-        const selectedOption = element.options[element.selectedIndex]
-        return selectedOption ? selectedOption.getAttribute('data-geonameid') : null
-      }
-      
-      const updateAddressByType = (type) => {
-        const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
-        switch (capitalizedType) {
-          case 'Mailing':
-            emit('update:mailingAddress', {...internalMailingAddress.value})
-            break
-          case 'Permanent':
-            emit('update:permanentAddress', {...internalPermanentAddress.value})
-            break
-          case 'Temporary':
-            emit('update:temporaryAddress', {...internalTemporaryAddress.value})
-            break
+        if (result && (result.geonames || Array.isArray(result))) {
+          const provinces = result.geonames || result
+          console.log(`Setting ${provinces.length} provinces for ${type}`)
+          setProvincesByType(type, provinces)
+          enableProvincesByType(type)
+        } else {
+          console.error(`No valid province data received for ${type}`)
         }
+      } catch (error) {
+        console.error(`Error in handleCountryChange for ${type}:`, error)
       }
       
-      const resetProvincesByType = (type) => {
-        const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
-        switch (capitalizedType) {
-          case 'Mailing':
-            mailingProvinces.value = []
-            internalMailingAddress.value.provinceCity = ''
-            break
-          case 'Permanent':
-            permanentProvinces.value = []
-            internalPermanentAddress.value.provinceCity = ''
-            break
-          case 'Temporary':
-            temporaryProvinces.value = []
-            internalTemporaryAddress.value.provinceCity = ''
-            break
+      // Update parent after all changes
+      updateAddressByType(type)
+    }
+    
+    const handleProvinceChange = async (type) => {
+      // Get the selected province element and its geonameId
+      const addressObj = type === 'mailing' ? internalMailingAddress.value : 
+                       type === 'permanent' ? internalPermanentAddress.value :
+                       internalTemporaryAddress.value
+      
+      const provinceCity = addressObj.provinceCity
+      
+      // Find the province in the provinces array for this type
+      let provinces = []
+      if (type === 'mailing') provinces = mailingProvinces.value
+      else if (type === 'permanent') provinces = permanentProvinces.value
+      else provinces = temporaryProvinces.value
+      
+      const province = provinces.find(p => 
+        (p.toponymName === provinceCity || p.name === provinceCity)
+      )
+      
+      const geonameId = province ? province.geonameId : null
+      
+      if (!geonameId) {
+        console.error(`Could not find geonameId for province: ${provinceCity}`)
+        return
+      }
+      
+      console.log(`Found geonameId ${geonameId} for province ${provinceCity}`)
+      
+      // Reset dependent dropdowns
+      resetDistrictsByType(type)
+      resetWardsByType(type)
+      
+      try {
+        // Use the fetchLocationData prop function to get the data directly
+        const result = await props.fetchLocationData(geonameId)
+        console.log(`Received districts for ${type}:`, result)
+        
+        if (result && (result.geonames || Array.isArray(result))) {
+          const districts = result.geonames || result
+          console.log(`Setting ${districts.length} districts for ${type}`)
+          setDistrictsByType(type, districts)
+          enableDistrictsByType(type)
+        } else {
+          console.error(`No valid district data received for ${type}`)
         }
-        updateAddressByType(type)
+      } catch (error) {
+        console.error(`Error in handleProvinceChange for ${type}:`, error)
       }
       
-      const resetDistrictsByType = (type) => {
-        const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
-        switch (capitalizedType) {
-          case 'Mailing':
-            mailingDistricts.value = []
-            internalMailingAddress.value.districtCounty = ''
-            break
-          case 'Permanent':
-            permanentDistricts.value = []
-            internalPermanentAddress.value.districtCounty = ''
-            break
-          case 'Temporary':
-            temporaryDistricts.value = []
-            internalTemporaryAddress.value.districtCounty = ''
-            break
+      // Update parent after all changes
+      updateAddressByType(type)
+    }
+    
+    const handleDistrictChange = async (type) => {
+      // Get the selected district element and its geonameId
+      const addressObj = type === 'mailing' ? internalMailingAddress.value : 
+                       type === 'permanent' ? internalPermanentAddress.value :
+                       internalTemporaryAddress.value
+      
+      const districtCounty = addressObj.districtCounty
+      
+      // Find the district in the districts array for this type
+      let districts = []
+      if (type === 'mailing') districts = mailingDistricts.value
+      else if (type === 'permanent') districts = permanentDistricts.value
+      else districts = temporaryDistricts.value
+      
+      const district = districts.find(d => 
+        (d.toponymName === districtCounty || d.name === districtCounty)
+      )
+      
+      const geonameId = district ? district.geonameId : null
+      
+      if (!geonameId) {
+        console.error(`Could not find geonameId for district: ${districtCounty}`)
+        return
+      }
+      
+      console.log(`Found geonameId ${geonameId} for district ${districtCounty}`)
+      
+      // Reset ward dropdown
+      resetWardsByType(type)
+      
+      try {
+        // Use the fetchLocationData prop function to get the data directly
+        const result = await props.fetchLocationData(geonameId)
+        console.log(`Received wards for ${type}:`, result)
+        
+        if (result && (result.geonames || Array.isArray(result))) {
+          const wards = result.geonames || result
+          console.log(`Setting ${wards.length} wards for ${type}`)
+          setWardsByType(type, wards)
+          enableWardsByType(type)
+        } else {
+          console.error(`No valid ward data received for ${type}`)
         }
-        updateAddressByType(type)
+      } catch (error) {
+        console.error(`Error in handleDistrictChange for ${type}:`, error)
       }
       
-      const resetWardsByType = (type) => {
-        const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
-        switch (capitalizedType) {
-          case 'Mailing':
-            mailingWards.value = []
-            internalMailingAddress.value.wardCommune = ''
-            break
-          case 'Permanent':
-            permanentWards.value = []
-            internalPermanentAddress.value.wardCommune = ''
-            break
-          case 'Temporary':
-            temporaryWards.value = []
-            internalTemporaryAddress.value.wardCommune = ''
-            break
-        }
-        updateAddressByType(type)
-      }
-      
-      const setProvincesByType = (type, provinces) => {
-        const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
-        switch (capitalizedType) {
-          case 'Mailing':
-            mailingProvinces.value = provinces
-            break
-          case 'Permanent':
-            permanentProvinces.value = provinces
-            break
-          case 'Temporary':
-            temporaryProvinces.value = provinces
-            break
-        }
-      }
-      
-      const setDistrictsByType = (type, districts) => {
-        const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
-        switch (capitalizedType) {
-          case 'Mailing':
-            mailingDistricts.value = districts
-            break
-          case 'Permanent':
-            permanentDistricts.value = districts
-            break
-          case 'Temporary':
-            temporaryDistricts.value = districts
-            break
-        }
-      }
-      
-      const setWardsByType = (type, wards) => {
-        const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
-        switch (capitalizedType) {
-          case 'Mailing':
-            mailingWards.value = wards
-            break
-          case 'Permanent':
-            permanentWards.value = wards
-            break
-          case 'Temporary':
-            temporaryWards.value = wards
-            break
-        }
-      }
-      
-      // Watch for changes in props to sync internal state
-      watch(mailingAddress, (newValue) => {
-        internalMailingAddress.value = {...newValue}
-      }, { deep: true })
-      
-      watch(permanentAddress, (newValue) => {
-        internalPermanentAddress.value = {...newValue}
-      }, { deep: true })
-      
-      watch(temporaryAddress, (newValue) => {
-        internalTemporaryAddress.value = {...newValue}
-      }, { deep: true })
-      
-      // Watch for changes in internal state to emit updates
-      watch(internalMailingAddress, (newValue) => {
-        emit('update:mailingAddress', {...newValue})
-      }, { deep: true })
-      
-      watch(internalPermanentAddress, (newValue) => {
-        emit('update:permanentAddress', {...newValue})
-      }, { deep: true })
-      
-      watch(internalTemporaryAddress, (newValue) => {
-        emit('update:temporaryAddress', {...newValue})
-      }, { deep: true })
-      
-      return {
-        internalMailingAddress,
-        internalPermanentAddress,
-        internalTemporaryAddress,
-        mailingProvinces,
-        mailingDistricts,
-        mailingWards,
-        permanentProvinces,
-        permanentDistricts,
-        permanentWards,
-        temporaryProvinces,
-        temporaryDistricts,
-        temporaryWards,
-        handleCountryChange,
-        handleProvinceChange,
-        handleDistrictChange
+      // Update parent after all changes
+      updateAddressByType(type)
+    }
+    
+    const updateAddressByType = (type) => {
+      const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
+      switch (capitalizedType) {
+        case 'Mailing':
+          emit('update:mailingAddress', {...internalMailingAddress.value})
+          break
+        case 'Permanent':
+          emit('update:permanentAddress', {...internalPermanentAddress.value})
+          break
+        case 'Temporary':
+          emit('update:temporaryAddress', {...internalTemporaryAddress.value})
+          break
       }
     }
+    
+    const resetProvincesByType = (type) => {
+      const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
+      switch (capitalizedType) {
+        case 'Mailing':
+          mailingProvinces.value = []
+          internalMailingAddress.value.provinceCity = ''
+          mailingProvincesDisabled.value = true
+          break
+        case 'Permanent':
+          permanentProvinces.value = []
+          internalPermanentAddress.value.provinceCity = ''
+          permanentProvincesDisabled.value = true
+          break
+        case 'Temporary':
+          temporaryProvinces.value = []
+          internalTemporaryAddress.value.provinceCity = ''
+          temporaryProvincesDisabled.value = true
+          break
+      }
+      updateAddressByType(type)
+    }
+    
+    const resetDistrictsByType = (type) => {
+      const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
+      switch (capitalizedType) {
+        case 'Mailing':
+          mailingDistricts.value = []
+          internalMailingAddress.value.districtCounty = ''
+          mailingDistrictsDisabled.value = true
+          break
+        case 'Permanent':
+          permanentDistricts.value = []
+          internalPermanentAddress.value.districtCounty = ''
+          permanentDistrictsDisabled.value = true
+          break
+        case 'Temporary':
+          temporaryDistricts.value = []
+          internalTemporaryAddress.value.districtCounty = ''
+          temporaryDistrictsDisabled.value = true
+          break
+      }
+      updateAddressByType(type)
+    }
+    
+    const resetWardsByType = (type) => {
+      const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
+      switch (capitalizedType) {
+        case 'Mailing':
+          mailingWards.value = []
+          internalMailingAddress.value.wardCommune = ''
+          mailingWardsDisabled.value = true
+          break
+        case 'Permanent':
+          permanentWards.value = []
+          internalPermanentAddress.value.wardCommune = ''
+          permanentWardsDisabled.value = true
+          break
+        case 'Temporary':
+          temporaryWards.value = []
+          internalTemporaryAddress.value.wardCommune = ''
+          temporaryWardsDisabled.value = true
+          break
+      }
+      updateAddressByType(type)
+    }
+    
+    const setProvincesByType = (type, provinces) => {
+      const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
+      switch (capitalizedType) {
+        case 'Mailing':
+          mailingProvinces.value = provinces
+          break
+        case 'Permanent':
+          permanentProvinces.value = provinces
+          break
+        case 'Temporary':
+          temporaryProvinces.value = provinces
+          break
+      }
+    }
+    
+    const setDistrictsByType = (type, districts) => {
+      const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
+      switch (capitalizedType) {
+        case 'Mailing':
+          mailingDistricts.value = districts
+          break
+        case 'Permanent':
+          permanentDistricts.value = districts
+          break
+        case 'Temporary':
+          temporaryDistricts.value = districts
+          break
+      }
+    }
+    
+    const setWardsByType = (type, wards) => {
+      const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
+      switch (capitalizedType) {
+        case 'Mailing':
+          mailingWards.value = wards
+          break
+        case 'Permanent':
+          permanentWards.value = wards
+          break
+        case 'Temporary':
+          temporaryWards.value = wards
+          break
+      }
+    }
+    
+    const enableProvincesByType = (type) => {
+      const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
+      switch (capitalizedType) {
+        case 'Mailing':
+          mailingProvincesDisabled.value = false
+          break
+        case 'Permanent':
+          permanentProvincesDisabled.value = false
+          break
+        case 'Temporary':
+          temporaryProvincesDisabled.value = false
+          break
+      }
+    }
+    
+    const enableDistrictsByType = (type) => {
+      const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
+      switch (capitalizedType) {
+        case 'Mailing':
+          mailingDistrictsDisabled.value = false
+          break
+        case 'Permanent':
+          permanentDistrictsDisabled.value = false
+          break
+        case 'Temporary':
+          temporaryDistrictsDisabled.value = false
+          break
+      }
+    }
+    
+    const enableWardsByType = (type) => {
+      const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
+      switch (capitalizedType) {
+        case 'Mailing':
+          mailingWardsDisabled.value = false
+          break
+        case 'Permanent':
+          permanentWardsDisabled.value = false
+          break
+        case 'Temporary':
+          temporaryWardsDisabled.value = false
+          break
+      }
+    }
+    
+    // Watch for changes in props to sync internal state
+    watch(mailingAddress, (newValue) => {
+      internalMailingAddress.value = {...newValue}
+    }, { deep: true })
+    
+    watch(permanentAddress, (newValue) => {
+      internalPermanentAddress.value = {...newValue}
+    }, { deep: true })
+    
+    watch(temporaryAddress, (newValue) => {
+      internalTemporaryAddress.value = {...newValue}
+    }, { deep: true })
+    
+    // Remove the watchers that were causing circular dependencies
+    // Don't need to watch internal state to emit updates, as we're now doing that in specific methods
+    
+    return {
+      internalMailingAddress,
+      internalPermanentAddress,
+      internalTemporaryAddress,
+      mailingProvinces,
+      mailingDistricts,
+      mailingWards,
+      permanentProvinces,
+      permanentDistricts,
+      permanentWards,
+      temporaryProvinces,
+      temporaryDistricts,
+      temporaryWards,
+      mailingProvincesDisabled,
+      mailingDistrictsDisabled,
+      mailingWardsDisabled,
+      permanentProvincesDisabled,
+      permanentDistrictsDisabled,
+      permanentWardsDisabled,
+      temporaryProvincesDisabled,
+      temporaryDistrictsDisabled,
+      temporaryWardsDisabled,
+      handleCountryChange,
+      handleProvinceChange,
+      handleDistrictChange
+    }
   }
-  </script>
+}
+</script>
   
-  <style scoped>
-  .section-title {
-    background-color: #e9ecef;
-    padding: 8px 12px;
-    margin-top: 15px;
-    margin-bottom: 15px;
-    border-radius: 5px;
-    font-weight: bold;
-  }
-  </style>
+<style scoped>
+.section-title {
+  background-color: #e9ecef;
+  padding: 8px 12px;
+  margin-top: 15px;
+  margin-bottom: 15px;
+  border-radius: 5px;
+  font-weight: bold;
+}
+</style>

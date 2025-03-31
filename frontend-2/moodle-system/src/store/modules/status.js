@@ -36,7 +36,7 @@ export default {
       commit('SET_LOADING', true)
       try {
         const response = await api.getStatusTypes()
-        const statusTypes = response.data.metadata || []
+        const statusTypes = response.data.metadata.statusType || []
         commit('SET_STATUS_TYPES', statusTypes)
       } catch (error) {
         commit('SET_ERROR', error.message)
@@ -153,13 +153,22 @@ export default {
       }
     },
     
-    async fetchLocationChildren(_, geonameId) {
+    // Modified to properly log and handle location children fetching
+    async fetchLocationChildren({ commit }, geonameId) {
+      commit('SET_LOADING', true)
       try {
+        console.log(`Fetching children for geonameId: ${geonameId}`)
         const response = await api.getLocationChildren(geonameId)
+        console.log('API response:', response.data)
+        
+        // Return the geonames array directly from the response
         return response.data.metadata.children
       } catch (error) {
         console.error('Error fetching location children:', error)
+        commit('SET_ERROR', error.message)
         throw error
+      } finally {
+        commit('SET_LOADING', false)
       }
     }
   },
