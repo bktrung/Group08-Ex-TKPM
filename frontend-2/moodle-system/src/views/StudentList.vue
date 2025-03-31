@@ -57,7 +57,19 @@
               </td>
             </tr>
             <tr v-else-if="students.length === 0" class="text-center">
-              <td colspan="12">Không tìm thấy kết quả phù hợp với tìm kiếm của bạn.</td>
+              <td colspan="12">
+                <div v-if="searchQuery || selectedDepartment">
+                  Không tìm thấy kết quả phù hợp với tìm kiếm của bạn.
+                </div>
+                <div v-else-if="initialDataLoaded">
+                  Chưa có sinh viên nào trong cơ sở dữ liệu. Vui lòng thêm sinh viên mới.
+                </div>
+                <div v-else>
+                  <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                </div>
+              </td>
             </tr>
             <tr v-for="student in students" :key="student.studentId" v-else>
               <td>{{ student.studentId }}</td>
@@ -149,6 +161,7 @@
       StudentImportExport
     },
     setup() {
+      const initialDataLoaded = ref(false);
       const store = useStore()
       const searchQuery = ref('')
       const selectedDepartment = ref('')
@@ -180,13 +193,13 @@
         return pages
       })
   
-      // Methods
       const loadData = async () => {
         await Promise.all([
           store.dispatch('student/fetchStudents', { page: currentPage.value }),
           store.dispatch('department/fetchDepartments')
-        ])
-      }
+        ]);
+        initialDataLoaded.value = true;
+      };
       
       const search = async () => {
         await store.dispatch('student/searchStudents', { 
@@ -306,7 +319,8 @@
         formatAddress,
         getDepartmentName,
         getProgramName,
-        getStatusName
+        getStatusName,
+        initialDataLoaded
       }
     }
   }

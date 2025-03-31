@@ -13,7 +13,17 @@ export default {
     return apiClient.get(`/v1/api/students?page=${page}&limit=${limit}`)
   },
   getStudent(id) {
-    return apiClient.get(`/v1/api/students/${id}`)
+    return apiClient.get(`/v1/api/students?page=1&limit=1000`).then(response => {
+      const student = response.data.metadata.students.find(s => s.studentId === id);
+      if (student) {
+        return {
+          data: {
+            metadata: student
+          }
+        };
+      }
+      throw new Error('Student not found');
+    });
   },
   createStudent(student) {
     return apiClient.post('/v1/api/students', student)
