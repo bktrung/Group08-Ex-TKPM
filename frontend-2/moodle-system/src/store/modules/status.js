@@ -7,6 +7,7 @@ export default {
     statusTransitions: [],
     countries: [],
     nationalities: [],
+    locationCache: {}, // Cache for location data by geonameId
     loading: false,
     error: null
   },
@@ -22,6 +23,9 @@ export default {
     },
     SET_NATIONALITIES(state, nationalities) {
       state.nationalities = nationalities
+    },
+    SET_LOCATION_DATA(state, { geonameId, data }) {
+      state.locationCache[geonameId] = data
     },
     SET_LOADING(state, loading) {
       state.loading = loading
@@ -133,9 +137,36 @@ export default {
       commit('SET_LOADING', true)
       try {
         const response = await api.getCountries()
-        commit('SET_COUNTRIES', response.data.metadata.countries || [])
+        const countries = response.data.metadata.countries || []
+        
+        // Ensure Vietnam is always available
+        const hasVietnam = countries.some(country => 
+          country.countryName === 'Vietnam' || 
+          country.countryName === 'Viet Nam' || 
+          country.countryName.toLowerCase().includes('viet')
+        )
+        
+        if (!hasVietnam) {
+          countries.push({
+            countryName: 'Vietnam',
+            geonameId: '1562822'
+          })
+        }
+        
+        commit('SET_COUNTRIES', countries)
       } catch (error) {
         commit('SET_ERROR', error.message)
+        
+        // Fallback to default countries if API fails
+        const defaultCountries = [
+          { countryName: 'Vietnam', geonameId: '1562822' },
+          { countryName: 'United States', geonameId: '6252001' },
+          { countryName: 'United Kingdom', geonameId: '2635167' },
+          { countryName: 'China', geonameId: '1814991' },
+          { countryName: 'Japan', geonameId: '1861060' },
+          { countryName: 'France', geonameId: '3017382' }
+        ]
+        commit('SET_COUNTRIES', defaultCountries)
       } finally {
         commit('SET_LOADING', false)
       }
@@ -148,25 +179,67 @@ export default {
         commit('SET_NATIONALITIES', response.data.metadata.nationalities || [])
       } catch (error) {
         commit('SET_ERROR', error.message)
+        
+        // Fallback to default nationalities if API fails
+        const defaultNationalities = [
+          'Vietnamese', 'American', 'British', 'Chinese', 'French', 'Japanese'
+        ]
+        commit('SET_NATIONALITIES', defaultNationalities)
       } finally {
         commit('SET_LOADING', false)
       }
     },
     
-    // Modified to properly log and handle location children fetching
-    async fetchLocationChildren({ commit }, geonameId) {
+    // Improved location children fetching with caching and better error handling
+    async fetchLocationChildren({ commit, state }, geonameId) {
+      if (!geonameId) {
+        console.error('Invalid geonameId:', geonameId)
+        return { geonames: [] }
+      }
+      
+      // Check if we have this data in cache
+      if (state.locationCache[geonameId]) {
+        console.log(`Using cached location data for geonameId: ${geonameId}`)
+        return state.locationCache[geonameId]
+      }
+      
       commit('SET_LOADING', true)
       try {
         console.log(`Fetching children for geonameId: ${geonameId}`)
         const response = await api.getLocationChildren(geonameId)
-        console.log('API response:', response.data)
         
-        // Return the geonames array directly from the response
-        return response.data.metadata.children
+        if (!response.data || !response.data.metadata || !response.data.metadata.children) {
+          console.error('Invalid response format:', response.data)
+          return { geonames: [] }
+        }
+        
+        let locationData
+        
+        // Normalize data structure
+        if (response.data.metadata.children.geonames) {
+          locationData = { 
+            geonames: response.data.metadata.children.geonames 
+          }
+        } else if (Array.isArray(response.data.metadata.children)) {
+          locationData = { 
+            geonames: response.data.metadata.children 
+          }
+        } else {
+          console.error('Unexpected response structure:', response.data.metadata.children)
+          locationData = { geonames: [] }
+        }
+        
+        // Cache the data
+        commit('SET_LOCATION_DATA', { 
+          geonameId: geonameId, 
+          data: locationData 
+        })
+        
+        return locationData
       } catch (error) {
         console.error('Error fetching location children:', error)
         commit('SET_ERROR', error.message)
-        throw error
+        return { geonames: [] }
       } finally {
         commit('SET_LOADING', false)
       }
@@ -189,6 +262,29 @@ export default {
       const transition = state.statusTransitions.find(t => t.fromStatusId === fromStatusId)
       if (!transition) return false
       return transition.toStatus.some(status => status._id === toStatusId)
+    },
+    getCountryByName: (state) => (countryName) => {
+      if (!countryName) return null
+      
+      // First try exact match
+      let country = state.countries.find(c => c.countryName === countryName)
+      
+      // If not found, try case-insensitive match
+      if (!country) {
+        const countryNameLower = countryName.toLowerCase()
+        country = state.countries.find(c => c.countryName.toLowerCase() === countryNameLower)
+      }
+      
+      // If still not found, try partial match
+      if (!country) {
+        const countryNameLower = countryName.toLowerCase()
+        country = state.countries.find(c => 
+          c.countryName.toLowerCase().includes(countryNameLower) || 
+          countryNameLower.includes(c.countryName.toLowerCase())
+        )
+      }
+      
+      return country
     }
   }
 }

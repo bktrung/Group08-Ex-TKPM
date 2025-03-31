@@ -15,7 +15,7 @@
     <div v-else class="card bg-light">
       <div class="card-body">
         <StudentForm 
-          :student-data="studentData" 
+          :student-data="enhancedStudentData" 
           :is-editing="true" 
           @submit="handleSubmit" 
         />
@@ -61,7 +61,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter, useRoute } from 'vue-router'
 import { Modal } from 'bootstrap'
@@ -87,11 +87,99 @@ export default {
     let successModal = null
     let errorModal = null
     
+    // This computed property enhances the student data for proper form initialization
+    const enhancedStudentData = computed(() => {
+      if (!studentData.value || Object.keys(studentData.value).length === 0) {
+        return {}
+      }
+      
+      // Create a deep copy to avoid modifying the original data
+      const enhancedData = JSON.parse(JSON.stringify(studentData.value))
+      
+      // Ensure addresses are properly initialized
+      if (!enhancedData.mailingAddress) {
+        enhancedData.mailingAddress = {
+          houseNumberStreet: '',
+          wardCommune: '',
+          districtCounty: '',
+          provinceCity: '',
+          country: ''
+        }
+      }
+      
+      if (!enhancedData.permanentAddress) {
+        enhancedData.permanentAddress = {
+          houseNumberStreet: '',
+          wardCommune: '',
+          districtCounty: '',
+          provinceCity: '',
+          country: ''
+        }
+      }
+      
+      if (!enhancedData.temporaryAddress) {
+        enhancedData.temporaryAddress = {
+          houseNumberStreet: '',
+          wardCommune: '',
+          districtCounty: '',
+          provinceCity: '',
+          country: ''
+        }
+      }
+      
+      // Pre-fix the address dropdowns by ensuring the properties are set properly
+      const addressTypes = ['mailingAddress', 'permanentAddress', 'temporaryAddress']
+      addressTypes.forEach(type => {
+        if (enhancedData[type]) {
+          // Ensure each address has all required fields
+          enhancedData[type].houseNumberStreet = enhancedData[type].houseNumberStreet || ''
+          enhancedData[type].wardCommune = enhancedData[type].wardCommune || ''
+          enhancedData[type].districtCounty = enhancedData[type].districtCounty || ''
+          enhancedData[type].provinceCity = enhancedData[type].provinceCity || ''
+          enhancedData[type].country = enhancedData[type].country || ''
+        }
+      })
+      
+      // Format dates properly
+      if (enhancedData.dateOfBirth) {
+        enhancedData.dateOfBirth = new Date(enhancedData.dateOfBirth).toISOString().split('T')[0]
+      }
+      
+      // Process identity document
+      if (enhancedData.identityDocument) {
+        if (enhancedData.identityDocument.issueDate) {
+          enhancedData.identityDocument.issueDate = new Date(enhancedData.identityDocument.issueDate).toISOString().split('T')[0]
+        }
+        if (enhancedData.identityDocument.expiryDate) {
+          enhancedData.identityDocument.expiryDate = new Date(enhancedData.identityDocument.expiryDate).toISOString().split('T')[0]
+        }
+        
+        // Set hasChip to boolean value if the identity type is CCCD
+        if (enhancedData.identityDocument.type === 'CCCD') {
+          enhancedData.identityDocument.hasChip = 
+            enhancedData.identityDocument.hasChip === true || 
+            enhancedData.identityDocument.hasChip === 'true'
+        }
+      }
+      
+      return enhancedData
+    })
+    
     const fetchStudentData = async () => {
       loading.value = true
       error.value = null
       
       try {
+        // First load the necessary reference data
+        await Promise.all([
+          store.dispatch('department/fetchDepartments'),
+          store.dispatch('program/fetchPrograms'),
+          store.dispatch('status/fetchStatusTypes'),
+          store.dispatch('status/fetchStatusTransitions'),
+          store.dispatch('status/fetchCountries'),
+          store.dispatch('status/fetchNationalities')
+        ])
+        
         // Try to find the student in the current store state first
         let student = store.getters['student/getStudentById'](studentId)
         
@@ -102,6 +190,9 @@ export default {
         
         if (student) {
           studentData.value = student
+          
+          // Pre-fetch geographic data for the student's addresses to enable dropdowns
+          await preloadAddressData(student)
         } else {
           error.value = 'Không tìm thấy sinh viên với mã số này'
         }
@@ -110,6 +201,35 @@ export default {
         error.value = err.message || 'Không thể tải thông tin sinh viên'
       } finally {
         loading.value = false
+      }
+    }
+    
+    const preloadAddressData = async (student) => {
+      // Try to pre-fetch location data for addresses
+      const addressTypes = ['mailingAddress', 'permanentAddress', 'temporaryAddress']
+      
+      for (const type of addressTypes) {
+        if (student[type] && student[type].country) {
+          try {
+            // Find the country in the list of countries
+            const countries = store.state.status.countries
+            const country = countries.find(c => 
+              c.countryName === student[type].country || 
+              c.countryName.toLowerCase() === student[type].country.toLowerCase()
+            )
+            
+            if (country && country.geonameId) {
+              // Fetch the provinces for this country
+              await store.dispatch('status/fetchLocationChildren', country.geonameId)
+              
+              // Note: We could further fetch districts and wards here,
+              // but that would require us to know the geonameId of the province/district
+              // which we don't have in the original data
+            }
+          } catch (err) {
+            console.error(`Error pre-fetching location data for ${type}:`, err)
+          }
+        }
       }
     }
     
@@ -156,6 +276,7 @@ export default {
     
     return {
       studentData,
+      enhancedStudentData,
       loading,
       error,
       errorMessage,

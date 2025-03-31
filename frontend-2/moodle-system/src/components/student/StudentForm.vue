@@ -398,40 +398,82 @@ export default {
       emit('submit', studentData)
     }
     
+    // Watch for changes in student data prop
     watch(() => props.studentData, (newValue) => {
       if (newValue && Object.keys(newValue).length > 0) {
-        form.value = { ...form.value, ...JSON.parse(JSON.stringify(newValue)) }
+        console.log('Updating form with student data:', newValue)
         
-        // Format main date of birth
-        if (newValue.dateOfBirth) {
-          form.value.dateOfBirth = new Date(newValue.dateOfBirth).toISOString().split('T')[0]
-        }
+        // Create a deep copy of the student data to avoid reference issues
+        const studentDataCopy = JSON.parse(JSON.stringify(newValue))
         
-        if (newValue.identityDocument) {
-          if (newValue.identityDocument.issueDate) {
-            form.value.identityDocument.issueDate = new Date(newValue.identityDocument.issueDate).toISOString().split('T')[0]
+        // Carefully merge the student data into the form
+        Object.keys(form.value).forEach(key => {
+          if (key in studentDataCopy) {
+            if (key === 'mailingAddress' || key === 'permanentAddress' || key === 'temporaryAddress') {
+              // For addresses, ensure we have all required fields
+              form.value[key] = {
+                houseNumberStreet: studentDataCopy[key]?.houseNumberStreet || '',
+                wardCommune: studentDataCopy[key]?.wardCommune || '',
+                districtCounty: studentDataCopy[key]?.districtCounty || '',
+                provinceCity: studentDataCopy[key]?.provinceCity || '',
+                country: studentDataCopy[key]?.country || ''
+              }
+            } else if (key === 'identityDocument') {
+              // For identity document, handle the special fields
+              form.value[key] = {
+                ...form.value[key],
+                ...studentDataCopy[key]
+              }
+            } else {
+              // For other fields, just copy the value
+              form.value[key] = studentDataCopy[key]
+            }
           }
-          if (newValue.identityDocument.expiryDate) {
-            form.value.identityDocument.expiryDate = new Date(newValue.identityDocument.expiryDate).toISOString().split('T')[0]
+        })
+        
+        // Handle special fields
+        
+        // Format date of birth
+        if (studentDataCopy.dateOfBirth) {
+          form.value.dateOfBirth = new Date(studentDataCopy.dateOfBirth).toISOString().split('T')[0]
+        }
+        
+        // Handle identity document
+        if (studentDataCopy.identityDocument) {
+          // Format identity document dates
+          if (studentDataCopy.identityDocument.issueDate) {
+            form.value.identityDocument.issueDate = new Date(studentDataCopy.identityDocument.issueDate).toISOString().split('T')[0]
+          }
+          if (studentDataCopy.identityDocument.expiryDate) {
+            form.value.identityDocument.expiryDate = new Date(studentDataCopy.identityDocument.expiryDate).toISOString().split('T')[0]
+          }
+          
+          // Ensure hasChip is a boolean value if the identity type is CCCD
+          if (studentDataCopy.identityDocument.type === 'CCCD') {
+            form.value.identityDocument.hasChip = studentDataCopy.identityDocument.hasChip === true || 
+                                                 studentDataCopy.identityDocument.hasChip === 'true'
           }
         }
         
-        if (newValue.department) {
-          form.value.department = typeof newValue.department === 'object' 
-            ? newValue.department._id 
-            : newValue.department
+        // Handle department object
+        if (studentDataCopy.department) {
+          form.value.department = typeof studentDataCopy.department === 'object' 
+            ? studentDataCopy.department._id 
+            : studentDataCopy.department
         }
         
-        if (newValue.program) {
-          form.value.program = typeof newValue.program === 'object' 
-            ? newValue.program._id 
-            : newValue.program
+        // Handle program object
+        if (studentDataCopy.program) {
+          form.value.program = typeof studentDataCopy.program === 'object' 
+            ? studentDataCopy.program._id 
+            : studentDataCopy.program
         }
         
-        if (newValue.status) {
-          currentStatusId.value = typeof newValue.status === 'object' 
-            ? newValue.status._id 
-            : newValue.status
+        // Handle status object and track current status ID for transition rules
+        if (studentDataCopy.status) {
+          currentStatusId.value = typeof studentDataCopy.status === 'object' 
+            ? studentDataCopy.status._id 
+            : studentDataCopy.status
           form.value.status = currentStatusId.value
         }
       }
