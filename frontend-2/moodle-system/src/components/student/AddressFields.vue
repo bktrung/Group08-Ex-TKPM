@@ -20,6 +20,7 @@
             v-model="internalPermanentAddress.country" 
             class="form-select"
             @change="handleCountryChange('permanent')"
+            id="permanent-country"
           >
             <option value="">-- Chọn quốc gia --</option>
             <option 
@@ -38,11 +39,12 @@
             class="form-select" 
             :disabled="permanentProvincesDisabled"
             @change="handleProvinceChange('permanent')"
+            id="permanent-province"
           >
             <option value="">-- Chọn tỉnh/thành phố --</option>
             <option 
               v-for="province in permanentProvinces" 
-              :key="province.geonameId" 
+              :key="province.geonameId || province.toponymName" 
               :value="province.toponymName || province.name"
               :data-geonameid="province.geonameId"
             >
@@ -56,11 +58,12 @@
             class="form-select" 
             :disabled="permanentDistrictsDisabled"
             @change="handleDistrictChange('permanent')"
+            id="permanent-district"
           >
             <option value="">-- Chọn quận/huyện --</option>
             <option 
               v-for="district in permanentDistricts" 
-              :key="district.geonameId" 
+              :key="district.geonameId || district.toponymName" 
               :value="district.toponymName || district.name"
               :data-geonameid="district.geonameId"
             >
@@ -75,11 +78,12 @@
             v-model="internalPermanentAddress.wardCommune" 
             class="form-select" 
             :disabled="permanentWardsDisabled"
+            id="permanent-wardcommune"
           >
             <option value="">-- Chọn phường/xã --</option>
             <option 
               v-for="ward in permanentWards" 
-              :key="ward.geonameId" 
+              :key="ward.geonameId || ward.toponymName" 
               :value="ward.toponymName || ward.name"
             >
               {{ ward.toponymName || ward.name }}
@@ -107,6 +111,7 @@
             v-model="internalTemporaryAddress.country" 
             class="form-select"
             @change="handleCountryChange('temporary')"
+            id="temporary-country"
           >
             <option value="">-- Chọn quốc gia --</option>
             <option 
@@ -125,11 +130,12 @@
             class="form-select" 
             :disabled="temporaryProvincesDisabled"
             @change="handleProvinceChange('temporary')"
+            id="temporary-province"
           >
             <option value="">-- Chọn tỉnh/thành phố --</option>
             <option 
               v-for="province in temporaryProvinces" 
-              :key="province.geonameId" 
+              :key="province.geonameId || province.toponymName" 
               :value="province.toponymName || province.name"
               :data-geonameid="province.geonameId"
             >
@@ -143,11 +149,12 @@
             class="form-select" 
             :disabled="temporaryDistrictsDisabled"
             @change="handleDistrictChange('temporary')"
+            id="temporary-district"
           >
             <option value="">-- Chọn quận/huyện --</option>
             <option 
               v-for="district in temporaryDistricts" 
-              :key="district.geonameId" 
+              :key="district.geonameId || district.toponymName" 
               :value="district.toponymName || district.name"
               :data-geonameid="district.geonameId"
             >
@@ -162,11 +169,12 @@
             v-model="internalTemporaryAddress.wardCommune" 
             class="form-select" 
             :disabled="temporaryWardsDisabled"
+            id="temporary-wardcommune"
           >
             <option value="">-- Chọn phường/xã --</option>
             <option 
               v-for="ward in temporaryWards" 
-              :key="ward.geonameId" 
+              :key="ward.geonameId || ward.toponymName" 
               :value="ward.toponymName || ward.name"
             >
               {{ ward.toponymName || ward.name }}
@@ -196,6 +204,7 @@
             class="form-select"
             @change="handleCountryChange('mailing')"
             required
+            id="mailing-country"
           >
             <option value="">-- Chọn quốc gia --</option>
             <option 
@@ -215,11 +224,12 @@
             :disabled="mailingProvincesDisabled"
             @change="handleProvinceChange('mailing')"
             required
+            id="mailing-province"
           >
             <option value="">-- Chọn tỉnh/thành phố --</option>
             <option 
               v-for="province in mailingProvinces" 
-              :key="province.geonameId" 
+              :key="province.geonameId || province.toponymName" 
               :value="province.toponymName || province.name"
               :data-geonameid="province.geonameId"
             >
@@ -234,11 +244,12 @@
             :disabled="mailingDistrictsDisabled"
             @change="handleDistrictChange('mailing')"
             required
+            id="mailing-district"
           >
             <option value="">-- Chọn quận/huyện --</option>
             <option 
               v-for="district in mailingDistricts" 
-              :key="district.geonameId" 
+              :key="district.geonameId || district.toponymName" 
               :value="district.toponymName || district.name"
               :data-geonameid="district.geonameId"
             >
@@ -253,11 +264,12 @@
             v-model="internalMailingAddress.wardCommune" 
             class="form-select" 
             :disabled="mailingWardsDisabled"
+            id="mailing-wardcommune"
           >
             <option value="">-- Chọn phường/xã --</option>
             <option 
               v-for="ward in mailingWards" 
-              :key="ward.geonameId" 
+              :key="ward.geonameId || ward.toponymName" 
               :value="ward.toponymName || ward.name"
             >
               {{ ward.toponymName || ward.name }}
@@ -270,7 +282,7 @@
 </template>
   
 <script>
-import { ref, toRefs, watch } from 'vue'
+import { ref, toRefs, watch, onMounted } from 'vue'
 
 export default {
   name: 'AddressFields',
@@ -339,6 +351,184 @@ export default {
     const temporaryDistrictsDisabled = ref(true)
     const temporaryWardsDisabled = ref(true)
     
+    // For existing addresses, initialize dropdowns
+    const initializeAddress = async (type) => {
+      const addressObj = type === 'mailing' ? internalMailingAddress.value : 
+                       type === 'permanent' ? internalPermanentAddress.value :
+                       internalTemporaryAddress.value
+      
+      if (addressObj && addressObj.country) {
+        // Get country ID from the countries array
+        const country = props.countries.find(c => 
+          c.countryName === addressObj.country || 
+          c.countryName.toLowerCase() === addressObj.country.toLowerCase()
+        )
+        
+        if (country && country.geonameId) {
+          try {
+            // Enable province dropdown
+            if (type === 'mailing') mailingProvincesDisabled.value = false
+            else if (type === 'permanent') permanentProvincesDisabled.value = false
+            else temporaryProvincesDisabled.value = false
+            
+            // Fetch and populate provinces
+            const result = await props.fetchLocationData(country.geonameId)
+            if (result && (result.geonames || Array.isArray(result))) {
+              const provinces = result.geonames || result
+              setProvincesByType(type, provinces)
+              
+              // If provinceCity exists, try to find matching province and fetch districts
+              if (addressObj.provinceCity) {
+                const province = provinces.find(p => 
+                  p.toponymName === addressObj.provinceCity || 
+                  p.name === addressObj.provinceCity
+                )
+                
+                if (province && province.geonameId) {
+                  // Enable district dropdown
+                  if (type === 'mailing') mailingDistrictsDisabled.value = false
+                  else if (type === 'permanent') permanentDistrictsDisabled.value = false
+                  else temporaryDistrictsDisabled.value = false
+                  
+                  // Fetch and populate districts
+                  const districtsResult = await props.fetchLocationData(province.geonameId)
+                  if (districtsResult && (districtsResult.geonames || Array.isArray(districtsResult))) {
+                    const districts = districtsResult.geonames || districtsResult
+                    setDistrictsByType(type, districts)
+                    
+                    // If districtCounty exists, try to find matching district and fetch wards
+                    if (addressObj.districtCounty) {
+                      const district = districts.find(d => 
+                        d.toponymName === addressObj.districtCounty || 
+                        d.name === addressObj.districtCounty
+                      )
+                      
+                      if (district && district.geonameId) {
+                        // Enable ward dropdown
+                        if (type === 'mailing') mailingWardsDisabled.value = false
+                        else if (type === 'permanent') permanentWardsDisabled.value = false
+                        else temporaryWardsDisabled.value = false
+                        
+                        // Fetch and populate wards
+                        const wardsResult = await props.fetchLocationData(district.geonameId)
+                        if (wardsResult && (wardsResult.geonames || Array.isArray(wardsResult))) {
+                          const wards = wardsResult.geonames || wardsResult
+                          setWardsByType(type, wards)
+                        }
+                      } else {
+                        // If no matching district is found, add existing district as option
+                        if (addressObj.districtCounty) {
+                          addCustomOption(type, 'district', addressObj.districtCounty)
+                        }
+                      }
+                    }
+                  }
+                } else {
+                  // If no matching province is found, add existing province as option
+                  if (addressObj.provinceCity) {
+                    addCustomOption(type, 'province', addressObj.provinceCity)
+                  }
+                }
+              }
+            }
+          } catch (error) {
+            console.error(`Error initializing ${type} address:`, error)
+          }
+        } else {
+          // If country not found in the list, add it as a custom option
+          if (addressObj.country) {
+            addCustomOption(type, 'country', addressObj.country)
+          }
+        }
+      }
+      
+      // As a fallback, if we have address values but couldn't initialize the dropdowns properly,
+      // add them as custom options to ensure they're visible
+      ensureExistingValuesVisible(type)
+    }
+    
+    // Ensure existing values are visible in the dropdowns
+    const ensureExistingValuesVisible = (type) => {
+      const addressObj = type === 'mailing' ? internalMailingAddress.value : 
+                       type === 'permanent' ? internalPermanentAddress.value :
+                       internalTemporaryAddress.value
+      
+      // Add each existing value as a custom option if needed
+      if (addressObj.provinceCity) {
+        addCustomOption(type, 'province', addressObj.provinceCity)
+      }
+      
+      if (addressObj.districtCounty) {
+        addCustomOption(type, 'district', addressObj.districtCounty)
+      }
+      
+      if (addressObj.wardCommune) {
+        addCustomOption(type, 'ward', addressObj.wardCommune)
+      }
+      
+      // Enable dropdowns if we have values for them
+      if (addressObj.country) {
+        if (type === 'mailing') mailingProvincesDisabled.value = false
+        else if (type === 'permanent') permanentProvincesDisabled.value = false
+        else temporaryProvincesDisabled.value = false
+      }
+      
+      if (addressObj.provinceCity) {
+        if (type === 'mailing') mailingDistrictsDisabled.value = false
+        else if (type === 'permanent') permanentDistrictsDisabled.value = false
+        else temporaryDistrictsDisabled.value = false
+      }
+      
+      if (addressObj.districtCounty) {
+        if (type === 'mailing') mailingWardsDisabled.value = false
+        else if (type === 'permanent') permanentWardsDisabled.value = false
+        else temporaryWardsDisabled.value = false
+      }
+    }
+    
+    // Add a custom option to a dropdown if value is not in the list
+    const addCustomOption = (type, level, value) => {
+      if (!value) return
+      
+      if (level === 'province') {
+        // For province dropdown
+        if (type === 'mailing' && !mailingProvinces.value.find(p => p.toponymName === value || p.name === value)) {
+          mailingProvinces.value = [...mailingProvinces.value, { toponymName: value, name: value, geonameId: null }]
+          mailingProvincesDisabled.value = false
+        } else if (type === 'permanent' && !permanentProvinces.value.find(p => p.toponymName === value || p.name === value)) {
+          permanentProvinces.value = [...permanentProvinces.value, { toponymName: value, name: value, geonameId: null }]
+          permanentProvincesDisabled.value = false
+        } else if (type === 'temporary' && !temporaryProvinces.value.find(p => p.toponymName === value || p.name === value)) {
+          temporaryProvinces.value = [...temporaryProvinces.value, { toponymName: value, name: value, geonameId: null }]
+          temporaryProvincesDisabled.value = false
+        }
+      } else if (level === 'district') {
+        // For district dropdown
+        if (type === 'mailing' && !mailingDistricts.value.find(d => d.toponymName === value || d.name === value)) {
+          mailingDistricts.value = [...mailingDistricts.value, { toponymName: value, name: value, geonameId: null }]
+          mailingDistrictsDisabled.value = false
+        } else if (type === 'permanent' && !permanentDistricts.value.find(d => d.toponymName === value || d.name === value)) {
+          permanentDistricts.value = [...permanentDistricts.value, { toponymName: value, name: value, geonameId: null }]
+          permanentDistrictsDisabled.value = false
+        } else if (type === 'temporary' && !temporaryDistricts.value.find(d => d.toponymName === value || d.name === value)) {
+          temporaryDistricts.value = [...temporaryDistricts.value, { toponymName: value, name: value, geonameId: null }]
+          temporaryDistrictsDisabled.value = false
+        }
+      } else if (level === 'ward') {
+        // For ward dropdown
+        if (type === 'mailing' && !mailingWards.value.find(w => w.toponymName === value || w.name === value)) {
+          mailingWards.value = [...mailingWards.value, { toponymName: value, name: value, geonameId: null }]
+          mailingWardsDisabled.value = false
+        } else if (type === 'permanent' && !permanentWards.value.find(w => w.toponymName === value || w.name === value)) {
+          permanentWards.value = [...permanentWards.value, { toponymName: value, name: value, geonameId: null }]
+          permanentWardsDisabled.value = false
+        } else if (type === 'temporary' && !temporaryWards.value.find(w => w.toponymName === value || w.name === value)) {
+          temporaryWards.value = [...temporaryWards.value, { toponymName: value, name: value, geonameId: null }]
+          temporaryWardsDisabled.value = false
+        }
+      }
+    }
+
     // Event handlers
     const handleCountryChange = async (type) => {
       // Get the internal address object for this type
@@ -349,8 +539,15 @@ export default {
       // Find the country name from the address
       const countryName = addressObj.country
       
+      if (!countryName) {
+        return
+      }
+      
       // Find the country object from the countries prop
-      const country = props.countries.find(c => c.countryName === countryName)
+      const country = props.countries.find(c => 
+        c.countryName === countryName || 
+        c.countryName.toLowerCase() === countryName.toLowerCase()
+      )
       
       // Get the geonameId from the country object
       const geonameId = country ? country.geonameId : null
@@ -395,6 +592,10 @@ export default {
                        internalTemporaryAddress.value
       
       const provinceCity = addressObj.provinceCity
+      
+      if (!provinceCity) {
+        return
+      }
       
       // Find the province in the provinces array for this type
       let provinces = []
@@ -448,6 +649,10 @@ export default {
       
       const districtCounty = addressObj.districtCounty
       
+      if (!districtCounty) {
+        return
+      }
+      
       // Find the district in the districts array for this type
       let districts = []
       if (type === 'mailing') districts = mailingDistricts.value
@@ -495,13 +700,19 @@ export default {
       const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
       switch (capitalizedType) {
         case 'Mailing':
-          emit('update:mailingAddress', {...internalMailingAddress.value})
+          if (JSON.stringify(internalMailingAddress.value) !== JSON.stringify(mailingAddress.value)) {
+            emit('update:mailingAddress', {...internalMailingAddress.value})
+          }
           break
         case 'Permanent':
-          emit('update:permanentAddress', {...internalPermanentAddress.value})
+          if (JSON.stringify(internalPermanentAddress.value) !== JSON.stringify(permanentAddress.value)) {
+            emit('update:permanentAddress', {...internalPermanentAddress.value})
+          }
           break
         case 'Temporary':
-          emit('update:temporaryAddress', {...internalTemporaryAddress.value})
+          if (JSON.stringify(internalTemporaryAddress.value) !== JSON.stringify(temporaryAddress.value)) {
+            emit('update:temporaryAddress', {...internalTemporaryAddress.value})
+          }
           break
       }
     }
@@ -662,21 +873,37 @@ export default {
       }
     }
     
-    // Watch for changes in props to sync internal state
     watch(mailingAddress, (newValue) => {
       internalMailingAddress.value = {...newValue}
     }, { deep: true })
-    
+
     watch(permanentAddress, (newValue) => {
       internalPermanentAddress.value = {...newValue}
     }, { deep: true })
-    
+
     watch(temporaryAddress, (newValue) => {
       internalTemporaryAddress.value = {...newValue}
     }, { deep: true })
     
-    // Remove the watchers that were causing circular dependencies
-    // Don't need to watch internal state to emit updates, as we're now doing that in specific methods
+    onMounted(async () => {
+      console.log('AddressFields mounted, initializing addresses...')
+      
+      if (mailingAddress.value && mailingAddress.value.country) {
+        await initializeAddress('mailing')
+      }
+      
+      setTimeout(async () => {
+        if (permanentAddress.value && permanentAddress.value.country) {
+          await initializeAddress('permanent')
+        }
+      }, 100)
+      
+      setTimeout(async () => {
+        if (temporaryAddress.value && temporaryAddress.value.country) {
+          await initializeAddress('temporary')
+        }
+      }, 200)
+    })
     
     return {
       internalMailingAddress,
@@ -702,7 +929,10 @@ export default {
       temporaryWardsDisabled,
       handleCountryChange,
       handleProvinceChange,
-      handleDistrictChange
+      handleDistrictChange,
+      initializeAddress,
+      updateAddressByType,
+      ensureExistingValuesVisible
     }
   }
 }
