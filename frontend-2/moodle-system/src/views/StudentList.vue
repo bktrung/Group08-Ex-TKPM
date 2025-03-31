@@ -150,7 +150,7 @@
   </template>
   
   <script>
-  import { ref, computed, onMounted, watch } from 'vue'
+  import { ref, computed, onMounted } from 'vue'
   import { useStore } from 'vuex'
   import { Modal } from 'bootstrap'
   import StudentImportExport from '@/components/student/ImportExport.vue'

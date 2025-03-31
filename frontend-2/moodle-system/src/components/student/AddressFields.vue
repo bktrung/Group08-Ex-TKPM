@@ -1,277 +1,277 @@
 <template>
-    <div>
-      <div class="section-title">Thông tin địa chỉ</div>
-  
-      <div class="mb-3">
-        <label class="form-label fw-bold">Địa chỉ thường trú</label>
-        <div class="row g-2">
-          <div class="col-md-12">
-            <input 
-              type="text" 
-              v-model="permanentAddress.houseNumberStreet" 
-              class="form-control"
-              placeholder="Số nhà, Tên đường"
-            >
-          </div>
-        </div>
-        <div class="row g-2 mt-1">
-          <div class="col-md-4">
-            <select 
-              v-model="permanentAddress.country" 
-              class="form-select"
-              @change="handleCountryChange('permanent')"
-            >
-              <option value="">-- Chọn quốc gia --</option>
-              <option 
-                v-for="country in countries" 
-                :key="country.geonameId" 
-                :value="country.countryName"
-                :data-geonameid="country.geonameId"
-              >
-                {{ country.countryName }}
-              </option>
-            </select>
-          </div>
-          <div class="col-md-4">
-            <select 
-              v-model="permanentAddress.provinceCity" 
-              class="form-select" 
-              :disabled="!permanentProvinces.length"
-              @change="handleProvinceChange('permanent')"
-            >
-              <option value="">-- Chọn tỉnh/thành phố --</option>
-              <option 
-                v-for="province in permanentProvinces" 
-                :key="province.geonameId" 
-                :value="province.toponymName || province.name"
-                :data-geonameid="province.geonameId"
-              >
-                {{ province.toponymName || province.name }}
-              </option>
-            </select>
-          </div>
-          <div class="col-md-4">
-            <select 
-              v-model="permanentAddress.districtCounty" 
-              class="form-select" 
-              :disabled="!permanentDistricts.length"
-              @change="handleDistrictChange('permanent')"
-            >
-              <option value="">-- Chọn quận/huyện --</option>
-              <option 
-                v-for="district in permanentDistricts" 
-                :key="district.geonameId" 
-                :value="district.toponymName || district.name"
-                :data-geonameid="district.geonameId"
-              >
-                {{ district.toponymName || district.name }}
-              </option>
-            </select>
-          </div>
-        </div>
-        <div class="row g-2 mt-1">
-          <div class="col-md-12">
-            <select 
-              v-model="permanentAddress.wardCommune" 
-              class="form-select" 
-              :disabled="!permanentWards.length"
-            >
-              <option value="">-- Chọn phường/xã --</option>
-              <option 
-                v-for="ward in permanentWards" 
-                :key="ward.geonameId" 
-                :value="ward.toponymName || ward.name"
-              >
-                {{ ward.toponymName || ward.name }}
-              </option>
-            </select>
-          </div>
+  <div>
+    <div class="section-title">Thông tin địa chỉ</div>
+
+    <div class="mb-3">
+      <label class="form-label fw-bold">Địa chỉ thường trú</label>
+      <div class="row g-2">
+        <div class="col-md-12">
+          <input 
+            type="text" 
+            v-model="internalPermanentAddress.houseNumberStreet" 
+            class="form-control"
+            placeholder="Số nhà, Tên đường"
+          >
         </div>
       </div>
-  
-      <div class="mb-3">
-        <label class="form-label fw-bold">Địa chỉ tạm trú</label>
-        <div class="row g-2">
-          <div class="col-md-12">
-            <input 
-              type="text" 
-              v-model="temporaryAddress.houseNumberStreet" 
-              class="form-control"
-              placeholder="Số nhà, Tên đường"
+      <div class="row g-2 mt-1">
+        <div class="col-md-4">
+          <select 
+            v-model="internalPermanentAddress.country" 
+            class="form-select"
+            @change="handleCountryChange('permanent')"
+          >
+            <option value="">-- Chọn quốc gia --</option>
+            <option 
+              v-for="country in countries" 
+              :key="country.geonameId" 
+              :value="country.countryName"
+              :data-geonameid="country.geonameId"
             >
-          </div>
+              {{ country.countryName }}
+            </option>
+          </select>
         </div>
-        <div class="row g-2 mt-1">
-          <div class="col-md-4">
-            <select 
-              v-model="temporaryAddress.country" 
-              class="form-select"
-              @change="handleCountryChange('temporary')"
+        <div class="col-md-4">
+          <select 
+            v-model="internalPermanentAddress.provinceCity" 
+            class="form-select" 
+            :disabled="!permanentProvinces.length"
+            @change="handleProvinceChange('permanent')"
+          >
+            <option value="">-- Chọn tỉnh/thành phố --</option>
+            <option 
+              v-for="province in permanentProvinces" 
+              :key="province.geonameId" 
+              :value="province.toponymName || province.name"
+              :data-geonameid="province.geonameId"
             >
-              <option value="">-- Chọn quốc gia --</option>
-              <option 
-                v-for="country in countries" 
-                :key="country.geonameId" 
-                :value="country.countryName"
-                :data-geonameid="country.geonameId"
-              >
-                {{ country.countryName }}
-              </option>
-            </select>
-          </div>
-          <div class="col-md-4">
-            <select 
-              v-model="temporaryAddress.provinceCity" 
-              class="form-select" 
-              :disabled="!temporaryProvinces.length"
-              @change="handleProvinceChange('temporary')"
-            >
-              <option value="">-- Chọn tỉnh/thành phố --</option>
-              <option 
-                v-for="province in temporaryProvinces" 
-                :key="province.geonameId" 
-                :value="province.toponymName || province.name"
-                :data-geonameid="province.geonameId"
-              >
-                {{ province.toponymName || province.name }}
-              </option>
-            </select>
-          </div>
-          <div class="col-md-4">
-            <select 
-              v-model="temporaryAddress.districtCounty" 
-              class="form-select" 
-              :disabled="!temporaryDistricts.length"
-              @change="handleDistrictChange('temporary')"
-            >
-              <option value="">-- Chọn quận/huyện --</option>
-              <option 
-                v-for="district in temporaryDistricts" 
-                :key="district.geonameId" 
-                :value="district.toponymName || district.name"
-                :data-geonameid="district.geonameId"
-              >
-                {{ district.toponymName || district.name }}
-              </option>
-            </select>
-          </div>
+              {{ province.toponymName || province.name }}
+            </option>
+          </select>
         </div>
-        <div class="row g-2 mt-1">
-          <div class="col-md-12">
-            <select 
-              v-model="temporaryAddress.wardCommune" 
-              class="form-select" 
-              :disabled="!temporaryWards.length"
+        <div class="col-md-4">
+          <select 
+            v-model="internalPermanentAddress.districtCounty" 
+            class="form-select" 
+            :disabled="!permanentDistricts.length"
+            @change="handleDistrictChange('permanent')"
+          >
+            <option value="">-- Chọn quận/huyện --</option>
+            <option 
+              v-for="district in permanentDistricts" 
+              :key="district.geonameId" 
+              :value="district.toponymName || district.name"
+              :data-geonameid="district.geonameId"
             >
-              <option value="">-- Chọn phường/xã --</option>
-              <option 
-                v-for="ward in temporaryWards" 
-                :key="ward.geonameId" 
-                :value="ward.toponymName || ward.name"
-              >
-                {{ ward.toponymName || ward.name }}
-              </option>
-            </select>
-          </div>
+              {{ district.toponymName || district.name }}
+            </option>
+          </select>
         </div>
       </div>
-  
-      <div class="mb-3">
-        <label class="form-label fw-bold">Địa chỉ nhận thư <span class="text-danger">*</span></label>
-        <div class="row g-2">
-          <div class="col-md-12">
-            <input 
-              type="text" 
-              v-model="mailingAddress.houseNumberStreet" 
-              class="form-control"
-              placeholder="Số nhà, Tên đường"
-              required
+      <div class="row g-2 mt-1">
+        <div class="col-md-12">
+          <select 
+            v-model="internalPermanentAddress.wardCommune" 
+            class="form-select" 
+            :disabled="!permanentWards.length"
+          >
+            <option value="">-- Chọn phường/xã --</option>
+            <option 
+              v-for="ward in permanentWards" 
+              :key="ward.geonameId" 
+              :value="ward.toponymName || ward.name"
             >
-          </div>
-        </div>
-        <div class="row g-2 mt-1">
-          <div class="col-md-4">
-            <select 
-              v-model="mailingAddress.country" 
-              class="form-select"
-              @change="handleCountryChange('mailing')"
-              required
-            >
-              <option value="">-- Chọn quốc gia --</option>
-              <option 
-                v-for="country in countries" 
-                :key="country.geonameId" 
-                :value="country.countryName"
-                :data-geonameid="country.geonameId"
-              >
-                {{ country.countryName }}
-              </option>
-            </select>
-          </div>
-          <div class="col-md-4">
-            <select 
-              v-model="mailingAddress.provinceCity" 
-              class="form-select" 
-              :disabled="!mailingProvinces.length"
-              @change="handleProvinceChange('mailing')"
-              required
-            >
-              <option value="">-- Chọn tỉnh/thành phố --</option>
-              <option 
-                v-for="province in mailingProvinces" 
-                :key="province.geonameId" 
-                :value="province.toponymName || province.name"
-                :data-geonameid="province.geonameId"
-              >
-                {{ province.toponymName || province.name }}
-              </option>
-            </select>
-          </div>
-          <div class="col-md-4">
-            <select 
-              v-model="mailingAddress.districtCounty" 
-              class="form-select" 
-              :disabled="!mailingDistricts.length"
-              @change="handleDistrictChange('mailing')"
-              required
-            >
-              <option value="">-- Chọn quận/huyện --</option>
-              <option 
-                v-for="district in mailingDistricts" 
-                :key="district.geonameId" 
-                :value="district.toponymName || district.name"
-                :data-geonameid="district.geonameId"
-              >
-                {{ district.toponymName || district.name }}
-              </option>
-            </select>
-          </div>
-        </div>
-        <div class="row g-2 mt-1">
-          <div class="col-md-12">
-            <select 
-              v-model="mailingAddress.wardCommune" 
-              class="form-select" 
-              :disabled="!mailingWards.length"
-            >
-              <option value="">-- Chọn phường/xã --</option>
-              <option 
-                v-for="ward in mailingWards" 
-                :key="ward.geonameId" 
-                :value="ward.toponymName || ward.name"
-              >
-                {{ ward.toponymName || ward.name }}
-              </option>
-            </select>
-          </div>
+              {{ ward.toponymName || ward.name }}
+            </option>
+          </select>
         </div>
       </div>
     </div>
-  </template>
+
+    <div class="mb-3">
+      <label class="form-label fw-bold">Địa chỉ tạm trú</label>
+      <div class="row g-2">
+        <div class="col-md-12">
+          <input 
+            type="text" 
+            v-model="internalTemporaryAddress.houseNumberStreet" 
+            class="form-control"
+            placeholder="Số nhà, Tên đường"
+          >
+        </div>
+      </div>
+      <div class="row g-2 mt-1">
+        <div class="col-md-4">
+          <select 
+            v-model="internalTemporaryAddress.country" 
+            class="form-select"
+            @change="handleCountryChange('temporary')"
+          >
+            <option value="">-- Chọn quốc gia --</option>
+            <option 
+              v-for="country in countries" 
+              :key="country.geonameId" 
+              :value="country.countryName"
+              :data-geonameid="country.geonameId"
+            >
+              {{ country.countryName }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <select 
+            v-model="internalTemporaryAddress.provinceCity" 
+            class="form-select" 
+            :disabled="!temporaryProvinces.length"
+            @change="handleProvinceChange('temporary')"
+          >
+            <option value="">-- Chọn tỉnh/thành phố --</option>
+            <option 
+              v-for="province in temporaryProvinces" 
+              :key="province.geonameId" 
+              :value="province.toponymName || province.name"
+              :data-geonameid="province.geonameId"
+            >
+              {{ province.toponymName || province.name }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <select 
+            v-model="internalTemporaryAddress.districtCounty" 
+            class="form-select" 
+            :disabled="!temporaryDistricts.length"
+            @change="handleDistrictChange('temporary')"
+          >
+            <option value="">-- Chọn quận/huyện --</option>
+            <option 
+              v-for="district in temporaryDistricts" 
+              :key="district.geonameId" 
+              :value="district.toponymName || district.name"
+              :data-geonameid="district.geonameId"
+            >
+              {{ district.toponymName || district.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="row g-2 mt-1">
+        <div class="col-md-12">
+          <select 
+            v-model="internalTemporaryAddress.wardCommune" 
+            class="form-select" 
+            :disabled="!temporaryWards.length"
+          >
+            <option value="">-- Chọn phường/xã --</option>
+            <option 
+              v-for="ward in temporaryWards" 
+              :key="ward.geonameId" 
+              :value="ward.toponymName || ward.name"
+            >
+              {{ ward.toponymName || ward.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <label class="form-label fw-bold">Địa chỉ nhận thư <span class="text-danger">*</span></label>
+      <div class="row g-2">
+        <div class="col-md-12">
+          <input 
+            type="text" 
+            v-model="internalMailingAddress.houseNumberStreet" 
+            class="form-control"
+            placeholder="Số nhà, Tên đường"
+            required
+          >
+        </div>
+      </div>
+      <div class="row g-2 mt-1">
+        <div class="col-md-4">
+          <select 
+            v-model="internalMailingAddress.country" 
+            class="form-select"
+            @change="handleCountryChange('mailing')"
+            required
+          >
+            <option value="">-- Chọn quốc gia --</option>
+            <option 
+              v-for="country in countries" 
+              :key="country.geonameId" 
+              :value="country.countryName"
+              :data-geonameid="country.geonameId"
+            >
+              {{ country.countryName }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <select 
+            v-model="internalMailingAddress.provinceCity" 
+            class="form-select" 
+            :disabled="!mailingProvinces.length"
+            @change="handleProvinceChange('mailing')"
+            required
+          >
+            <option value="">-- Chọn tỉnh/thành phố --</option>
+            <option 
+              v-for="province in mailingProvinces" 
+              :key="province.geonameId" 
+              :value="province.toponymName || province.name"
+              :data-geonameid="province.geonameId"
+            >
+              {{ province.toponymName || province.name }}
+            </option>
+          </select>
+        </div>
+        <div class="col-md-4">
+          <select 
+            v-model="internalMailingAddress.districtCounty" 
+            class="form-select" 
+            :disabled="!mailingDistricts.length"
+            @change="handleDistrictChange('mailing')"
+            required
+          >
+            <option value="">-- Chọn quận/huyện --</option>
+            <option 
+              v-for="district in mailingDistricts" 
+              :key="district.geonameId" 
+              :value="district.toponymName || district.name"
+              :data-geonameid="district.geonameId"
+            >
+              {{ district.toponymName || district.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+      <div class="row g-2 mt-1">
+        <div class="col-md-12">
+          <select 
+            v-model="internalMailingAddress.wardCommune" 
+            class="form-select" 
+            :disabled="!mailingWards.length"
+          >
+            <option value="">-- Chọn phường/xã --</option>
+            <option 
+              v-for="ward in mailingWards" 
+              :key="ward.geonameId" 
+              :value="ward.toponymName || ward.name"
+            >
+              {{ ward.toponymName || ward.name }}
+            </option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
   
   <script>
-  import { ref, toRefs, computed, watch } from 'vue'
-  
+  import { ref, toRefs, watch } from 'vue'
+
   export default {
     name: 'AddressFields',
     props: {
@@ -305,6 +305,11 @@
     setup(props, { emit }) {
       const { mailingAddress, permanentAddress, temporaryAddress } = toRefs(props)
       
+      // Create internal copies of the addresses to avoid direct prop mutation
+      const internalMailingAddress = ref({...mailingAddress.value})
+      const internalPermanentAddress = ref({...permanentAddress.value})
+      const internalTemporaryAddress = ref({...temporaryAddress.value})
+      
       // State for location data
       const mailingProvinces = ref([])
       const mailingDistricts = ref([])
@@ -318,26 +323,16 @@
       const temporaryDistricts = ref([])
       const temporaryWards = ref([])
       
-      // Helper function to get geonameId from select element
-      const getGeonameId = (type, field) => {
-        const selectElement = document.querySelector(`select[v-model="${type}Address.${field}"]`)
-        if (!selectElement) return null
-        
-        const selectedOption = selectElement.options[selectElement.selectedIndex]
-        return selectedOption ? selectedOption.getAttribute('data-geonameid') : null
-      }
-      
       // Event handlers
       const handleCountryChange = async (type) => {
-        const address = getAddressByType(type)
-        const geonameId = getGeonameIdFromElement(`select[v-model="${type}Address.country"]`)
+        const geonameId = getGeonameIdFromElement(`select[v-model="internal${type}Address.country"]`)
         
         if (!geonameId) return
         
         // Reset dependent dropdowns
-        resetProvinces(type)
-        resetDistricts(type)
-        resetWards(type)
+        resetProvincesByType(type)
+        resetDistrictsByType(type)
+        resetWardsByType(type)
         
         // Load provinces
         const children = await emit('loadChildren', geonameId, type, 'province')
@@ -345,17 +340,19 @@
         
         const provinces = children.geonames || children
         setProvincesByType(type, provinces)
+        
+        // Update the parent
+        updateAddressByType(type)
       }
       
       const handleProvinceChange = async (type) => {
-        const address = getAddressByType(type)
-        const geonameId = getGeonameIdFromElement(`select[v-model="${type}Address.provinceCity"]`)
+        const geonameId = getGeonameIdFromElement(`select[v-model="internal${type}Address.provinceCity"]`)
         
         if (!geonameId) return
         
         // Reset dependent dropdowns
-        resetDistricts(type)
-        resetWards(type)
+        resetDistrictsByType(type)
+        resetWardsByType(type)
         
         // Load districts
         const children = await emit('loadChildren', geonameId, type, 'district')
@@ -363,32 +360,27 @@
         
         const districts = children.geonames || children
         setDistrictsByType(type, districts)
+        
+        // Update the parent
+        updateAddressByType(type)
       }
       
       const handleDistrictChange = async (type) => {
-        const address = getAddressByType(type)
-        const geonameId = getGeonameIdFromElement(`select[v-model="${type}Address.districtCounty"]`)
+        const geonameId = getGeonameIdFromElement(`select[v-model="internal${type}Address.districtCounty"]`)
         
         if (!geonameId) return
         
         // Reset ward dropdown
-        resetWards(type)
+        resetWardsByType(type)
         
         const children = await emit('loadChildren', geonameId, type, 'ward')
         if (!children) return
         
         const wards = children.geonames || children
         setWardsByType(type, wards)
-      }
-      
-      // Helper functions
-      const getAddressByType = (type) => {
-        switch (type) {
-          case 'mailing': return mailingAddress.value
-          case 'permanent': return permanentAddress.value
-          case 'temporary': return temporaryAddress.value
-          default: return null
-        }
+        
+        // Update the parent
+        updateAddressByType(type)
       }
       
       const getGeonameIdFromElement = (selector) => {
@@ -399,113 +391,153 @@
         return selectedOption ? selectedOption.getAttribute('data-geonameid') : null
       }
       
-      const resetProvinces = (type) => {
-        switch (type) {
-          case 'mailing':
+      const updateAddressByType = (type) => {
+        const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
+        switch (capitalizedType) {
+          case 'Mailing':
+            emit('update:mailingAddress', {...internalMailingAddress.value})
+            break
+          case 'Permanent':
+            emit('update:permanentAddress', {...internalPermanentAddress.value})
+            break
+          case 'Temporary':
+            emit('update:temporaryAddress', {...internalTemporaryAddress.value})
+            break
+        }
+      }
+      
+      const resetProvincesByType = (type) => {
+        const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
+        switch (capitalizedType) {
+          case 'Mailing':
             mailingProvinces.value = []
-            mailingAddress.value.provinceCity = ''
+            internalMailingAddress.value.provinceCity = ''
             break
-          case 'permanent':
+          case 'Permanent':
             permanentProvinces.value = []
-            permanentAddress.value.provinceCity = ''
+            internalPermanentAddress.value.provinceCity = ''
             break
-          case 'temporary':
+          case 'Temporary':
             temporaryProvinces.value = []
-            temporaryAddress.value.provinceCity = ''
+            internalTemporaryAddress.value.provinceCity = ''
             break
         }
+        updateAddressByType(type)
       }
       
-      const resetDistricts = (type) => {
-        switch (type) {
-          case 'mailing':
+      const resetDistrictsByType = (type) => {
+        const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
+        switch (capitalizedType) {
+          case 'Mailing':
             mailingDistricts.value = []
-            mailingAddress.value.districtCounty = ''
+            internalMailingAddress.value.districtCounty = ''
             break
-          case 'permanent':
+          case 'Permanent':
             permanentDistricts.value = []
-            permanentAddress.value.districtCounty = ''
+            internalPermanentAddress.value.districtCounty = ''
             break
-          case 'temporary':
+          case 'Temporary':
             temporaryDistricts.value = []
-            temporaryAddress.value.districtCounty = ''
+            internalTemporaryAddress.value.districtCounty = ''
             break
         }
+        updateAddressByType(type)
       }
       
-      const resetWards = (type) => {
-        switch (type) {
-          case 'mailing':
+      const resetWardsByType = (type) => {
+        const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
+        switch (capitalizedType) {
+          case 'Mailing':
             mailingWards.value = []
-            mailingAddress.value.wardCommune = ''
+            internalMailingAddress.value.wardCommune = ''
             break
-          case 'permanent':
+          case 'Permanent':
             permanentWards.value = []
-            permanentAddress.value.wardCommune = ''
+            internalPermanentAddress.value.wardCommune = ''
             break
-          case 'temporary':
+          case 'Temporary':
             temporaryWards.value = []
-            temporaryAddress.value.wardCommune = ''
+            internalTemporaryAddress.value.wardCommune = ''
             break
         }
+        updateAddressByType(type)
       }
       
       const setProvincesByType = (type, provinces) => {
-        switch (type) {
-          case 'mailing':
+        const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
+        switch (capitalizedType) {
+          case 'Mailing':
             mailingProvinces.value = provinces
             break
-          case 'permanent':
+          case 'Permanent':
             permanentProvinces.value = provinces
             break
-          case 'temporary':
+          case 'Temporary':
             temporaryProvinces.value = provinces
             break
         }
       }
       
       const setDistrictsByType = (type, districts) => {
-        switch (type) {
-          case 'mailing':
+        const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
+        switch (capitalizedType) {
+          case 'Mailing':
             mailingDistricts.value = districts
             break
-          case 'permanent':
+          case 'Permanent':
             permanentDistricts.value = districts
             break
-          case 'temporary':
+          case 'Temporary':
             temporaryDistricts.value = districts
             break
         }
       }
       
       const setWardsByType = (type, wards) => {
-        switch (type) {
-          case 'mailing':
+        const capitalizedType = type.charAt(0).toUpperCase() + type.slice(1)
+        switch (capitalizedType) {
+          case 'Mailing':
             mailingWards.value = wards
             break
-          case 'permanent':
+          case 'Permanent':
             permanentWards.value = wards
             break
-          case 'temporary':
+          case 'Temporary':
             temporaryWards.value = wards
             break
         }
       }
       
-      // Watch for changes in addresses
+      // Watch for changes in props to sync internal state
       watch(mailingAddress, (newValue) => {
-        emit('update:mailingAddress', newValue)
+        internalMailingAddress.value = {...newValue}
       }, { deep: true })
       
       watch(permanentAddress, (newValue) => {
-        emit('update:permanentAddress', newValue)
+        internalPermanentAddress.value = {...newValue}
       }, { deep: true })
       
       watch(temporaryAddress, (newValue) => {
-        emit('update:temporaryAddress', newValue)
+        internalTemporaryAddress.value = {...newValue}
+      }, { deep: true })
+      
+      // Watch for changes in internal state to emit updates
+      watch(internalMailingAddress, (newValue) => {
+        emit('update:mailingAddress', {...newValue})
+      }, { deep: true })
+      
+      watch(internalPermanentAddress, (newValue) => {
+        emit('update:permanentAddress', {...newValue})
+      }, { deep: true })
+      
+      watch(internalTemporaryAddress, (newValue) => {
+        emit('update:temporaryAddress', {...newValue})
       }, { deep: true })
       
       return {
+        internalMailingAddress,
+        internalPermanentAddress,
+        internalTemporaryAddress,
         mailingProvinces,
         mailingDistricts,
         mailingWards,
