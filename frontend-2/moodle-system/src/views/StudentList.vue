@@ -89,27 +89,22 @@
             <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">Trước</a>
           </li>
           
-          <!-- First page -->
           <li v-if="startPage > 1" class="page-item">
             <a class="page-link" href="#" @click.prevent="changePage(1)">1</a>
           </li>
           
-          <!-- Ellipsis if needed -->
           <li v-if="startPage > 2" class="page-item disabled">
             <span class="page-link">...</span>
           </li>
           
-          <!-- Page numbers -->
           <li v-for="page in paginationPages" :key="page" class="page-item" :class="{ active: page === currentPage }">
             <a class="page-link" href="#" @click.prevent="changePage(page)">{{ page }}</a>
           </li>
           
-          <!-- Ellipsis if needed -->
           <li v-if="endPage < totalPages - 1" class="page-item disabled">
             <span class="page-link">...</span>
           </li>
           
-          <!-- Last page -->
           <li v-if="endPage < totalPages" class="page-item">
             <a class="page-link" href="#" @click.prevent="changePage(totalPages)">{{ totalPages }}</a>
           </li>
@@ -120,10 +115,8 @@
         </ul>
       </nav>
   
-      <!-- Import/Export -->
       <StudentImportExport />
   
-      <!-- Delete confirmation modal -->
       <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true" ref="deleteModal">
         <div class="modal-dialog">
           <div class="modal-content">

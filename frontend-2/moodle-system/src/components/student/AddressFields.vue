@@ -2,7 +2,6 @@
     <div>
       <div class="section-title">Thông tin địa chỉ</div>
   
-      <!-- Permanent Address -->
       <div class="mb-3">
         <label class="form-label fw-bold">Địa chỉ thường trú</label>
         <div class="row g-2">
@@ -90,7 +89,6 @@
         </div>
       </div>
   
-      <!-- Temporary Address -->
       <div class="mb-3">
         <label class="form-label fw-bold">Địa chỉ tạm trú</label>
         <div class="row g-2">
@@ -178,7 +176,6 @@
         </div>
       </div>
   
-      <!-- Mailing Address -->
       <div class="mb-3">
         <label class="form-label fw-bold">Địa chỉ nhận thư <span class="text-danger">*</span></label>
         <div class="row g-2">
@@ -377,7 +374,6 @@
         // Reset ward dropdown
         resetWards(type)
         
-        // Load wards
         const children = await emit('loadChildren', geonameId, type, 'ward')
         if (!children) return
         

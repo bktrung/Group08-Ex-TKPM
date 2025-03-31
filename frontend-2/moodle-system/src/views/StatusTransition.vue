@@ -161,7 +161,7 @@
       const loading = computed(() => store.state.status.loading)
       
       const toastClass = computed(() => {
-        return { 'show': toastType.value !== '' }
+        return { 'show': toastType.value !== '' && toastMessage.value !== '' }
       })
       
       const toastHeaderClass = computed(() => {
@@ -182,7 +182,6 @@
             toStatus: toStatusId.value
           })
           
-          // Reset form
           fromStatusId.value = ''
           toStatusId.value = ''
           
@@ -220,16 +219,17 @@
       }
       
       const showToast = (title, message, type = 'info') => {
-        toastTitle.value = title
-        toastMessage.value = message
-        toastType.value = type
+        if (!message) return;
+        
+        toastTitle.value = title || 'Thông báo';
+        toastMessage.value = message;
+        toastType.value = type;
         
         if (toast.value) {
-          toast.value.show()
+          toast.value.show();
         }
       }
   
-      // Lifecycle hooks
       onMounted(async () => {
         await Promise.all([
           store.dispatch('status/fetchStatusTypes'),
