@@ -235,46 +235,68 @@ export default {
     
     const handleSubmit = async (updatedStudentData) => {
       try {
+        console.log('Received updated student data:', JSON.stringify(updatedStudentData, null, 2));
+        
+        // Create a clean copy of the data to send to the API
         const cleanData = {};
         
+        // Handle special fields that need conversion
         const originalStatus = studentData.value && studentData.value.status ? 
           (typeof studentData.value.status === 'object' ? 
             studentData.value.status._id : studentData.value.status) : null;
+            
         const updatedStatus = updatedStudentData.status ? 
           (typeof updatedStudentData.status === 'object' ? 
             updatedStudentData.status._id : updatedStudentData.status) : null;
         
         const shouldIncludeStatus = originalStatus !== updatedStatus;
         
+        // Process all fields
         for (const [key, value] of Object.entries(updatedStudentData)) {
           // Skip the status field if it hasn't changed
           if (key === 'status' && !shouldIncludeStatus) {
             continue;
           }
           
+          // Handle reference fields
           if (key === 'department' || key === 'program' || key === 'status') {
             cleanData[key] = typeof value === 'object' ? value._id : value;
-          } else if (key === 'dateOfBirth' || 
-                    (key === 'identityDocument' && 
-                    (value.issueDate || value.expiryDate))) {
-            cleanData[key] = key === 'dateOfBirth' ? 
-              new Date(value).toISOString() : 
-              {...value, 
-              issueDate: new Date(value.issueDate).toISOString(),
-              expiryDate: new Date(value.expiryDate).toISOString()
-              };
-          } else if (key === 'identityDocument' && value.type === 'CCCD') {
-            cleanData[key] = {
-              ...value,
-              hasChip: Boolean(value.hasChip)
-            };
-          } else {
+          } 
+          // Handle date fields
+          else if (key === 'dateOfBirth') {
+            cleanData[key] = new Date(value).toISOString();
+          }
+          // Handle identity document
+          else if (key === 'identityDocument') {
+            const docCopy = {...value};
+            
+            if (docCopy.issueDate) {
+              docCopy.issueDate = new Date(docCopy.issueDate).toISOString();
+            }
+            
+            if (docCopy.expiryDate) {
+              docCopy.expiryDate = new Date(docCopy.expiryDate).toISOString();
+            }
+            
+            if (docCopy.type === 'CCCD') {
+              docCopy.hasChip = Boolean(docCopy.hasChip);
+            }
+            
+            cleanData[key] = docCopy;
+          }
+          // Handle address fields - copy these directly
+          else if (key === 'mailingAddress' || key === 'permanentAddress' || key === 'temporaryAddress') {
+            cleanData[key] = {...value};
+          }
+          // Handle all other fields
+          else {
             cleanData[key] = value;
           }
         }
         
-        console.log('Submitting data:', cleanData);
+        console.log('Prepared data for API:', JSON.stringify(cleanData, null, 2));
         
+        // Send the data to the API
         await store.dispatch('student/updateStudent', {
           id: studentId,
           student: cleanData
@@ -304,18 +326,18 @@ export default {
     };
     
     onMounted(async () => {
-      await fetchStudentData()
+      await fetchStudentData();
       
-      const successModalElement = document.getElementById('successModal')
+      const successModalElement = document.getElementById('successModal');
       if (successModalElement) {
-        successModal = new Modal(successModalElement)
+        successModal = new Modal(successModalElement);
       }
       
-      const errorModalElement = document.getElementById('errorModal')
+      const errorModalElement = document.getElementById('errorModal');
       if (errorModalElement) {
-        errorModal = new Modal(errorModalElement)
+        errorModal = new Modal(errorModalElement);
       }
-    })
+    });
     
     return {
       studentData,

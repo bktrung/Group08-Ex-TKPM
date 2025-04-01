@@ -861,6 +861,18 @@ export default {
       }
     }
     
+    watch(internalMailingAddress, () => {
+      emit('update:mailingAddress', {...internalMailingAddress.value})
+    }, { deep: true })
+
+    watch(internalPermanentAddress, () => {
+      emit('update:permanentAddress', {...internalPermanentAddress.value})
+    }, { deep: true })
+
+    watch(internalTemporaryAddress, () => {
+      emit('update:temporaryAddress', {...internalTemporaryAddress.value})
+    }, { deep: true })
+    
     watch(mailingAddress, (newValue) => {
       if (JSON.stringify(internalMailingAddress.value) !== JSON.stringify(newValue)) {
         internalMailingAddress.value = {...newValue}
