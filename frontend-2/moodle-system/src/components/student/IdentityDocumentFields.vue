@@ -9,9 +9,10 @@
             id="identity-type" 
             v-model="internalDocument.type" 
             class="form-select" 
-            :class="{ 'is-valid': isValid.type, 'is-invalid': isInvalid.type }"
+            :class="{ 'is-valid': isValid.type && touched.type, 'is-invalid': isInvalid.type && touched.type }"
             required 
             @change="handleTypeChange"
+            @blur="onFieldTouched('type')"
           >
             <option value="CMND">Chứng minh nhân dân (CMND)</option>
             <option value="CCCD">Căn cước công dân (CCCD)</option>
@@ -24,10 +25,11 @@
             type="text" 
             v-model="internalDocument.number" 
             class="form-control" 
-            :class="{ 'is-valid': isValid.number, 'is-invalid': isInvalid.number }"
+            :class="{ 'is-valid': isValid.number && touched.number, 'is-invalid': isInvalid.number && touched.number }"
             required
+            @blur="onFieldTouched('number')"
           >
-          <div class="invalid-feedback" v-if="isInvalid.number">
+          <div class="invalid-feedback" v-if="isInvalid.number && touched.number">
             <span v-if="internalDocument.type === 'CMND'">Số CMND phải có đúng 9 chữ số</span>
             <span v-else-if="internalDocument.type === 'CCCD'">Số CCCD phải có đúng 12 chữ số</span>
             <span v-else-if="internalDocument.type === 'PASSPORT'">Số hộ chiếu phải có 1 chữ cái viết hoa và 8 chữ số</span>
@@ -38,12 +40,13 @@
           <select 
             v-model="internalDocument.hasChip" 
             class="form-select"
-            :class="{ 'is-valid': isValid.hasChip, 'is-invalid': isInvalid.hasChip }"
+            :class="{ 'is-valid': isValid.hasChip && touched.hasChip, 'is-invalid': isInvalid.hasChip && touched.hasChip }"
+            @blur="onFieldTouched('hasChip')"
           >
             <option :value="true">Có</option>
             <option :value="false">Không</option>
           </select>
-          <div class="invalid-feedback" v-if="isInvalid.hasChip">
+          <div class="invalid-feedback" v-if="isInvalid.hasChip && touched.hasChip">
             Thông tin về chip là trường bắt buộc
           </div>
         </div>
@@ -56,10 +59,11 @@
             type="date" 
             v-model="internalDocument.issueDate" 
             class="form-control" 
-            :class="{ 'is-valid': isValid.issueDate, 'is-invalid': isInvalid.issueDate }"
+            :class="{ 'is-valid': isValid.issueDate && touched.issueDate, 'is-invalid': isInvalid.issueDate && touched.issueDate }"
             required
+            @blur="onFieldTouched('issueDate')"
           >
-          <div class="invalid-feedback" v-if="isInvalid.issueDate">
+          <div class="invalid-feedback" v-if="isInvalid.issueDate && touched.issueDate">
             Ngày cấp không thể trong tương lai
           </div>
         </div>
@@ -69,10 +73,11 @@
             type="date" 
             v-model="internalDocument.expiryDate" 
             class="form-control" 
-            :class="{ 'is-valid': isValid.expiryDate, 'is-invalid': isInvalid.expiryDate }"
+            :class="{ 'is-valid': isValid.expiryDate && touched.expiryDate, 'is-invalid': isInvalid.expiryDate && touched.expiryDate }"
             required
+            @blur="onFieldTouched('expiryDate')"
           >
-          <div class="invalid-feedback" v-if="isInvalid.expiryDate">
+          <div class="invalid-feedback" v-if="isInvalid.expiryDate && touched.expiryDate">
             Ngày hết hạn phải sau ngày hiện tại
           </div>
         </div>
@@ -82,10 +87,11 @@
             type="text" 
             v-model="internalDocument.issuedBy" 
             class="form-control" 
-            :class="{ 'is-valid': isValid.issuedBy, 'is-invalid': isInvalid.issuedBy }"
+            :class="{ 'is-valid': isValid.issuedBy && touched.issuedBy, 'is-invalid': isInvalid.issuedBy && touched.issuedBy }"
             required
+            @blur="onFieldTouched('issuedBy')"
           >
-          <div class="invalid-feedback" v-if="isInvalid.issuedBy">
+          <div class="invalid-feedback" v-if="isInvalid.issuedBy && touched.issuedBy">
             Nơi cấp không được để trống
           </div>
         </div>
@@ -99,15 +105,16 @@
             <select 
               v-model="internalDocument.issuedCountry" 
               class="form-select"
-              :class="{ 'is-valid': isValid.issuedCountry, 'is-invalid': isInvalid.issuedCountry }"
+              :class="{ 'is-valid': isValid.issuedCountry && touched.issuedCountry, 'is-invalid': isInvalid.issuedCountry && touched.issuedCountry }"
               required
+              @blur="onFieldTouched('issuedCountry')"
             >
               <option value="">-- Chọn quốc gia --</option>
               <option v-for="country in countries" :key="country.geonameId" :value="country.countryName">
                 {{ country.countryName }}
               </option>
             </select>
-            <div class="invalid-feedback" v-if="isInvalid.issuedCountry">
+            <div class="invalid-feedback" v-if="isInvalid.issuedCountry && touched.issuedCountry">
               Quốc gia cấp không được để trống
             </div>
           </div>
@@ -117,7 +124,8 @@
               type="text" 
               v-model="internalDocument.notes" 
               class="form-control"
-              :class="{ 'is-valid': internalDocument.notes && internalDocument.notes.trim().length > 0 }"
+              :class="{ 'is-valid': internalDocument.notes && internalDocument.notes.trim().length > 0 && touched.notes }"
+              @blur="onFieldTouched('notes')"
             >
           </div>
         </div>
@@ -146,6 +154,30 @@ export default {
     const { identityDocument } = toRefs(props)
     
     const internalDocument = ref({...identityDocument.value})
+    
+    // Track touched state for each field
+    const touched = ref({
+      type: false,
+      number: false,
+      issueDate: false,
+      expiryDate: false,
+      issuedBy: false,
+      hasChip: false,
+      issuedCountry: false,
+      notes: false
+    })
+    
+    // Function to mark a field as touched
+    const onFieldTouched = (field) => {
+      touched.value[field] = true
+    }
+    
+    // Mark all fields as touched (useful when submitting the form)
+    const markAllFieldsTouched = () => {
+      Object.keys(touched.value).forEach(field => {
+        touched.value[field] = true
+      })
+    }
     
     // Validation state
     const isValid = ref({
@@ -318,6 +350,9 @@ export default {
         internalDocument.value = newDocument
       }
       
+      // Mark type as touched since user explicitly changed it
+      touched.value.type = true
+      
       // Validate after changing the type
       validateAll()
       
@@ -359,7 +394,7 @@ export default {
     watch(identityDocument, (newValue) => {
       if (JSON.stringify(internalDocument.value) !== JSON.stringify(newValue)) {
         internalDocument.value = {...newValue}
-        // Validate after updating from props
+        // Validate after updating from props, but don't mark as touched
         validateAll()
       }
     }, { deep: true })
@@ -371,7 +406,10 @@ export default {
       internalDocument,
       isValid,
       isInvalid,
-      handleTypeChange
+      touched,
+      handleTypeChange,
+      onFieldTouched,
+      markAllFieldsTouched
     }
   }
 }

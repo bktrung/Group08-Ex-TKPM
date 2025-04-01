@@ -193,9 +193,13 @@
       :countries="countries" 
       :loading="loading"
       :fetchLocationData="fetchLocationData"
+      @update:mailingAddress="onAddressUpdate('mailing', $event)"
+      @update:permanentAddress="onAddressUpdate('permanent', $event)"
+      @update:temporaryAddress="onAddressUpdate('temporary', $event)"
     />
 
     <IdentityDocumentFields 
+      ref="identityDocFields"
       v-model:identityDocument="form.identityDocument"
       :countries="countries"
     />
@@ -239,6 +243,7 @@ export default {
     const store = useStore()
     const currentYear = new Date().getFullYear()
     const currentStatusId = ref(null)
+    const identityDocFields = ref(null)
     
     const form = ref({
       studentId: '',
@@ -282,6 +287,24 @@ export default {
         hasChip: true
       }
     })
+    
+    // Handler for address updates from child component
+    const onAddressUpdate = (type, newValue) => {
+      if (!newValue) return;
+      
+      switch(type) {
+        case 'mailing':
+          form.value.mailingAddress = {...newValue};
+          break;
+        case 'permanent':
+          form.value.permanentAddress = {...newValue};
+          break;
+        case 'temporary':
+          form.value.temporaryAddress = {...newValue};
+          break;
+      }
+      console.log(`Address updated (${type}):`, form.value[`${type}Address`]);
+    }
     
     // Validation rules
     const rules = computed(() => {
@@ -379,20 +402,27 @@ export default {
     }
     
     const handleSubmit = async () => {
+      // Mark all identity document fields as touched for validation
+      if (identityDocFields.value && typeof identityDocFields.value.markAllFieldsTouched === 'function') {
+        identityDocFields.value.markAllFieldsTouched()
+      }
+      
       const isValid = await v$.value.$validate()
       if (!isValid) return
       
-      const studentData = { ...form.value }
+      // Create a deep copy of the form data to avoid reference issues
+      const studentData = JSON.parse(JSON.stringify(form.value))
       
-      // Only include addresses that have at least a street name
-      if (!studentData.permanentAddress.houseNumberStreet) {
+      // Process addresses to ensure they're properly included
+      if (!studentData.permanentAddress || !studentData.permanentAddress.houseNumberStreet) {
         delete studentData.permanentAddress
       }
       
-      if (!studentData.temporaryAddress.houseNumberStreet) {
+      if (!studentData.temporaryAddress || !studentData.temporaryAddress.houseNumberStreet) {
         delete studentData.temporaryAddress
       }
       
+      console.log('Form data before submit:', studentData)
       emit('submit', studentData)
     }
     
@@ -481,7 +511,9 @@ export default {
       currentStatusId,
       handleSubmit,
       fetchLocationData,
-      isValidStatusTransition
+      isValidStatusTransition,
+      onAddressUpdate,
+      identityDocFields // Expose the ref
     }
   }
 }
