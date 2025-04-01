@@ -86,15 +86,28 @@ export default {
     },
     
     async updateStudent({ commit }, { id, student }) {
-      commit('SET_LOADING', true)
+      commit('SET_LOADING', true);
       try {
-        const response = await api.updateStudent(id, student)
-        return response.data
+        // Log the data being sent
+        console.log('Updating student with ID:', id);
+        console.log('Data being sent:', JSON.stringify(student, null, 2));
+        
+        const response = await api.updateStudent(id, student);
+        return response.data;
       } catch (error) {
-        commit('SET_ERROR', error.message)
-        throw error
+        console.error('Update student error details:', {
+          message: error.message,
+          response: error.response ? {
+            status: error.response.status,
+            data: error.response.data
+          } : 'No response data',
+          requestData: student
+        });
+        
+        commit('SET_ERROR', error.response?.data?.message || error.message);
+        throw error;
       } finally {
-        commit('SET_LOADING', false)
+        commit('SET_LOADING', false);
       }
     },
     

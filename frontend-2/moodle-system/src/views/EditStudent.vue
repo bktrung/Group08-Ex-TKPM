@@ -235,34 +235,77 @@ export default {
     
     const handleSubmit = async (updatedStudentData) => {
       try {
+        const cleanData = {};
+        
+        const originalStatus = studentData.value && studentData.value.status ? 
+          (typeof studentData.value.status === 'object' ? 
+            studentData.value.status._id : studentData.value.status) : null;
+        const updatedStatus = updatedStudentData.status ? 
+          (typeof updatedStudentData.status === 'object' ? 
+            updatedStudentData.status._id : updatedStudentData.status) : null;
+        
+        const shouldIncludeStatus = originalStatus !== updatedStatus;
+        
+        for (const [key, value] of Object.entries(updatedStudentData)) {
+          // Skip the status field if it hasn't changed
+          if (key === 'status' && !shouldIncludeStatus) {
+            continue;
+          }
+          
+          if (key === 'department' || key === 'program' || key === 'status') {
+            cleanData[key] = typeof value === 'object' ? value._id : value;
+          } else if (key === 'dateOfBirth' || 
+                    (key === 'identityDocument' && 
+                    (value.issueDate || value.expiryDate))) {
+            cleanData[key] = key === 'dateOfBirth' ? 
+              new Date(value).toISOString() : 
+              {...value, 
+              issueDate: new Date(value.issueDate).toISOString(),
+              expiryDate: new Date(value.expiryDate).toISOString()
+              };
+          } else if (key === 'identityDocument' && value.type === 'CCCD') {
+            cleanData[key] = {
+              ...value,
+              hasChip: Boolean(value.hasChip)
+            };
+          } else {
+            cleanData[key] = value;
+          }
+        }
+        
+        console.log('Submitting data:', cleanData);
+        
         await store.dispatch('student/updateStudent', {
           id: studentId,
-          student: updatedStudentData
-        })
+          student: cleanData
+        });
         
-        // Show success modal
         if (successModal) {
-          successModal.show()
+          successModal.show();
         }
       } catch (err) {
-        console.error('Error updating student:', err)
-        errorMessage.value = err.message || 'Có lỗi xảy ra khi cập nhật sinh viên'
+        console.error('Error updating student:', err);
+        errorMessage.value = err.message || 'Có lỗi xảy ra khi cập nhật sinh viên';
         
-        // Show error modal
         if (errorModal) {
-          errorModal.show()
+          errorModal.show();
         }
       }
-    }
+    };
     
     const redirectToList = () => {
-      router.push('/')
-    }
+      if (successModal) {
+        successModal.hide();
+      }
+      
+      setTimeout(() => {
+        router.push('/');
+      }, 300);
+    };
     
     onMounted(async () => {
       await fetchStudentData()
       
-      // Initialize Bootstrap modals
       const successModalElement = document.getElementById('successModal')
       if (successModalElement) {
         successModal = new Modal(successModalElement)
