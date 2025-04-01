@@ -365,10 +365,8 @@ export default {
     
     // This is the function that will be passed to AddressFields component
     const fetchLocationData = async (geonameId) => {
-      console.log(`Fetching location data for geonameId: ${geonameId}`)
       try {
         const response = await store.dispatch('status/fetchLocationChildren', geonameId)
-        console.log(`API response for location data:`, response)
         return response
       } catch (error) {
         console.error(`Error fetching location data:`, error)
@@ -401,7 +399,6 @@ export default {
     // Watch for changes in student data prop
     watch(() => props.studentData, (newValue) => {
       if (newValue && Object.keys(newValue).length > 0) {
-        console.log('Updating form with student data:', newValue)
         
         // Create a deep copy of the student data to avoid reference issues
         const studentDataCopy = JSON.parse(JSON.stringify(newValue))

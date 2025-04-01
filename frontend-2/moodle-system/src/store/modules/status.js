@@ -40,7 +40,7 @@ export default {
       commit('SET_LOADING', true)
       try {
         const response = await api.getStatusTypes()
-        const statusTypes = response.data.metadata.statusType || []
+        const statusTypes = response.data.metadata || []
         commit('SET_STATUS_TYPES', statusTypes)
       } catch (error) {
         commit('SET_ERROR', error.message)
@@ -197,15 +197,12 @@ export default {
         return { geonames: [] }
       }
       
-      // Check if we have this data in cache
       if (state.locationCache[geonameId]) {
-        console.log(`Using cached location data for geonameId: ${geonameId}`)
         return state.locationCache[geonameId]
       }
       
       commit('SET_LOADING', true)
       try {
-        console.log(`Fetching children for geonameId: ${geonameId}`)
         const response = await api.getLocationChildren(geonameId)
         
         if (!response.data || !response.data.metadata || !response.data.metadata.children) {

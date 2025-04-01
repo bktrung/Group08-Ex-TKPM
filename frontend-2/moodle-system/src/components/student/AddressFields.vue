@@ -557,8 +557,6 @@ export default {
         return
       }
       
-      console.log(`Found geonameId ${geonameId} for country ${countryName}`)
-      
       // Reset dependent dropdowns
       resetProvincesByType(type)
       resetDistrictsByType(type)
@@ -567,11 +565,9 @@ export default {
       try {
         // Use the fetchLocationData prop function to get the data directly
         const result = await props.fetchLocationData(geonameId)
-        console.log(`Received children for ${type}:`, result)
         
         if (result && (result.geonames || Array.isArray(result))) {
           const provinces = result.geonames || result
-          console.log(`Setting ${provinces.length} provinces for ${type}`)
           setProvincesByType(type, provinces)
           enableProvincesByType(type)
         } else {
@@ -614,8 +610,6 @@ export default {
         return
       }
       
-      console.log(`Found geonameId ${geonameId} for province ${provinceCity}`)
-      
       // Reset dependent dropdowns
       resetDistrictsByType(type)
       resetWardsByType(type)
@@ -623,11 +617,9 @@ export default {
       try {
         // Use the fetchLocationData prop function to get the data directly
         const result = await props.fetchLocationData(geonameId)
-        console.log(`Received districts for ${type}:`, result)
         
         if (result && (result.geonames || Array.isArray(result))) {
           const districts = result.geonames || result
-          console.log(`Setting ${districts.length} districts for ${type}`)
           setDistrictsByType(type, districts)
           enableDistrictsByType(type)
         } else {
@@ -670,19 +662,15 @@ export default {
         return
       }
       
-      console.log(`Found geonameId ${geonameId} for district ${districtCounty}`)
-      
       // Reset ward dropdown
       resetWardsByType(type)
       
       try {
         // Use the fetchLocationData prop function to get the data directly
         const result = await props.fetchLocationData(geonameId)
-        console.log(`Received wards for ${type}:`, result)
         
         if (result && (result.geonames || Array.isArray(result))) {
           const wards = result.geonames || result
-          console.log(`Setting ${wards.length} wards for ${type}`)
           setWardsByType(type, wards)
           enableWardsByType(type)
         } else {
@@ -886,8 +874,6 @@ export default {
     }, { deep: true })
     
     onMounted(async () => {
-      console.log('AddressFields mounted, initializing addresses...')
-      
       if (mailingAddress.value && mailingAddress.value.country) {
         await initializeAddress('mailing')
       }

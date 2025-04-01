@@ -112,7 +112,6 @@ export default {
     return apiClient.get('/v1/api/address/nationalities')
   },
   getLocationChildren(geonameId) {
-    console.log(`API call for geonameId: ${geonameId}`)
     return apiClient.get(`/v1/api/address/children/${geonameId}`)
   }
 }
