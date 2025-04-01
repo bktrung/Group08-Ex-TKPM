@@ -862,15 +862,21 @@ export default {
     }
     
     watch(mailingAddress, (newValue) => {
-      internalMailingAddress.value = {...newValue}
+      if (JSON.stringify(internalMailingAddress.value) !== JSON.stringify(newValue)) {
+        internalMailingAddress.value = {...newValue}
+      }
     }, { deep: true })
 
     watch(permanentAddress, (newValue) => {
-      internalPermanentAddress.value = {...newValue}
+      if (JSON.stringify(internalPermanentAddress.value) !== JSON.stringify(newValue)) {
+        internalPermanentAddress.value = {...newValue}
+      }
     }, { deep: true })
 
     watch(temporaryAddress, (newValue) => {
-      internalTemporaryAddress.value = {...newValue}
+      if (JSON.stringify(internalTemporaryAddress.value) !== JSON.stringify(newValue)) {
+        internalTemporaryAddress.value = {...newValue}
+      }
     }, { deep: true })
     
     onMounted(async () => {

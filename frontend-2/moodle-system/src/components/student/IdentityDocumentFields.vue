@@ -80,7 +80,6 @@ export default {
   setup(props, { emit }) {
     const { identityDocument } = toRefs(props)
     
-    // Create internal copy to avoid direct prop mutation
     const internalDocument = ref({...identityDocument.value})
     
     const handleTypeChange = () => {
@@ -89,14 +88,12 @@ export default {
       if (docType === 'CCCD') {
         internalDocument.value.hasChip = true
         
-        // Clean up fields not needed for this type
         const newDocument = {...internalDocument.value}
         delete newDocument.issuedCountry
         delete newDocument.notes
         internalDocument.value = newDocument
       } 
       else if (docType === 'PASSPORT') {
-        // Clean up fields not needed for this type
         const newDocument = {...internalDocument.value}
         delete newDocument.hasChip
         
@@ -105,7 +102,6 @@ export default {
         internalDocument.value = newDocument
       } 
       else {
-        // For CMND or other types
         const newDocument = {...internalDocument.value}
         delete newDocument.hasChip
         delete newDocument.issuedCountry
@@ -116,14 +112,16 @@ export default {
       emit('update:identityDocument', {...internalDocument.value})
     }
     
-    // Watch for changes in props to sync internal state
     watch(identityDocument, (newValue) => {
-      internalDocument.value = {...newValue}
+      if (JSON.stringify(internalDocument.value) !== JSON.stringify(newValue)) {
+        internalDocument.value = {...newValue}
+      }
     }, { deep: true })
-    
-    // Watch for changes in internal state to emit updates
+
     watch(internalDocument, (newValue) => {
-      emit('update:identityDocument', {...newValue})
+      if (JSON.stringify(identityDocument.value) !== JSON.stringify(newValue)) {
+        emit('update:identityDocument', {...newValue})
+      }
     }, { deep: true })
     
     return {
