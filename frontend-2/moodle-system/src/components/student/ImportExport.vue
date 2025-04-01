@@ -182,7 +182,7 @@
           const result = await store.dispatch('student/importStudents', formData)
           
           importResult.value = {
-            success: result.status === 200,
+            success: result.status === 200 || result.status === 201,
             message: result.message || 'Import dữ liệu thành công',
             errors: result.metadata?.errors || []
           }

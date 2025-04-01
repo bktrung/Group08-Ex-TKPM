@@ -513,7 +513,7 @@ export default {
       fetchLocationData,
       isValidStatusTransition,
       onAddressUpdate,
-      identityDocFields // Expose the ref
+      identityDocFields
     }
   }
 }

@@ -200,12 +200,11 @@ export default {
       issuedCountry: false
     })
     
-    // Validation functions based on backend validation rules
     const validateDocumentNumber = () => {
       const number = internalDocument.value.number
       if (!number) {
         isValid.value.number = false
-        isInvalid.value.number = number !== '' // Only show as invalid if not empty
+        isInvalid.value.number = number !== ''
         return false
       }
       
@@ -350,16 +349,13 @@ export default {
         internalDocument.value = newDocument
       }
       
-      // Mark type as touched since user explicitly changed it
       touched.value.type = true
       
-      // Validate after changing the type
       validateAll()
       
       emit('update:identityDocument', {...internalDocument.value})
     }
     
-    // Set up watchers for validation
     watch(() => internalDocument.value.number, () => {
       validateDocumentNumber()
       emit('update:identityDocument', {...internalDocument.value})
