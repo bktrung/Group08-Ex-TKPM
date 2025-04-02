@@ -24,10 +24,12 @@ services:
 
   frontend:
     build:
-      context: ./frontend
+      context: ./frontend-2/moodle-system
       dockerfile: Dockerfile
     ports:
       - "80:80"
+    environment:
+      - VUE_APP_API_URL=http://backend:3456
     depends_on:
       - mongodb
       - backend
