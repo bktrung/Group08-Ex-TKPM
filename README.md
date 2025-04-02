@@ -139,6 +139,8 @@ API_BASE_URL=http://backend:3456/v1/api
 
 ### Chạy trên local
 
+**Note:** Bản frontend chạy trên local đang bị lỗi không hiển trị import/export file mà bản frontend `http://localhost:80` ở docker mới hiển thị nên nếu muốn test chức năng đó cần dùng bản docker.
+
 #### 1. Chuẩn bị môi trường
 1. Tạo file `.env` trong thư mục backend với nội dung:
 ```
