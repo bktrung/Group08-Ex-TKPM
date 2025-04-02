@@ -159,7 +159,9 @@ Note:
 2. Chạy lệnh sau `npm run install-all`
 3. Mở git bash console, di chuyển đến thư mục backend
 4. Chạy file bash `.\setup_initial_data.sh` để tạo dữ liệu ban đầu
-5. Chạy lệnh `npm run start` để chạy cả frontend và backend.
+
+#### 3. Chạy chương trình.
+Chạy lệnh `npm run start` để chạy cả frontend và backend.
 
 ## Hướng dẫn sử dụng các chức năng
 
