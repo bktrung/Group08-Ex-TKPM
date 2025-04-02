@@ -154,19 +154,12 @@ Note:
 - Thay `YOUR_MONGODB_HOST` và `YOUR_MONGODB_PORT` thành host và port của MongoDB và sử dụng default setting.
 - Thay `YOUR_GEONAMES_USERNAME` thành username lấy từ tài khoản của geonames (lên trang web để đăng ký) hoặc dùng `bktrung` để test.
 
-2. Mở terminal, di chuyển đến thư mục backend
-3. Chạy lệnh sau `npm install`
-
-#### 2. Biên dịch (từ typescript thành javascript)
-1. Mở terminal, di chuyển đến thư mục backend
-2. Chạy lệnh sau `npm run build`
-
-#### 3. Chạy chương trình
-1. Mở terminal, di chuyển đến thư mục backend
-2. Chạy lệnh sau `npm run start`
+#### 2. Cài đặt toàn bộ dependencies cho frontend, backend
+1. Mở terminal, di chuyển tới thư mục gốc hiện tại.
+2. Chạy lệnh sau `npm run install-all`
 3. Mở git bash console, di chuyển đến thư mục backend
 4. Chạy file bash `.\setup_initial_data.sh` để tạo dữ liệu ban đầu
-5. Mở file `index.html` trong thư mục frontend bằng trình duyệt web
+5. Chạy lệnh `npm run start` để chạy cả frontend và backend.
 
 ## Hướng dẫn sử dụng các chức năng
 
