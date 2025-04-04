@@ -66,7 +66,7 @@ abstract class BaseImportStrategy implements ImportStrategy {
 						{ 'identityDocument.number': value.identityDocument.number }
 					]
 				})
-				
+
 				if (existingStudent) {
 					const errors = [];
 					if (existingStudent.studentId === value.studentId) {
@@ -129,8 +129,8 @@ abstract class BaseImportStrategy implements ImportStrategy {
 				};
 			}
 		} catch (error) {
-			return { 
-				isValid: false, 
+			return {
+				isValid: false,
 				errors: [(error as Error).message]
 			};
 		}
@@ -451,22 +451,9 @@ class XmlImportStrategy extends BaseImportStrategy {
 			}
 		});
 
-		// Handle phone number - Format as Vietnamese phone number
+		// Handle phone number - simply extract it without formatting
 		if (record.phoneNumber) {
-			let phoneNumber = String(record.phoneNumber);
-
-			// Ensure it follows Vietnamese phone format
-			// Strip non-numeric characters first
-			phoneNumber = phoneNumber.replace(/\D/g, '');
-
-			// Ensure it starts with 0
-			if (phoneNumber.startsWith('84') && phoneNumber.length >= 10) {
-				phoneNumber = '0' + phoneNumber.substring(2);
-			} else if (!phoneNumber.startsWith('0')) {
-				phoneNumber = '0' + phoneNumber;
-			}
-
-			transformed.phoneNumber = phoneNumber;
+			transformed.phoneNumber = String(record.phoneNumber);
 		}
 
 		// Map nested objects
@@ -519,21 +506,8 @@ class XmlImportStrategy extends BaseImportStrategy {
 			processed.studentId = String(processed.studentId);
 		}
 
-		// Format phone number to ensure it matches the required pattern
 		if (processed.phoneNumber) {
-			let phoneNumber = String(processed.phoneNumber);
-
-			// Strip all non-numeric characters
-			phoneNumber = phoneNumber.replace(/\D/g, '');
-
-			// Ensure it starts with 0
-			if (phoneNumber.startsWith('84') && phoneNumber.length >= 10) {
-				phoneNumber = '0' + phoneNumber.substring(2);
-			} else if (!phoneNumber.startsWith('0')) {
-				phoneNumber = '0' + phoneNumber;
-			}
-
-			processed.phoneNumber = phoneNumber;
+			processed.phoneNumber = String(processed.phoneNumber);
 		}
 
 		// Ensure correct identity document structure based on type
@@ -792,21 +766,8 @@ class ExcelImportStrategy extends BaseImportStrategy {
 			processed.studentId = String(processed.studentId);
 		}
 
-		// Format phone number to ensure it matches the required pattern
 		if (processed.phoneNumber) {
-			let phoneNumber = String(processed.phoneNumber);
-
-			// Strip all non-numeric characters
-			phoneNumber = phoneNumber.replace(/\D/g, '');
-
-			// Ensure it starts with 0
-			if (phoneNumber.startsWith('84') && phoneNumber.length >= 10) {
-				phoneNumber = '0' + phoneNumber.substring(2);
-			} else if (!phoneNumber.startsWith('0')) {
-				phoneNumber = '0' + phoneNumber;
-			}
-
-			processed.phoneNumber = phoneNumber;
+			processed.phoneNumber = String(processed.phoneNumber);
 		}
 
 		// Ensure correct identity document structure based on type
@@ -972,7 +933,7 @@ class ImportService {
 		fs.mkdir(tempDir, { recursive: true })
 			.catch(err => console.error('Failed to create temp directory:', err));
 
-		
+
 		this.storage = multer.diskStorage({
 			destination: (req, file, cb) => {
 				cb(null, tempDir);
