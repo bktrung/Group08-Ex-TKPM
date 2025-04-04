@@ -3,114 +3,144 @@
 ## Cấu trúc source code
 ```
 bktrung-group08-ex-tkpm/
-├── README.md
-├── docker-compose.yml
-├── backend/
-│   ├── Dockerfile
-│   ├── config.json
-│   ├── package-lock.json
-│   ├── package.json
-│   ├── setup_initial_data.sh
-│   ├── tsconfig.json
-│   ├── .gitignore
-│   └── src/
-│       ├── index.ts
-│       ├── configs/
-│       │   ├── config.mongodb.ts
-│       │   └── init.config.ts
-│       ├── controllers/
-│       │   ├── address.controller.ts
-│       │   ├── department.controller.ts
-│       │   ├── export.controller.ts
-│       │   ├── import.controller.ts
-│       │   ├── program.controller.ts
-│       │   └── student.controller.ts
-│       ├── dbs/
-│       │   └── init.mongodb.ts
-│       ├── dto/
-│       │   ├── address/
-│       │   │   └── index.ts
-│       │   └── student/
-│       │       └── index.ts
-│       ├── helpers/
-│       │   └── asyncHandler.ts
-│       ├── middlewares/
-│       │   ├── error-logger.middleware.ts
-│       │   ├── upload.middleware.ts
-│       │   └── validation.middleware.ts
-│       ├── models/
-│       │   ├── department.model.ts
-│       │   ├── program.model.ts
-│       │   ├── student.model.ts
-│       │   ├── studentStatus.model.ts
-│       │   ├── studentStatusTransition.model.ts
-│       │   ├── hooks/
-│       │   │   ├── department.hook.ts
-│       │   │   ├── program.hook.ts
-│       │   │   └── student.hook.ts
-│       │   ├── interfaces/
-│       │   │   ├── department.interface.ts
-│       │   │   ├── program.interface.ts
-│       │   │   └── student.interface.ts
-│       │   └── repositories/
-│       │       ├── department.repo.ts
-│       │       ├── program.repo.ts
-│       │       └── student.repo.ts
-│       ├── responses/
-│       │   ├── error.responses.ts
-│       │   └── success.responses.ts
-│       ├── routes/
-│       │   ├── index.ts
-│       │   ├── address/
-│       │   │   └── index.ts
-│       │   ├── department/
-│       │   │   └── index.ts
-│       │   ├── export/
-│       │   │   └── index.ts
-│       │   ├── import/
-│       │   │   └── index.ts
-│       │   ├── program/
-│       │   │   └── index.ts
-│       │   └── student/
-│       │       └── index.ts
-│       ├── services/
-│       │   ├── address.service.ts
-│       │   ├── department.service.ts
-│       │   ├── export.service.ts
-│       │   ├── import.service.ts
-│       │   ├── logger.service.ts
-│       │   ├── program.service.ts
-│       │   └── student.service.ts
-│       ├── utils/
-│       │   └── index.ts
-│       └── validators/
-│           └── student/
-│               ├── add-student.validator.ts
-│               ├── import-student.validator.ts
-│               └── update-student.validator.ts
-└── frontend/
-	├── Dockerfile
-	├── index.html
-	├── .gitkeep
-	├── pages/
-	│   ├── add_student.html
-	│   ├── department_manage.html
-	│   ├── edit_student.html
-	│   ├── import_export.html
-	│   ├── program_manage.html
-	│   ├── sidebar.html
-	│   ├── status_manage.html
-	│   └── status_transition.html
-	└── scripts/
-		├── add_student.js
-		├── department_manage.js
-		├── edit_student.js
-		├── import_export.js
-		├── index.js
-		├── program_manage.js
-		├── sidebar.js
-		├── status_manage.js
-		└── status_transition.js
+    ├── README.md
+    ├── docker-compose.yml
+    ├── package.json
+    ├── backend/
+    │   ├── config.json
+    │   ├── Dockerfile
+    │   ├── package-lock.json
+    │   ├── package.json
+    │   ├── setup_initial_data.sh
+    │   ├── tsconfig.json
+    │   ├── .gitignore
+    │   └── src/
+    │       ├── index.ts
+    │       ├── configs/
+    │       │   ├── config.mongodb.ts
+    │       │   └── init.config.ts
+    │       ├── controllers/
+    │       │   ├── address.controller.ts
+    │       │   ├── department.controller.ts
+    │       │   ├── export.controller.ts
+    │       │   ├── import.controller.ts
+    │       │   ├── program.controller.ts
+    │       │   └── student.controller.ts
+    │       ├── dbs/
+    │       │   └── init.mongodb.ts
+    │       ├── dto/
+    │       │   ├── address/
+    │       │   │   └── index.ts
+    │       │   └── student/
+    │       │       └── index.ts
+    │       ├── helpers/
+    │       │   └── asyncHandler.ts
+    │       ├── middlewares/
+    │       │   ├── error-logger.middleware.ts
+    │       │   ├── upload.middleware.ts
+    │       │   └── validation.middleware.ts
+    │       ├── models/
+    │       │   ├── department.model.ts
+    │       │   ├── program.model.ts
+    │       │   ├── student.model.ts
+    │       │   ├── studentStatus.model.ts
+    │       │   ├── studentStatusTransition.model.ts
+    │       │   ├── hooks/
+    │       │   │   ├── department.hook.ts
+    │       │   │   ├── program.hook.ts
+    │       │   │   └── student.hook.ts
+    │       │   ├── interfaces/
+    │       │   │   ├── department.interface.ts
+    │       │   │   ├── program.interface.ts
+    │       │   │   └── student.interface.ts
+    │       │   └── repositories/
+    │       │       ├── department.repo.ts
+    │       │       ├── program.repo.ts
+    │       │       └── student.repo.ts
+    │       ├── responses/
+    │       │   ├── error.responses.ts
+    │       │   └── success.responses.ts
+    │       ├── routes/
+    │       │   ├── index.ts
+    │       │   ├── address/
+    │       │   │   └── index.ts
+    │       │   ├── department/
+    │       │   │   └── index.ts
+    │       │   ├── export/
+    │       │   │   └── index.ts
+    │       │   ├── import/
+    │       │   │   └── index.ts
+    │       │   ├── program/
+    │       │   │   └── index.ts
+    │       │   └── student/
+    │       │       └── index.ts
+    │       ├── services/
+    │       │   ├── address.service.ts
+    │       │   ├── department.service.ts
+    │       │   ├── export.service.ts
+    │       │   ├── import.service.ts
+    │       │   ├── logger.service.ts
+    │       │   ├── program.service.ts
+    │       │   └── student.service.ts
+    │       ├── utils/
+    │       │   └── index.ts
+    │       └── validators/
+    │           └── student/
+    │               ├── add-student.validator.ts
+    │               ├── import-student.validator.ts
+    │               └── update-student.validator.ts
+    ├── frontend/
+    │   └── moodle-system/
+    │       ├── README.md
+    │       ├── babel.config.js
+    │       ├── Dockerfile
+    │       ├── jsconfig.json
+    │       ├── nginx.conf
+    │       ├── package.json
+    │       ├── vue.config.js
+    │       ├── .eslintrc.js
+    │       ├── .gitignore
+    │       ├── public/
+    │       │   └── index.html
+    │       └── src/
+    │           ├── App.vue
+    │           ├── main.js
+    │           ├── assets/
+    │           ├── components/
+    │           │   ├── layout/
+    │           │   │   ├── AppSidebar.vue
+    │           │   │   └── BaseModal.vue
+    │           │   └── student/
+    │           │       ├── AddressFields.vue
+    │           │       ├── IdentityDocumentFields.vue
+    │           │       ├── ImportExport.vue
+    │           │       └── StudentForm.vue
+    │           ├── router/
+    │           │   └── index.js
+    │           ├── services/
+    │           │   └── api.js
+    │           ├── store/
+    │           │   ├── index.js
+    │           │   └── modules/
+    │           │       ├── department.js
+    │           │       ├── program.js
+    │           │       ├── status.js
+    │           │       └── student.js
+    │           ├── utils/
+    │           │   ├── format.js
+    │           │   └── validation.js
+    │           └── views/
+    │               ├── AddStudent.vue
+    │               ├── DepartmentManage.vue
+    │               ├── EditStudent.vue
+    │               ├── ProgramManage.vue
+    │               ├── StatusManage.vue
+    │               ├── StatusTransition.vue
+    │               └── StudentList.vue
+    └── report/
+        └── The Broken Window Theory & The Boy Scout Rule.pdf
+        └── Unit Testing.pptx
+
 ```
 
 ## Hướng dẫn cài đặt & chạy chương trình
