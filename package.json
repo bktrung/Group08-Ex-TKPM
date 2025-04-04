@@ -1,0 +1,23 @@
+{
+  "name": "group08-ex-tkpm",
+  "version": "1.0.0",
+  "description": "```\r bktrung-group08-ex-tkpm/\r ├── README.md\r ├── docker-compose.yml\r ├── backend/\r │   ├── Dockerfile\r │   ├── config.json\r │   ├── package-lock.json\r │   ├── package.json\r │   ├── setup_initial_data.sh\r │   ├── tsconfig.json\r │   ├── .gitignore\r │   └── src/\r │       ├── index.ts\r │       ├── configs/\r │       │   ├── config.mongodb.ts\r │       │   └── init.config.ts\r │       ├── controllers/\r │       │   ├── address.controller.ts\r │       │   ├── department.controller.ts\r │       │   ├── export.controller.ts\r │       │   ├── import.controller.ts\r │       │   ├── program.controller.ts\r │       │   └── student.controller.ts\r │       ├── dbs/\r │       │   └── init.mongodb.ts\r │       ├── dto/\r │       │   ├── address/\r │       │   │   └── index.ts\r │       │   └── student/\r │       │       └── index.ts\r │       ├── helpers/\r │       │   └── asyncHandler.ts\r │       ├── middlewares/\r │       │   ├── error-logger.middleware.ts\r │       │   ├── upload.middleware.ts\r │       │   └── validation.middleware.ts\r │       ├── models/\r │       │   ├── department.model.ts\r │       │   ├── program.model.ts\r │       │   ├── student.model.ts\r │       │   ├── studentStatus.model.ts\r │       │   ├── studentStatusTransition.model.ts\r │       │   ├── hooks/\r │       │   │   ├── department.hook.ts\r │       │   │   ├── program.hook.ts\r │       │   │   └── student.hook.ts\r │       │   ├── interfaces/\r │       │   │   ├── department.interface.ts\r │       │   │   ├── program.interface.ts\r │       │   │   └── student.interface.ts\r │       │   └── repositories/\r │       │       ├── department.repo.ts\r │       │       ├── program.repo.ts\r │       │       └── student.repo.ts\r │       ├── responses/\r │       │   ├── error.responses.ts\r │       │   └── success.responses.ts\r │       ├── routes/\r │       │   ├── index.ts\r │       │   ├── address/\r │       │   │   └── index.ts\r │       │   ├── department/\r │       │   │   └── index.ts\r │       │   ├── export/\r │       │   │   └── index.ts\r │       │   ├── import/\r │       │   │   └── index.ts\r │       │   ├── program/\r │       │   │   └── index.ts\r │       │   └── student/\r │       │       └── index.ts\r │       ├── services/\r │       │   ├── address.service.ts\r │       │   ├── department.service.ts\r │       │   ├── export.service.ts\r │       │   ├── import.service.ts\r │       │   ├── logger.service.ts\r │       │   ├── program.service.ts\r │       │   └── student.service.ts\r │       ├── utils/\r │       │   └── index.ts\r │       └── validators/\r │           └── student/\r │               ├── add-student.validator.ts\r │               ├── import-student.validator.ts\r │               └── update-student.validator.ts\r └── frontend/\r \t├── Dockerfile\r \t├── index.html\r \t├── .gitkeep\r \t├── pages/\r \t│   ├── add_student.html\r \t│   ├── department_manage.html\r \t│   ├── edit_student.html\r \t│   ├── import_export.html\r \t│   ├── program_manage.html\r \t│   ├── sidebar.html\r \t│   ├── status_manage.html\r \t│   └── status_transition.html\r \t└── scripts/\r \t\t├── add_student.js\r \t\t├── department_manage.js\r \t\t├── edit_student.js\r \t\t├── import_export.js\r \t\t├── index.js\r \t\t├── program_manage.js\r \t\t├── sidebar.js\r \t\t├── status_manage.js\r \t\t└── status_transition.js\r ```",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "install-root": "npm install && npm install concurrently --save-dev",
+    "install-frontend": "npm install --prefix frontend-2/moodle-system && npm install -g @vue/cli",
+    "install-backend": "npm install --prefix backend",
+    "install-all": "npm run install-root && npm run install-frontend && npm run install-backend",
+    "build-backend": "npm run build --prefix backend",
+    "start-backend": "npm run start --prefix backend",
+    "start-frontend": "npm run serve --prefix frontend-2/moodle-system",
+    "start": "concurrently \"npm run build-backend && npm run start-backend\" \"npm run start-frontend\""
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}
