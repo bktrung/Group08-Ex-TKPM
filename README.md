@@ -163,7 +163,7 @@ API_BASE_URL=http://backend:3456/v1/api
 1. Mở Docker Desktop
 2. Mở terminal trong Docker Desktop, di chuyển đến thư mục chứa project
 3. Chạy lệnh `docker compose up --build`
-4. Truy cập trang web tại: http://localhost:80
+4. Truy cập trang web tại: http://localhost:8080
 
 ### Chạy trên local
 
@@ -191,7 +191,7 @@ Note:
 2. Chạy file bash `.\setup_initial_data.sh` để tạo dữ liệu ban đầu
 
 #### 4. Chạy chương trình.
-Chạy lệnh `npm run start` để chạy cả frontend và backend.
+Chạy lệnh `npm run start` để chạy cả frontend và backend, sau đó truy cập vào trang web tại địa chỉ http://localhost:8080
 
 ## Hướng dẫn sử dụng các chức năng
 
