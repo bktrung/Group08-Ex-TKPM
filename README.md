@@ -117,8 +117,6 @@ bktrung-group08-ex-tkpm/
 
 ### Sử dụng Docker
 
-**Note:** File `.\setup_initial_data.sh` bị lỗi không chạy tự động cùng với docker được trên window, chỉ chạy được trên linux nên cần phải chạy thủ công file này giống **Chạy trên local**
-
 #### 1. Chuẩn bị môi trường 
 Tạo file `.env.docker` trong thư mục gốc với nội dung:
 ```
@@ -139,8 +137,6 @@ API_BASE_URL=http://backend:3456/v1/api
 
 ### Chạy trên local
 
-**Note:** Bản frontend chạy trên local đang bị lỗi không hiển trị import/export file mà bản frontend `http://localhost:80` ở docker mới hiển thị nên nếu muốn test chức năng đó cần dùng bản docker.
-
 #### 1. Chuẩn bị môi trường
 1. Tạo file `.env` trong thư mục backend với nội dung:
 ```
@@ -159,23 +155,25 @@ Note:
 #### 2. Cài đặt toàn bộ dependencies cho frontend, backend
 1. Mở terminal, di chuyển tới thư mục gốc hiện tại.
 2. Chạy lệnh sau `npm run install-all`
-3. Mở git bash console, di chuyển đến thư mục backend
-4. Chạy file bash `.\setup_initial_data.sh` để tạo dữ liệu ban đầu
 
-#### 3. Chạy chương trình.
+#### 3. Tạo dữ liệu ban đầu.
+1. Mở git bash console, di chuyển đến thư mục backend
+2. Chạy file bash `.\setup_initial_data.sh` để tạo dữ liệu ban đầu
+
+#### 4. Chạy chương trình.
 Chạy lệnh `npm run start` để chạy cả frontend và backend.
 
 ## Hướng dẫn sử dụng các chức năng
 
 #### 1. Tìm kiếm theo khoa
 
-   Chọn dropwdown bên trái thanh search để lọc theo Khoa.
+   Ở trang quản lí sinh viên, chọn dropwdown bên trái thanh search để lọc theo Khoa.
    
    ![Screenshot 2025-03-21 214413](https://github.com/user-attachments/assets/f860d1ce-93c5-4ab4-96df-b8a5d441da24)
 
 #### 2. Tìm kiếm theo khoa, tên
 
-   Nhập khoa hoặc tên để tìm kiếm sinh viên
+   Nhập khoa hoặc tên vào thanh tìm kiếm để tìm kiếm sinh viên.
    
    ![Screenshot 2025-03-21 214514](https://github.com/user-attachments/assets/a7e5ae52-839e-41d8-9aa7-2c27cd19db1f)
 

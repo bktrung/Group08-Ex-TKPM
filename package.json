@@ -6,12 +6,12 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "install-root": "npm install && npm install concurrently --save-dev",
-    "install-frontend": "npm install --prefix frontend-2/moodle-system && npm install -g @vue/cli",
+    "install-frontend": "npm install --prefix frontend/moodle-system && npm install -g @vue/cli",
     "install-backend": "npm install --prefix backend",
     "install-all": "npm run install-root && npm run install-frontend && npm run install-backend",
     "build-backend": "npm run build --prefix backend",
     "start-backend": "npm run start --prefix backend",
-    "start-frontend": "npm run serve --prefix frontend-2/moodle-system",
+    "start-frontend": "npm run serve --prefix frontend/moodle-system",
     "start": "concurrently \"npm run build-backend && npm run start-backend\" \"npm run start-frontend\""
   },
   "keywords": [],
