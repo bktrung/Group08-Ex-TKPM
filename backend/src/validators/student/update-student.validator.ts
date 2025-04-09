@@ -144,6 +144,8 @@ const updateStudentDto = Joi.object({
 	})
 }).min(1).messages({
 	'object.min': 'Cần cung cấp ít nhất một trường để cập nhật'
+}).unknown(false).messages({
+	'object.unknown': 'Trường "{#label}" không được phép trong cập nhật sinh viên'
 });
 
 export const updateStudentValidator = validateRequest(updateStudentDto);

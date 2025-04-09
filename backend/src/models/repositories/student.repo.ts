@@ -9,11 +9,7 @@ import StudentStatusTransition from "../studentStatusTransition.model";
 
 /// Student Repo
 export const findStudent = async (query: any): Promise<IStudent | null> => {
-	return Student.findOne(query)
-		.populate("department")
-		.populate("program")
-		.populate("status")
-		.lean();
+	return Student.findOne(query).lean();
 }
 
 export const addStudent = async (studentData: CreateStudentDto): Promise<IStudent> => {

@@ -17,7 +17,7 @@ import {
 } from '../models/repositories/student.repo';
 import { IStudent } from '../models/interfaces/student.interface';
 import { BadRequestError, NotFoundError } from '../responses/error.responses';
-import { CreateStudentDto } from '../dto/student';
+import { CreateStudentDto, UpdateStudentDto } from '../dto/student';
 import { PaginationResult } from '../utils';
 import { SearchOptions } from '../utils/index';
 import { findDepartmentById } from '../models/repositories/department.repo';
@@ -70,14 +70,14 @@ class StudentService {
 		return newStudent;
 	}
 
-	static async updateStudent(studentId: string, studentData: CreateStudentDto): Promise<IStudent> {
+	static async updateStudent(studentId: string, studentData: UpdateStudentDto): Promise<IStudent> {
 		const existingStudent = await findStudent({ studentId });
 		if (!existingStudent) {
 			throw new NotFoundError('Không tìm thấy sinh viên');
 		}
 
 		// Validate status transition rule
-		if (studentData.status) {
+		if (studentData.status && existingStudent.status.toString() !== studentData.status.toString()) {
 			const fromStatus = existingStudent.status;
 			const toStatus = studentData.status;
 			const transition = await findStudentStatusTransition(fromStatus, toStatus);
