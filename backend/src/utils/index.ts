@@ -1,4 +1,4 @@
-import { Model, Document, FilterQuery, SortOrder } from 'mongoose';
+import { Model, Document, FilterQuery, SortOrder, Types } from 'mongoose';
 
 export interface SearchOptions {
 	filter?: Record<string, any>;
@@ -89,4 +89,9 @@ export const flattenObject = (obj: any, prefix = ''): string[] => {
 	}
 
 	return keys;
+}
+
+export const getDocumentId = (doc: any): Types.ObjectId | string => {
+	if (!doc) return '';
+	return doc._id;
 }

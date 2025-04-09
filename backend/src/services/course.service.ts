@@ -1,7 +1,7 @@
 import { createCourse, findCoursesByIds, findCourseByCode, updateCourse, deleteCourse } from "../models/repositories/course.repo";
 import { ICourse } from "../models/interfaces/course.interface";
 import { CreateCourseDto, UpdateCourseDto } from "../dto/course";
-import { BadRequestError } from "../responses/error.responses";
+import { BadRequestError, NotFoundError } from "../responses/error.responses";
 import { findDepartmentById } from "../models/repositories/department.repo";
 
 class CourseService {
@@ -15,7 +15,7 @@ class CourseService {
 		// Check if department exists
 		const existingDepartment = await findDepartmentById(courseData.department);
 		if (!existingDepartment) {
-			throw new BadRequestError("Khoa không tồn tại");
+			throw new NotFoundError("Khoa không tồn tại");
 		}
 
 		// Check if prerequisites exist
@@ -29,7 +29,7 @@ class CourseService {
 					!foundIds.includes(id.toString())
 				);
 
-				throw new BadRequestError(
+				throw new NotFoundError(
 					`Môn học tiên quyết không tồn tại: ${missingIds.join(', ')}`
 				);
 			}
@@ -42,7 +42,7 @@ class CourseService {
 	static async updateCourse(courseCode: string, courseData: UpdateCourseDto): Promise<ICourse | null> {
 		const existingCourse = await findCourseByCode(courseCode);
 		if (!existingCourse) {
-			throw new BadRequestError("Mã môn học không tồn tại");
+			throw new NotFoundError("Mã môn học không tồn tại");
 		}
 
 		// can not change credits if some students are enrolled in classes in this course
@@ -54,7 +54,7 @@ class CourseService {
 	static async deleteCourse(courseCode: string): Promise<ICourse | null> {
 		const existingCourse = await findCourseByCode(courseCode);
 		if (!existingCourse) {
-			throw new BadRequestError("Mã môn học không tồn tại");
+			throw new NotFoundError("Mã môn học không tồn tại");
 		}
 
 		// Check if the course was created less than 30 minutes ago
@@ -69,7 +69,7 @@ class CourseService {
 			);
 		}
 
-		// can not delete course if some classes are opened for this course
+		// can not delete course if some classes with more than 1 enrollment are opened for this course
 
 		const deletedCourse = await deleteCourse(courseCode);
 		return deletedCourse;
