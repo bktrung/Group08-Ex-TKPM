@@ -17,6 +17,11 @@ const courseSchema = new Schema<ICourse>({
 	credits: {
 		type: Number,
 		required: true,
+		min: 2,
+		validate: {
+			validator: Number.isInteger,
+			message: 'Credits must be an integer greater than or equal to 2'
+		},
 	},
 	department: {
 		type: Schema.Types.ObjectId,

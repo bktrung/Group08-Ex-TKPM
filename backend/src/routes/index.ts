@@ -6,6 +6,7 @@ import address from "./address/index";
 import exportData from "./export/index";
 import importData from "./import/index";
 import course from "./course/index";
+import classes from "./class/index";
 
 const router = Router();
 
@@ -16,5 +17,6 @@ router.use("/v1/api/address", address);
 router.use("/v1/api/export", exportData);
 router.use("/v1/api/import", importData);
 router.use("/v1/api/courses", course);
+router.use("/v1/api/classes", classes);
 
 export default router;
