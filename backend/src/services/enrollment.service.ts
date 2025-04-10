@@ -1,10 +1,11 @@
-import { findEnrollment, createEnrollment, getCompletedCourseIdsByStudent } from "../models/repositories/enrollment.repo";
+import { findEnrollment, createEnrollment, getCompletedCourseIdsByStudent, dropEnrollment } from "../models/repositories/enrollment.repo";
 import { BadRequestError, NotFoundError } from "../responses/error.responses";
 import { enrollStudentDto } from "../dto/enrollment";
 import { findStudent } from "../models/repositories/student.repo";
 import { findClassByCode } from "../models/repositories/class.repo";
 import { getDocumentId } from "../utils";
 import { findCourseById, findCoursesByIds } from "../models/repositories/course.repo";
+import { findSemester } from "../models/repositories/semester.repo";
 
 class EnrollmentService {
 	static async enrollStudent(enrollmentData: enrollStudentDto) {
@@ -89,6 +90,49 @@ class EnrollmentService {
 		}
 
 		return newEnrollment;
+	}
+
+	static async dropStudent(studentId: string, classCode: string, dropReason: string) {
+		// Check if student exists
+		const existingStudent = await findStudent({ studentId });
+		if (!existingStudent) {
+			throw new NotFoundError("Sinh viên không tồn tại");
+		}
+
+		// Check if class exists
+		const existingClass = await findClassByCode(classCode);
+		if (!existingClass) {
+			throw new NotFoundError("Lớp học không tồn tại");
+		}
+
+		// check if possible to drop class
+		const semester = await findSemester(
+			existingClass.academicYear,
+			existingClass.semester
+		);
+
+		if (!semester) {
+			throw new NotFoundError("Học kỳ không tồn tại");
+		}
+
+		const currentDate = new Date();
+		const dropDeadline = new Date(semester.dropDeadline);
+		if (currentDate > dropDeadline) {
+			throw new BadRequestError("Đã quá hạn huỷ lớp học");
+		}
+
+
+		const droppedEnrollment = await dropEnrollment(
+			getDocumentId(existingStudent),
+			getDocumentId(existingClass),
+			dropReason
+		);
+
+		if (!droppedEnrollment) {
+			throw new BadRequestError("Sinh viên chưa đăng ký lớp học này");
+		}
+
+		return droppedEnrollment;
 	}
 }
 

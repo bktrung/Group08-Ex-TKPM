@@ -33,6 +33,22 @@ export const updateCourse = async (courseCode: string, courseData: UpdateCourseD
 	).lean();
 }
 
+export const deactivateCourse = async (courseCode: string) => {
+	return await Course.findOneAndUpdate(
+		{ courseCode },
+		{ isActive: false },
+		{ new: true }
+	).lean();
+}
+
+export const activateCourse = async (courseCode: string) => {
+	return await Course.findOneAndUpdate(
+		{ courseCode },
+		{ isActive: true },
+		{ new: true }
+	).lean();
+}
+
 export const deleteCourse = async (courseCode: string) => {
 	return await Course.findOneAndDelete({ courseCode }).lean();
 }

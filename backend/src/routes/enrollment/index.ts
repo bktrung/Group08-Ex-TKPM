@@ -4,5 +4,6 @@ import { asyncHandler } from "../../helpers/asyncHandler";
 const router = Router();
 
 router.post('', asyncHandler(EnrollmentController.enrollStudent));
+router.post('/drop', asyncHandler(EnrollmentController.dropStudent));
 
 export default router;

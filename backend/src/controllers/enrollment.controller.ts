@@ -11,6 +11,15 @@ class EnrollmentController {
 			metadata: { newEnrollment }
 		}).send(res);
 	}
+
+	dropStudent = async (req: Request, res: Response, next: NextFunction) => {
+		const { studentId, classCode, dropReason } = req.body;
+		const updatedEnrollment = await EnrollmentService.dropStudent(studentId, classCode, dropReason);
+		return new OK({
+			message: 'Enrollment dropped successfully',
+			metadata: { updatedEnrollment }
+		}).send(res);
+	}
 }
 
 export default new EnrollmentController();

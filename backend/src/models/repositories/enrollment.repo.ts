@@ -1,12 +1,15 @@
 import Enrollment from "../enrollment.model";
 import Class from "../class.model";
-import mongoose from "mongoose";
 import { Types } from "mongoose";
 import { CreateEnrollmentDto } from "../../dto/enrollment";
 import { EnrollmentStatus } from "../interfaces/enrollment.interface";
 
 export const findEnrollment = async (student: string | Types.ObjectId, class_id: string | Types.ObjectId) => {
-	return await Enrollment.findOne({ student, class: class_id }).lean();
+	return await Enrollment.findOne({ 
+		student, 
+		class: class_id, 
+		status: EnrollmentStatus.ACTIVE
+	}).lean();
 }
 
 export const createEnrollment = async (enrollmentData: CreateEnrollmentDto) => {
@@ -52,3 +55,28 @@ export const getCompletedCourseIdsByStudent = async (student: string | Types.Obj
 
 	return courseIds;
 };
+
+export const dropEnrollment = async (
+	student_id: string | Types.ObjectId, 
+	class_id: string | Types.ObjectId, 
+	dropReason: string
+) => {
+	const updatedEnrollment = await Enrollment.findOneAndUpdate(
+		{ student: student_id, class: class_id },
+		{
+			status: EnrollmentStatus.DROPPED,
+			dropDate: new Date(),
+			dropReason
+		},
+		{ new: true }
+	).lean();
+
+	if (updatedEnrollment) {
+		await Class.findByIdAndUpdate(
+			class_id,
+			{ $inc: { enrolledStudents: -1 } }
+		);
+	}
+
+	return updatedEnrollment;
+}

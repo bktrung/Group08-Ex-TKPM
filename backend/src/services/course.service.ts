@@ -1,8 +1,10 @@
-import { createCourse, findCoursesByIds, findCourseByCode, updateCourse, deleteCourse } from "../models/repositories/course.repo";
+import { createCourse, findCoursesByIds, findCourseByCode, updateCourse, deleteCourse, deactivateCourse } from "../models/repositories/course.repo";
 import { ICourse } from "../models/interfaces/course.interface";
 import { CreateCourseDto, UpdateCourseDto } from "../dto/course";
 import { BadRequestError, NotFoundError } from "../responses/error.responses";
 import { findDepartmentById } from "../models/repositories/department.repo";
+import { findClassByCourse } from "../models/repositories/class.repo";
+import { getDocumentId } from "../utils";
 
 class CourseService {
 	static async addCourse(courseData: CreateCourseDto): Promise<ICourse> {
@@ -69,7 +71,12 @@ class CourseService {
 			);
 		}
 
-		// can not delete course if some classes with more than 1 enrollment are opened for this course
+		// can not delete course if some classes are opened for this course
+		const openedClasses = await findClassByCourse(getDocumentId(existingCourse));
+		if (openedClasses.length > 0) {
+			const deactivatedCourse = await deactivateCourse(courseCode);
+			return deactivatedCourse;
+		}
 
 		const deletedCourse = await deleteCourse(courseCode);
 		return deletedCourse;

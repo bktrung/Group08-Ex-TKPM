@@ -8,6 +8,7 @@ import importData from "./import/index";
 import course from "./course/index";
 import classes from "./class/index";
 import enrollment from "./enrollment/index";
+import semester from "./semester/index";
 
 const router = Router();
 
@@ -20,5 +21,6 @@ router.use("/v1/api/import", importData);
 router.use("/v1/api/courses", course);
 router.use("/v1/api/classes", classes);
 router.use("/v1/api/enrollment", enrollment);
+router.use("/v1/api/semesters", semester);
 
 export default router;
