@@ -7,7 +7,7 @@ import { EnrollmentStatus } from "../interfaces/enrollment.interface";
 export const findEnrollment = async (student: string | Types.ObjectId, class_id: string | Types.ObjectId) => {
 	return await Enrollment.findOne({ 
 		student, 
-		class: class_id, 
+		class: class_id,
 		status: EnrollmentStatus.ACTIVE
 	}).lean();
 }

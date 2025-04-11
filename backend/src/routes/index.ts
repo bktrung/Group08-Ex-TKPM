@@ -1,14 +1,15 @@
 import { Router } from "express";
-import student from "./student/index";
-import department from "./department/index";
-import program from "./program/index";
-import address from "./address/index";
-import exportData from "./export/index";
-import importData from "./import/index";
-import course from "./course/index";
-import classes from "./class/index";
-import enrollment from "./enrollment/index";
-import semester from "./semester/index";
+import student from "./student";
+import department from "./department";
+import program from "./program";
+import address from "./address";
+import exportData from "./export";
+import importData from "./import";
+import course from "./course";
+import classes from "./class";
+import enrollment from "./enrollment";
+import semester from "./semester";
+import grade from "./grade";
 
 const router = Router();
 
@@ -22,5 +23,6 @@ router.use("/v1/api/courses", course);
 router.use("/v1/api/classes", classes);
 router.use("/v1/api/enrollment", enrollment);
 router.use("/v1/api/semesters", semester);
+router.use("/v1/api/grades", grade);
 
 export default router;
