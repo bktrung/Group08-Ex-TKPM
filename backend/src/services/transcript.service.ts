@@ -45,11 +45,16 @@ class TranscriptService {
 		const courseEnrollmentMap = new Map();
 
 		const getCourse = (field: any): string => {
-			return field && typeof field === 'object' && 'course' in field ? field.course : '';
+			// Convert ObjectId to string if needed
+			if (field && typeof field === 'object' && 'course' in field) {
+				return field.course.toString();  // Ensure it's a string
+			}
+			return '';
 		}
 
 		enrollments.forEach(enrollment => {
 			const courseId = getCourse(enrollment.class);
+			console.log(`Processing enrollment for course ID: ${courseId}`);
 			if (!courseEnrollmentMap.has(courseId) || 
 				new Date(enrollment.enrollmentDate) > new Date(courseEnrollmentMap.get(courseId).enrollmentDate)
 			) {
