@@ -1,7 +1,7 @@
 import { findCourseById } from "../models/repositories/course.repo";
 import { findEnrollmentsByStudent } from "../models/repositories/enrollment.repo";
 import { findGradeByEnrollment } from "../models/repositories/grade.repo";
-import { getStudentInfo } from "../models/repositories/student.repo";
+import { findStudent, getStudentInfo } from "../models/repositories/student.repo";
 import { NotFoundError } from "../responses/error.responses";
 import { getDocumentId } from "../utils";
 
@@ -28,9 +28,17 @@ class TranscriptService {
 	}
 
 	private async getStudentGrades(studentId: string) {
-		const enrollments = await findEnrollmentsByStudent(studentId);
+		const student = await findStudent({ studentId });
+		if (!student) {
+			throw new NotFoundError("Student not found");
+		}
+
+
+		const enrollments = await findEnrollmentsByStudent(getDocumentId(student));
+		console.log(`Found ${enrollments.length} enrollments for student ${studentId}`);
 		
 		if (!enrollments.length) {
+			console.log("No enrollments found, returning empty array");
 			return [];
 		}
 
@@ -75,7 +83,6 @@ class TranscriptService {
 		return grades.filter(grade => grade !== null);
 	}
 
-
 	async generateTranscript(studentId: string) {
 		const studentInfo = await this.getStudentInfo(studentId);
 		const studentGrades = await this.getStudentGrades(studentId);
@@ -114,3 +121,5 @@ class TranscriptService {
 		};
 	}
 }
+
+export default new TranscriptService();

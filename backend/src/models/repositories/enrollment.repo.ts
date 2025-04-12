@@ -19,7 +19,7 @@ export const findEnrollmentsByClass = async (class_id: string | Types.ObjectId) 
 export const findEnrollmentsByStudent = async (student: string | Types.ObjectId) => {
 	return await Enrollment.find({ 
 		student,
-		status: EnrollmentStatus.COMPLETED
+		status: { $in: [EnrollmentStatus.COMPLETED, EnrollmentStatus.ACTIVE] } // only active for now because im lazy
 	}).populate('class', '_id course').lean();
 }
 
