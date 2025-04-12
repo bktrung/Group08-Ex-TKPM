@@ -8,6 +8,12 @@ import ProgramManage from '@/views/ProgramManage.vue'
 import StatusManage from '@/views/StatusManage.vue'
 import StatusTransition from '@/views/StatusTransition.vue'
 
+// Course-related views (will be created)
+import CourseManage from '@/views/CourseManage.vue'
+import CourseAdd from '@/views/CourseAdd.vue'
+import CourseEdit from '@/views/CourseEdit.vue'
+import CourseClassAdd from '@/views/CourseClassAdd.vue'
+
 const routes = [
   {
     path: '/',
@@ -44,6 +50,29 @@ const routes = [
     path: '/status-transitions',
     name: 'StatusTransition',
     component: StatusTransition
+  },
+  
+  {
+    path: '/courses',
+    name: 'CourseManage',
+    component: CourseManage
+  },
+  {
+    path: '/courses/add',
+    name: 'CourseAdd',
+    component: CourseAdd
+  },
+  {
+    path: '/courses/edit/:courseCode',
+    name: 'CourseEdit',
+    component: CourseEdit,
+    props: true
+  },
+  {
+    path: '/courses/:courseCode/add-class',
+    name: 'CourseClassAdd',
+    component: CourseClassAdd,
+    props: true
   }
 ]
 

@@ -30,6 +30,24 @@
           Danh sách chương trình đào tạo
         </router-link>
       </li>
+      
+      <!-- New Course Management Section -->
+      <li class="border-top my-3"></li>
+      <li class="nav-item">
+        <div class="sidebar-heading ps-2 mb-1 text-muted">
+          Quản lý Khóa học
+        </div>
+      </li>
+      <li>
+        <router-link to="/courses" class="nav-link" :class="{ active: $route.path.startsWith('/courses') && $route.path !== '/courses/add' }">
+          Danh sách khóa học
+        </router-link>
+      </li>
+      <li>
+        <router-link to="/courses/add" class="nav-link" :class="{ active: $route.path === '/courses/add' }">
+          Thêm khóa học mới
+        </router-link>
+      </li>
     </ul>
   </div>
 </template>

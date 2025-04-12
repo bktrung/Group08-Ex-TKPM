@@ -113,5 +113,36 @@ export default {
   },
   getLocationChildren(geonameId) {
     return apiClient.get(`/v1/api/address/children/${geonameId}`)
+  },
+  
+  // Courses
+  getCourses(page = 1, limit = 10) {
+    return apiClient.get(`/v1/api/courses?page=${page}&limit=${limit}`)
+  },
+  getCourse(courseCode) {
+    return apiClient.get(`/v1/api/courses/${courseCode}`)
+  },
+  createCourse(course) {
+    return apiClient.post('/v1/api/courses', course)
+  },
+  updateCourse(courseCode, courseData) {
+    return apiClient.patch(`/v1/api/courses/${courseCode}`, courseData)
+  },
+  deleteCourse(courseCode) {
+    return apiClient.delete(`/v1/api/courses/${courseCode}`)
+  },
+  
+  // Classes
+  getClasses(page = 1, limit = 10) {
+    return apiClient.get(`/v1/api/classes?page=${page}&limit=${limit}`)
+  },
+  getCourseClasses(courseCode) {
+    return apiClient.get(`/v1/api/classes?course=${courseCode}`)
+  },
+  getClass(classCode) {
+    return apiClient.get(`/v1/api/classes/${classCode}`)
+  },
+  createClass(classData) {
+    return apiClient.post('/v1/api/classes', classData)
   }
 }

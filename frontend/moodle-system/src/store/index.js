@@ -3,6 +3,7 @@ import student from './modules/student'
 import department from './modules/department'
 import program from './modules/program'
 import status from './modules/status'
+import course from './modules/course'
 
 export default createStore({
   state: {
@@ -25,6 +26,7 @@ export default createStore({
     student,
     department,
     program,
-    status
+    status,
+    course 
   }
 })
