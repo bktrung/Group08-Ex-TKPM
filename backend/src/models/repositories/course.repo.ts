@@ -1,6 +1,7 @@
 import Course from "../course.model";
 import { CreateCourseDto, UpdateCourseDto } from "../../dto/course";
 import { Types } from "mongoose";
+import { getAllDocuments } from "../../utils";
 
 export const createCourse = async (courseData: CreateCourseDto) => {
 	return await Course.create(courseData);
@@ -51,4 +52,22 @@ export const activateCourse = async (courseCode: string) => {
 
 export const deleteCourse = async (courseCode: string) => {
 	return await Course.findOneAndDelete({ courseCode }).lean();
+}
+
+export const getAllCourses = async (
+	page: number = 1,
+	limit: number = 10,
+	filter: Record<string, any> = {}
+) => {
+	return await getAllDocuments(Course, {
+		filter,
+		page,
+		limit,
+		sort: "ctime",
+		select: { createdAt: 0, updatedAt: 0, __v: 0 },
+		populate: [
+			{ path: 'department', select: '_id name' },
+			{ path: 'prerequisites', select: '_id name courseCode' }
+		]
+	});
 }

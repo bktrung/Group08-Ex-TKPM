@@ -1,4 +1,4 @@
-import { findEnrollment, createEnrollment, getCompletedCourseIdsByStudent, dropEnrollment } from "../models/repositories/enrollment.repo";
+import { findEnrollment, createEnrollment, getCompletedCourseIdsByStudent, dropEnrollment, findDropHistoryByStudent } from "../models/repositories/enrollment.repo";
 import { BadRequestError, NotFoundError } from "../responses/error.responses";
 import { enrollStudentDto } from "../dto/enrollment";
 import { findStudent } from "../models/repositories/student.repo";
@@ -24,7 +24,7 @@ class EnrollmentService {
 		}
 
 		// Check if class is active
-		if (existingClass.isActive === false) {
+		if (!existingClass.isActive) {
 			throw new BadRequestError("Lớp học không hoạt động");
 		}
 
@@ -47,7 +47,7 @@ class EnrollmentService {
 			throw new NotFoundError("Môn học không tồn tại");
 		}
 
-		if (classCourse.isActive === false) {
+		if (!classCourse.isActive) {
 			throw new BadRequestError("Môn học không hoạt động");
 		}
 
@@ -121,7 +121,6 @@ class EnrollmentService {
 			throw new BadRequestError("Đã quá hạn huỷ lớp học");
 		}
 
-
 		const droppedEnrollment = await dropEnrollment(
 			getDocumentId(existingStudent),
 			getDocumentId(existingClass),
@@ -133,6 +132,21 @@ class EnrollmentService {
 		}
 
 		return droppedEnrollment;
+	}
+
+	static async getDropHistory(studentId: string) {
+		// Check if student exists
+		const existingStudent = await findStudent({ studentId });
+		if (!existingStudent) {
+			throw new NotFoundError("Sinh viên không tồn tại");
+		}
+
+		const dropHistory = await findDropHistoryByStudent(studentId);
+		if (!dropHistory) {
+			throw new NotFoundError("Không tìm thấy lịch sử huỷ lớp học");
+		}
+
+		return dropHistory;
 	}
 }
 

@@ -20,6 +20,15 @@ class EnrollmentController {
 			metadata: { updatedEnrollment }
 		}).send(res);
 	}
+
+	getDropHistory = async (req: Request, res: Response, next: NextFunction) => {
+		const { studentId } = req.params;
+		const dropHistory = await EnrollmentService.getDropHistory(studentId);
+		return new OK({
+			message: 'Drop history retrieved successfully',
+			metadata: { dropHistory }
+		}).send(res);
+	}
 }
 
 export default new EnrollmentController();

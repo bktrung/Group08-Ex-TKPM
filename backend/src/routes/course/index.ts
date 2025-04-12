@@ -6,6 +6,7 @@ import { updateCourseValidator } from "../../validators/course/update-course.val
 
 const router = Router();
 
+router.get('', asyncHandler(courseController.getCourses));
 router.post('', addCourseValidator, asyncHandler(courseController.addCourse));
 router.patch('/:courseCode', updateCourseValidator, asyncHandler(courseController.updateCourse));
 router.delete('/:courseCode', asyncHandler(courseController.deleteCourse));

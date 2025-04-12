@@ -1,10 +1,12 @@
-import { createCourse, findCoursesByIds, findCourseByCode, updateCourse, deleteCourse, deactivateCourse } from "../models/repositories/course.repo";
+import { createCourse, findCoursesByIds, findCourseByCode, updateCourse, deleteCourse, deactivateCourse, getAllCourses } from "../models/repositories/course.repo";
 import { ICourse } from "../models/interfaces/course.interface";
 import { CreateCourseDto, UpdateCourseDto } from "../dto/course";
 import { BadRequestError, NotFoundError } from "../responses/error.responses";
 import { findDepartmentById } from "../models/repositories/department.repo";
 import { findClassByCourse } from "../models/repositories/class.repo";
 import { getDocumentId } from "../utils";
+import { findEnrollment, findEnrollmentsByClass } from "../models/repositories/enrollment.repo";
+import { Types } from "mongoose";
 
 class CourseService {
 	static async addCourse(courseData: CreateCourseDto): Promise<ICourse> {
@@ -48,6 +50,21 @@ class CourseService {
 		}
 
 		// can not change credits if some students are enrolled in classes in this course
+		const openedClasses = await findClassByCourse(getDocumentId(existingCourse));
+		if (openedClasses.length > 0 && courseData.credits) {
+			let hasEnrollments = false;
+			for (const classObj of openedClasses) {
+				const classEnrollments = await findEnrollmentsByClass(getDocumentId(classObj));
+				if (classEnrollments.length > 0) {
+					hasEnrollments = true;
+					break;
+				}
+			}
+			
+			if (hasEnrollments) {
+				throw new BadRequestError("Không thể thay đổi số tín chỉ khi đã có sinh viên đăng ký");
+			}
+		}
 
 		const updatedCourse = await updateCourse(courseCode, courseData);
 		return updatedCourse;
@@ -80,6 +97,32 @@ class CourseService {
 
 		const deletedCourse = await deleteCourse(courseCode);
 		return deletedCourse;
+	}
+
+	static async getCourses(query: {
+		departmentId?: string;
+		page?: string;
+		limit?: string;
+	}) {
+		// Parse pagination parameters
+		const page = query.page ? parseInt(query.page) : 1;
+		const limit = query.limit ? parseInt(query.limit) : 10;
+
+		// Build filter object based on query parameters
+		const filter: Record<string, any> = {};
+
+		// Add department filter if departmentId is provided
+		if (query.departmentId) {
+			// Validate departmentId format to prevent errors
+			if (Types.ObjectId.isValid(query.departmentId)) {
+				filter.department = new Types.ObjectId(query.departmentId);
+			} else {
+				throw new BadRequestError('Invalid department ID format');
+			}
+		}
+
+		// Query courses with pagination and filters
+		return await getAllCourses(page, limit, filter);
 	}
 }
 

@@ -12,6 +12,17 @@ export const findEnrollment = async (student: string | Types.ObjectId, class_id:
 	}).lean();
 }
 
+export const findEnrollmentsByClass = async (class_id: string | Types.ObjectId) => {
+	return await Enrollment.find({ class: class_id }).lean();
+}
+
+export const findEnrollmentsByStudent = async (student: string | Types.ObjectId) => {
+	return await Enrollment.find({ 
+		student,
+		status: EnrollmentStatus.COMPLETED
+	}).populate('class', '_id course').lean();
+}
+
 export const createEnrollment = async (enrollmentData: CreateEnrollmentDto) => {
 	// MongoDb community does not support transactions, so i dont care about atomicity
 	// Create the enrollment
@@ -79,4 +90,11 @@ export const dropEnrollment = async (
 	}
 
 	return updatedEnrollment;
+}
+
+export const findDropHistoryByStudent = async (studentId: string) => {
+	return await Enrollment.find({
+		studentId,
+		status: EnrollmentStatus.DROPPED
+	})
 }
