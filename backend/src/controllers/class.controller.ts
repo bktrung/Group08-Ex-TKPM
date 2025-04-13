@@ -11,6 +11,23 @@ class classController {
 			metadata: { newClass },
 		}).send(res);
 	};
+
+	getClasses = async (req: Request, res: Response, next: NextFunction) => {
+		const { courseId, academicYear, semester, page, limit } = req.query;
+
+		const classesData = await ClassService.getClasses({
+			courseId: courseId as string,
+			academicYear: academicYear as string,
+			semester: semester as string,
+			page: page as string,
+			limit: limit as string
+		});
+
+		return new OK({
+			message: "Retrieved classes successfully",
+			metadata: classesData,
+		}).send(res);
+	};
 }
 
 export default new classController();

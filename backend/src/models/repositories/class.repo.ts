@@ -2,6 +2,7 @@ import Class from "../class.model";
 import { CreateClassDto } from "../../dto/class";
 import { IClass, ISchedule } from "../interfaces/class.interface";
 import { Types } from "mongoose";
+import { getAllDocuments } from "../../utils";
 
 export const findClassByCode = async (classCode: string) => {
 	return await Class.findOne({ classCode }).lean();
@@ -85,4 +86,21 @@ export const findClassesWithOverlappingSchedule = async (
 
 export const findClassByCourse = async (course: string | Types.ObjectId) => {
 	return await Class.find({ course }).lean();
+}
+
+export const getAllClasses = async (
+	page: number = 1,
+	limit: number = 10,
+	filter: Record<string, any> = {}
+) => {
+	return await getAllDocuments(Class, {
+		filter,
+		page,
+		limit,
+		sort: "ctime",
+		select: { createdAt: 0, updatedAt: 0, __v: 0 },
+		populate: [
+			{ path: 'course', select: '_id name courseCode' }
+		]
+	});
 }

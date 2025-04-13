@@ -1,9 +1,10 @@
-import { createClass, findClassesWithOverlappingSchedule } from "../models/repositories/class.repo";
+import { createClass, findClassesWithOverlappingSchedule, getAllClasses } from "../models/repositories/class.repo";
 import { CreateClassDto } from "../dto/class";
 import { findClassByCode } from "../models/repositories/class.repo";
 import { BadRequestError } from "../responses/error.responses";
 import { findCourseById } from "../models/repositories/course.repo";
 import { IClass } from "../models/interfaces/class.interface";
+import { Types } from "mongoose";
 
 class ClassService {
 	static async addClass(classData: CreateClassDto): Promise<IClass> {
@@ -88,6 +89,49 @@ class ClassService {
 		// Create the new class
 		const newClass = await createClass(classData);
 		return newClass;
+	}
+
+	static async getClasses(query: {
+		courseId?: string;
+		academicYear?: string;
+		semester?: string;
+		page?: string;
+		limit?: string;
+	}) {
+		// Parse pagination parameters
+		const page = query.page ? parseInt(query.page) : 1;
+		const limit = query.limit ? parseInt(query.limit) : 10;
+
+		// Build filter object based on query parameters
+		const filter: Record<string, any> = {};
+
+		// Add course filter if courseId is provided
+		if (query.courseId) {
+			// Validate courseId format to prevent errors
+			if (Types.ObjectId.isValid(query.courseId)) {
+				filter.course = new Types.ObjectId(query.courseId);
+			} else {
+				throw new BadRequestError('Invalid course ID format');
+			}
+		}
+
+		// Add academic year filter if provided
+		if (query.academicYear) {
+			filter.academicYear = query.academicYear;
+		}
+
+		// Add semester filter if provided
+		if (query.semester) {
+			const semester = parseInt(query.semester);
+			// Validate semester format
+			if (isNaN(semester) || ![1, 2, 3].includes(semester)) {
+				throw new BadRequestError('Invalid semester value. Must be 1, 2, or 3.');
+			}
+			filter.semester = semester;
+		}
+
+		// Query classes with pagination and filters
+		return await getAllClasses(page, limit, filter);
 	}
 }
 
