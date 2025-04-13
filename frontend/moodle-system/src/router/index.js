@@ -7,6 +7,8 @@ import DepartmentManage from '@/views/DepartmentManage.vue'
 import ProgramManage from '@/views/ProgramManage.vue'
 import StatusManage from '@/views/StatusManage.vue'
 import StatusTransition from '@/views/StatusTransition.vue'
+import CourseManage from '@/views/CourseManage.vue'
+import ClassManage from '@/views/ClassManage.vue'
 
 const routes = [
   {
@@ -44,6 +46,17 @@ const routes = [
     path: '/status-transitions',
     name: 'StatusTransition',
     component: StatusTransition
+  },
+  
+  {
+    path: '/courses',
+    name: 'CourseManage',
+    component: CourseManage
+  },
+  {
+    path: '/classes',
+    name: 'ClassManage',
+    component: ClassManage
   }
 ]
 
