@@ -10,6 +10,7 @@ import classes from "./class";
 import enrollment from "./enrollment";
 import semester from "./semester";
 import grade from "./grade";
+import transcript from "./transcript";
 
 const router = Router();
 
@@ -24,5 +25,7 @@ router.use("/v1/api/classes", classes);
 router.use("/v1/api/enrollment", enrollment);
 router.use("/v1/api/semesters", semester);
 router.use("/v1/api/grades", grade);
+router.use("/v1/api/transcript", transcript);
+
 
 export default router;

@@ -29,7 +29,15 @@ class CourseController {
 			message: 'Course deleted successfully',
 			metadata: { deletedCourse },
 		}).send(res);
-	}
+	};
+
+	getCourses = async (req: Request, res: Response, next: NextFunction) => {
+		const courses = await CourseService.getCourses(req.query);
+		return new OK({
+			message: 'Courses retrieved successfully',
+			metadata: { courses },
+		}).send(res);
+	}; 
 }
 
 export default new CourseController();

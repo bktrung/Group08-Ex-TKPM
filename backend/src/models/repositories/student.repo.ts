@@ -73,6 +73,13 @@ export const getAllStudents = async (page: number = 1, limit: number = 10, filte
 		]
 	});
 }
+
+export const getStudentInfo = async (studentId: string) => {
+	return await Student.findOne({ studentId })
+		.populate('department', '_id name')
+		.populate('program', '_id name')
+		.lean();
+}
 /// End Student Repo
 
 /// Student Status Repo

@@ -22,6 +22,10 @@ const gradeSchema = new Schema<IGrade>({
 		type: Number,
 		required: true,
 	},
+	letterGrade: {
+		type: String,
+		required: true,
+	},
 	gradePoints: {
 		type: Number,
 		required: true,
