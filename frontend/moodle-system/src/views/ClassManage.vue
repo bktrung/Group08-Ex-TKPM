@@ -79,7 +79,6 @@
               <th>Giảng viên</th>
               <th>Sĩ số</th>
               <th>Lịch học</th>
-              <th>Trạng thái</th>
               <th>Hành động</th>
             </tr>
           </thead>
@@ -113,7 +112,7 @@
                 {{ classItem.enrolledStudents }} / {{ classItem.maxCapacity }}
                 <div class="progress" style="height: 5px;">
                   <div class="progress-bar" :class="getProgressBarClass(classItem)" 
-                       :style="`width: ${(classItem.enrolledStudents / classItem.maxCapacity) * 100}%`">
+                      :style="`width: ${(classItem.enrolledStudents / classItem.maxCapacity) * 100}%`">
                   </div>
                 </div>
               </td>
@@ -122,19 +121,11 @@
                   Xem lịch học
                 </button>
               </td>
-              <td class="text-center">
-                <span :class="classItem.isActive ? 'badge bg-success' : 'badge bg-danger'">
-                  {{ classItem.isActive ? 'Đang mở' : 'Đã đóng' }}
-                </span>
-              </td>
+             
               <td class="text-center">
                 <div class="d-flex gap-1 justify-content-center">
                   <button @click="showEditForm(classItem)" class="btn btn-warning btn-sm">
                     <i class="bi bi-pencil"></i>
-                  </button>
-                  <button @click="confirmToggleStatus(classItem)" 
-                          :class="classItem.isActive ? 'btn btn-outline-danger btn-sm' : 'btn btn-outline-success btn-sm'">
-                    <i :class="classItem.isActive ? 'bi bi-x-circle' : 'bi bi-check-circle'"></i>
                   </button>
                 </div>
               </td>
@@ -209,38 +200,6 @@
         </div>
       </div>
     </div>
-
-    <!-- Toggle Status Modal -->
-    <div class="modal fade" id="toggleStatusModal" tabindex="-1" ref="toggleStatusModalRef">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" v-if="selectedClass">
-              {{ selectedClass.isActive ? 'Đóng lớp học' : 'Mở lại lớp học' }}
-            </h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body" v-if="selectedClass">
-            <p v-if="selectedClass.isActive">
-              Bạn có chắc chắn muốn đóng lớp học <strong>{{ selectedClass.classCode }}</strong>?
-            </p>
-            <p v-else>
-              Bạn có chắc chắn muốn mở lại lớp học <strong>{{ selectedClass.classCode }}</strong>?
-            </p>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-            <button 
-              type="button" 
-              :class="selectedClass && selectedClass.isActive ? 'btn btn-danger' : 'btn btn-success'"
-              @click="toggleClassStatus"
-            >
-              {{ selectedClass && selectedClass.isActive ? 'Đóng lớp học' : 'Mở lại lớp học' }}
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -274,11 +233,9 @@ export default {
     
     // Modal refs
     const scheduleModalRef = ref(null)
-    const toggleStatusModalRef = ref(null)
     
     // Bootstrap modal instances
     let scheduleModal = null
-    let toggleStatusModal = null
     
     // Current date for academic years
     const currentDate = new Date()
@@ -439,39 +396,6 @@ export default {
       }
     }
     
-    const confirmToggleStatus = (classItem) => {
-      selectedClass.value = classItem
-      if (toggleStatusModal) {
-        toggleStatusModal.show()
-      }
-    }
-    
-    const toggleClassStatus = async () => {
-      try {
-        await store.dispatch('class/toggleClassActiveStatus', {
-          classCode: selectedClass.value.classCode,
-          isActive: !selectedClass.value.isActive
-        })
-        
-        const action = selectedClass.value.isActive ? 'đóng' : 'mở lại'
-        success.value = `${action} lớp học ${selectedClass.value.classCode} thành công!`
-        
-        if (toggleStatusModal) {
-          toggleStatusModal.hide()
-        }
-        
-        // Refresh classes data
-        await store.dispatch('class/fetchClasses')
-        
-        // Clear success message after 5 seconds
-        setTimeout(() => {
-          success.value = ''
-        }, 5000)
-      } catch (err) {
-        error.value = `Lỗi: ${err.message || `Đã xảy ra lỗi khi ${selectedClass.value.isActive ? 'đóng' : 'mở lại'} lớp học`}`
-      }
-    }
-    
     const formatDayOfWeek = (day) => {
       const dayMapping = {
         2: 'Thứ Hai',
@@ -551,10 +475,6 @@ export default {
         if (document.getElementById('scheduleModal')) {
           scheduleModal = new Modal(document.getElementById('scheduleModal'));
         }
-        
-        if (document.getElementById('toggleStatusModal')) {
-          toggleStatusModal = new Modal(document.getElementById('toggleStatusModal'));
-        }
       } catch (err) {
         console.error('Error loading data:', err);
         error.value = `Lỗi: ${err.message || 'Đã xảy ra lỗi khi tải dữ liệu'}`;
@@ -579,7 +499,6 @@ export default {
       paginatedClasses,
       totalPages,
       scheduleModalRef,
-      toggleStatusModalRef,
       filterClasses,
       resetFilter,
       changePage,
@@ -588,8 +507,6 @@ export default {
       cancelForm,
       saveClass,
       showScheduleModal,
-      confirmToggleStatus,
-      toggleClassStatus,
       formatDayOfWeek,
       formatSemester,
       getCourseInfo,

@@ -170,14 +170,12 @@ export default {
       })
     })
     
-    // Populate form data when props change
     watch(() => props.courseData, (newData) => {
       if (newData && Object.keys(newData).length > 0) {
         formState.courseCode = newData.courseCode || ''
         formState.name = newData.name || ''
         formState.credits = newData.credits || 3
         
-        // Handle department - can be an object or just an ID
         if (newData.department) {
           formState.department = typeof newData.department === 'object' 
             ? newData.department._id 
@@ -188,7 +186,6 @@ export default {
         
         formState.description = newData.description || ''
         
-        // Handle prerequisites - ensure it's an array of IDs
         if (newData.prerequisites && Array.isArray(newData.prerequisites)) {
           formState.prerequisites = newData.prerequisites.map(prereq => 
             typeof prereq === 'object' ? prereq._id : prereq
@@ -251,7 +248,6 @@ export default {
       loading.value = true
       
       try {
-        // Create a copy of form data to submit
         const submitData = {
           courseCode: formState.courseCode,
           name: formState.name,
@@ -261,7 +257,6 @@ export default {
           prerequisites: formState.prerequisites
         }
         
-        // Emit the submit event with form data
         emit('submit', submitData)
       } catch (error) {
         console.error('Error in form submission:', error)

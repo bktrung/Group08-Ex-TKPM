@@ -14,7 +14,6 @@ export default {
       state.courses = courses
     },
     ADD_COURSE(state, course) {
-      // Ensure state.courses is an array before pushing
       if (!Array.isArray(state.courses)) {
         state.courses = []
       }
@@ -50,18 +49,14 @@ export default {
       try {
         const response = await api.getCourses(params)
         
-        // Check if response has the expected structure
         if (response.data && response.data.metadata) {
           const metadata = response.data.metadata;
           
-          // Check different possible locations of courses array
           let coursesArray = [];
           
           if (metadata.courses && Array.isArray(metadata.courses)) {
-            // Direct courses array
             coursesArray = metadata.courses;
           } else if (metadata.courses && metadata.courses.courses && Array.isArray(metadata.courses.courses)) {
-            // Nested courses
             coursesArray = metadata.courses.courses;
           }
           
@@ -75,7 +70,6 @@ export default {
       } catch (error) {
         console.error('Error fetching courses:', error);
         commit('SET_ERROR', error.message || 'Error fetching courses');
-        // Set empty array on error to prevent issues with computed properties
         commit('SET_COURSES', []);
         throw error;
       } finally {
@@ -83,21 +77,17 @@ export default {
       }
     },
     
-    // Create a new course
     async createCourse({ commit }, courseData) {
       commit('SET_LOADING', true)
       try {
-        // Ensure prerequisites is an array
         if (!courseData.prerequisites) {
           courseData.prerequisites = [];
         }
         
-        // Convert numeric values to ensure they're numbers, not strings
         if (courseData.credits) {
           courseData.credits = Number(courseData.credits);
         }
         
-        // Log the data being sent to help debug
         console.log('Creating course with data:', courseData);
         
         const response = await api.createCourse(courseData)
@@ -114,14 +104,12 @@ export default {
       }
     },
     
-    // Update an existing course
     async updateCourse({ commit, dispatch }, { courseCode, data }) {
       commit('SET_LOADING', true)
       try {
         console.log('Updating course with courseCode:', courseCode);
         console.log('Update data being sent:', data);
         
-        // Ensure we're only sending allowed fields for update
         const updateData = {
           name: data.name,
           credits: data.credits ? Number(data.credits) : undefined,
@@ -129,7 +117,6 @@ export default {
           description: data.description
         };
         
-        // Remove any undefined fields
         Object.keys(updateData).forEach(key => {
           if (updateData[key] === undefined) {
             delete updateData[key];
@@ -140,13 +127,11 @@ export default {
         
         const response = await api.updateCourse(courseCode, updateData)
         
-        // Check if response contains the updated course
         if (response.data && response.data.metadata && response.data.metadata.updatedCourse) {
           commit('UPDATE_COURSE', response.data.metadata.updatedCourse)
           return response.data.metadata
         } else {
           console.warn('Update course response does not contain updated course data:', response.data);
-          // Refresh the courses list to get the updated data
           await dispatch('fetchCourses');
           return response.data.metadata
         }
@@ -159,19 +144,15 @@ export default {
       }
     },
     
-    // Delete a course
     async deleteCourse({ commit, dispatch }, courseCode) {
       commit('SET_LOADING', true)
       try {
         console.log('Attempting to delete course with code:', courseCode);
         
-        // Attempt to delete the course - backend sẽ xử lý deactivate nếu không thể xóa
         const response = await api.deleteCourse(courseCode);
         
         if (response.data && response.data.metadata && response.data.metadata.deletedCourse) {
-          // Nếu xóa thành công
           if (response.data.metadata.deletedCourse.isActive === false) {
-            // Trường hợp khóa học bị deactivate
             commit('SET_COURSE_ACTIVE_STATUS', { 
               courseCode, 
               isActive: false 
@@ -182,7 +163,6 @@ export default {
               deactivated: true
             };
           } else {
-            // Trường hợp khóa học bị xóa hoàn toàn
             commit('REMOVE_COURSE', courseCode);
             return { 
               success: true, 
@@ -192,7 +172,6 @@ export default {
           }
         }
         
-        // Nếu không có response.data.metadata.deletedCourse, cập nhật lại danh sách
         await dispatch('fetchCourses');
         return { 
           success: true, 
@@ -207,19 +186,13 @@ export default {
       }
     },
     
-    // Toggle course active status (activate/deactivate)
     async toggleCourseActiveStatus({ commit, dispatch }, { courseCode, isActive }) {
       commit('SET_LOADING', true);
       try {
         console.log(`${isActive ? 'Activating' : 'Deactivating'} course ${courseCode}`);
         
-        // Gọi API và sử dụng kết quả
         await api.toggleCourseStatus(courseCode, isActive);
-        
-        // Cập nhật trạng thái trong store
         commit('SET_COURSE_ACTIVE_STATUS', { courseCode, isActive });
-        
-        // Refresh dữ liệu từ server để đảm bảo đồng bộ
         await dispatch('fetchCourses');
         
         return { 
@@ -239,17 +212,14 @@ export default {
   },
   
   getters: {
-    // Get course by course code
     getCourseByCode: (state) => (courseCode) => {
       return state.courses.find(course => course.courseCode === courseCode)
     },
     
-    // Get active courses
     getActiveCourses: (state) => {
       return state.courses.filter(course => course.isActive)
     },
     
-    // Get courses by department
     getCoursesByDepartment: (state) => (departmentId) => {
       return state.courses.filter(course => {
         const courseDeptId = typeof course.department === 'object' 

@@ -143,11 +143,10 @@ export default {
   },
   
   createCourse(courseData) {
-    // Ensure courseData has the required structure
     const validatedData = {
       courseCode: courseData.courseCode,
       name: courseData.name,
-      credits: Number(courseData.credits), // Ensure credits is a number
+      credits: Number(courseData.credits),
       department: courseData.department,
       description: courseData.description,
       prerequisites: Array.isArray(courseData.prerequisites) ? courseData.prerequisites : []
@@ -158,7 +157,6 @@ export default {
   },
   
   updateCourse(courseCode, courseData) {
-    // Đảm bảo chỉ gửi các trường được phép
     const allowedData = {}
     const allowedFields = ['name', 'credits', 'department', 'description']
     
@@ -185,16 +183,10 @@ export default {
       });
   },
   
-  // Phương thức chuyên biệt để activate/deactivate khóa học
-  // Sử dụng API deleteCourse để deactivate - backend đã xử lý việc này
   toggleCourseStatus(courseCode, isActive) {
     if (isActive === false) {
-      // Sử dụng deleteCourse để deactivate khóa học
-      console.log(`Deactivating course ${courseCode} via delete API`);
       return this.deleteCourse(courseCode);
     } else {
-      // Nếu không có API mở lại khóa học, bạn có thể thêm API đó hoặc 
-      // thông báo cho người dùng rằng chức năng này chưa được hỗ trợ
       console.error(`API for activating course ${courseCode} is not available`);
       return Promise.reject(new Error('API kích hoạt lại khóa học chưa được hỗ trợ'));
     }
@@ -238,9 +230,5 @@ export default {
   
   createClass(classData) {
     return apiClient.post('/v1/api/classes', classData)
-  },
-  
-  updateClass(classCode, classData) {
-    return apiClient.patch(`/v1/api/classes/${classCode}`, classData)
   }
 }
