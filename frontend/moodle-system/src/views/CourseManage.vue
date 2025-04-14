@@ -139,36 +139,15 @@ export default {
       try {
         console.log('Attempting to delete course:', course);
         
-        // Check if course can be completely deleted (within 30 min and no classes)
-        const createdAt = new Date(course.createdAt);
-        const now = new Date();
-        const diffInMinutes = Math.floor((now - createdAt) / (1000 * 60));
-        const canCompletelyDelete = diffInMinutes <= 30 && !course.hasClasses;
+        // Gọi action deleteCourse, backend sẽ xử lý xóa hoàn toàn hoặc chỉ deactivate
+        const result = await store.dispatch('course/deleteCourse', course.courseCode);
         
-        if (canCompletelyDelete) {
-          console.log('Course can be completely deleted');
-          const result = await store.dispatch('course/deleteCourse', course.courseCode);
+        if (result.success) {
+          success.value = result.message || 'Xóa/đóng khóa học thành công!';
           
-          if (result.success) {
-            success.value = 'Xóa khóa học thành công!';
-          } else {
-            // If deletion failed but deactivation succeeded
-            success.value = 'Không thể xóa khóa học, đã đóng khóa học thành công!';
-          }
-        } else {
-          console.log('Course cannot be deleted, deactivating instead');
-          const result = await store.dispatch('course/toggleCourseActiveStatus', {
-            courseCode: course.courseCode,
-            isActive: false
-          });
-          
-          if (result.success) {
-            success.value = 'Đã đóng khóa học thành công!';
-          }
+          // Refresh courses data
+          await store.dispatch('course/fetchCourses');
         }
-        
-        // Refresh courses data
-        await store.dispatch('course/fetchCourses');
         
         // Clear success message after 5 seconds
         setTimeout(() => {
@@ -178,10 +157,8 @@ export default {
         console.error('Error deleting/deactivating course:', err);
         
         let errorMessage = '';
-        if (err.response && err.response.data) {
-          if (err.response.data.message) {
-            errorMessage = err.response.data.message;
-          }
+        if (err.response && err.response.data && err.response.data.message) {
+          errorMessage = err.response.data.message;
         }
         
         error.value = errorMessage || err.message || 'Đã xảy ra lỗi khi xóa/đóng khóa học';
@@ -194,19 +171,23 @@ export default {
         console.log('Toggling course active status:', course);
         
         const newStatus = !course.isActive;
+        
+        // Lưu ý: Nếu newStatus = true (mở lại khóa học), có thể không được hỗ trợ
+        // vì backend không có API để reactivate khóa học
+        if (newStatus === true) {
+          error.value = "Chức năng mở lại khóa học chưa được hỗ trợ";
+          return;
+        }
+        
         const result = await store.dispatch('course/toggleCourseActiveStatus', {
           courseCode: course.courseCode,
           isActive: newStatus
         });
         
         if (result.success) {
-          success.value = newStatus 
-            ? `Mở lại khóa học ${course.name} thành công!` 
-            : `Đóng khóa học ${course.name} thành công!`;
+          success.value = result.message || 
+            (newStatus ? 'Mở lại khóa học thành công!' : 'Đóng khóa học thành công!');
         }
-        
-        // Refresh courses data
-        await store.dispatch('course/fetchCourses');
         
         // Clear success message after 5 seconds
         setTimeout(() => {
@@ -216,13 +197,12 @@ export default {
         console.error('Error toggling course status:', err);
         
         let errorMessage = '';
-        if (err.response && err.response.data) {
-          if (err.response.data.message) {
-            errorMessage = err.response.data.message;
-          }
+        if (err.response && err.response.data && err.response.data.message) {
+          errorMessage = err.response.data.message;
         }
         
-        error.value = errorMessage || err.message || `Đã xảy ra lỗi khi ${course.isActive ? 'đóng' : 'mở lại'} khóa học`;
+        error.value = errorMessage || err.message || 
+          `Đã xảy ra lỗi khi ${course.isActive ? 'đóng' : 'mở lại'} khóa học`;
       }
     }
     
@@ -239,7 +219,7 @@ export default {
         console.log('Current courses in store:', store.state.course.courses);
         
         // If we still don't have courses but know they should exist, try again
-        if (store.state.course.courses.length === 0) {
+        if (!Array.isArray(store.state.course.courses) || store.state.course.courses.length === 0) {
           console.log('No courses found, retrying...');
           setTimeout(async () => {
             await store.dispatch('course/fetchCourses');

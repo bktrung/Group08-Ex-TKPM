@@ -170,53 +170,41 @@ export default {
       try {
         console.log('Attempting to delete course with code:', courseCode);
         
-        // First check if the course has any classes
-        // This should be done by the backend, but we'll add extra validation here
-        const coursesWithClasses = await dispatch('fetchCoursesWithClasses');
-        const hasClasses = coursesWithClasses.some(c => c.courseCode === courseCode);
-        
-        if (hasClasses) {
-          console.log('Course has classes, deactivating instead of deleting');
-          // If it has classes, deactivate instead
-          return await dispatch('toggleCourseActiveStatus', { 
-            courseCode, 
-            isActive: false 
-          });
-        }
-        
-        // If no classes, attempt to delete
+        // Attempt to delete the course - backend sẽ xử lý deactivate nếu không thể xóa
         const response = await api.deleteCourse(courseCode);
         
-        if (response.status === 200 || response.status === 204) {
-          commit('REMOVE_COURSE', courseCode);
-          return { success: true, message: 'Khóa học đã được xóa thành công' };
-        } else {
-          // If deletion not allowed, deactivate instead
-          console.log('Deletion not allowed, deactivating instead');
-          return await dispatch('toggleCourseActiveStatus', { 
-            courseCode, 
-            isActive: false 
-          });
-        }
-      } catch (error) {
-        console.error('Error in deleteCourse:', error);
-        
-        // If deletion fails with a 400 error, it might be because the course has classes
-        // In this case, we should try to deactivate instead
-        if (error.response && error.response.status === 400) {
-          try {
-            console.log('Deletion failed with 400, trying to deactivate instead');
-            return await dispatch('toggleCourseActiveStatus', { 
+        if (response.data && response.data.metadata && response.data.metadata.deletedCourse) {
+          // Nếu xóa thành công
+          if (response.data.metadata.deletedCourse.isActive === false) {
+            // Trường hợp khóa học bị deactivate
+            commit('SET_COURSE_ACTIVE_STATUS', { 
               courseCode, 
               isActive: false 
             });
-          } catch (deactivateError) {
-            console.error('Error deactivating course:', deactivateError);
-            commit('SET_ERROR', 'Không thể xóa hoặc đóng khóa học');
-            throw deactivateError;
+            return { 
+              success: true, 
+              message: 'Khóa học đã được đóng thành công',
+              deactivated: true
+            };
+          } else {
+            // Trường hợp khóa học bị xóa hoàn toàn
+            commit('REMOVE_COURSE', courseCode);
+            return { 
+              success: true, 
+              message: 'Khóa học đã được xóa thành công',
+              deleted: true
+            };
           }
         }
         
+        // Nếu không có response.data.metadata.deletedCourse, cập nhật lại danh sách
+        await dispatch('fetchCourses');
+        return { 
+          success: true, 
+          message: 'Thao tác thành công, làm mới dữ liệu'
+        };
+      } catch (error) {
+        console.error('Error in deleteCourse:', error);
         commit('SET_ERROR', error.message || 'Error deleting course');
         throw error;
       } finally {
@@ -225,20 +213,19 @@ export default {
     },
     
     // Toggle course active status (activate/deactivate)
-    async toggleCourseActiveStatus({ commit }, { courseCode, isActive }) {
+    async toggleCourseActiveStatus({ commit, dispatch }, { courseCode, isActive }) {
       commit('SET_LOADING', true);
       try {
         console.log(`${isActive ? 'Activating' : 'Deactivating'} course ${courseCode}`);
         
-        // Only send the isActive field in the update
-        const response = await api.updateCourse(courseCode, { isActive });
+        // Gọi API và sử dụng kết quả
+        await api.toggleCourseStatus(courseCode, isActive);
         
-        if (response.data && response.data.metadata && response.data.metadata.updatedCourse) {
-          commit('SET_COURSE_ACTIVE_STATUS', { courseCode, isActive });
-        } else {
-          // If the response doesn't include the updated course, update the status manually
-          commit('SET_COURSE_ACTIVE_STATUS', { courseCode, isActive });
-        }
+        // Cập nhật trạng thái trong store
+        commit('SET_COURSE_ACTIVE_STATUS', { courseCode, isActive });
+        
+        // Refresh dữ liệu từ server để đảm bảo đồng bộ
+        await dispatch('fetchCourses');
         
         return { 
           success: true, 
@@ -253,23 +240,7 @@ export default {
       } finally {
         commit('SET_LOADING', false);
       }
-    },
-    
-    // Fetch courses with information about whether they have classes
-    async fetchCoursesWithClasses() {
-      // In a real implementation, this would call a specific API endpoint
-      // For now, we're simulating it using the existing courses data
-      try {
-        const response = await api.getCourses();
-        if (response.data && response.data.metadata && response.data.metadata.courses) {
-          return response.data.metadata.courses;
-        }
-        return [];
-      } catch (error) {
-        console.error('Error fetching courses with classes info:', error);
-        return [];
-      }
-    },
+    }
   },
   
   getters: {

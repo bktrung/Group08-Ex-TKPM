@@ -1,128 +1,130 @@
 <template>
-  <form @submit.prevent="handleSubmit" id="course-form">
-    <div class="section-title">Thông tin khóa học</div>
-    <div class="row mb-2">
-      <div class="col-md-6">
-        <label class="form-label">Mã khóa học <span class="text-danger">*</span></label>
-        <input 
-          type="text" 
-          id="course-code" 
-          v-model="form.courseCode" 
-          class="form-control" 
-          :class="{ 'is-invalid': v$.courseCode.$error, 'is-valid': !v$.courseCode.$invalid && v$.courseCode.$dirty }" 
-          :readonly="isEditing"
-          required
-        >
-        <div class="invalid-feedback" v-if="v$.courseCode.$error">
-          {{ v$.courseCode.$errors[0].$message }}
+  <form @submit.prevent="submitForm">
+    <!-- Thông tin cơ bản -->
+    <div class="row mb-3">
+      <div class="col-md-3">
+        <div class="form-group">
+          <label for="courseCode" class="form-label">Mã khóa học <span class="text-danger">*</span></label>
+          <input
+            type="text"
+            id="courseCode"
+            class="form-control"
+            v-model="formState.courseCode"
+            :disabled="isEditing"
+            :class="{ 'is-invalid': validationErrors.courseCode }"
+            placeholder="VD: CSC101"
+            required
+          />
+          <div class="invalid-feedback">{{ validationErrors.courseCode }}</div>
         </div>
       </div>
+      
       <div class="col-md-6">
-        <label class="form-label">Tên khóa học <span class="text-danger">*</span></label>
-        <input 
-          type="text" 
-          id="course-name" 
-          v-model="form.name" 
-          class="form-control" 
-          :class="{ 'is-invalid': v$.name.$error, 'is-valid': !v$.name.$invalid && v$.name.$dirty }" 
-          required
-        >
-        <div class="invalid-feedback" v-if="v$.name.$error">
-          {{ v$.name.$errors[0].$message }}
+        <div class="form-group">
+          <label for="name" class="form-label">Tên khóa học <span class="text-danger">*</span></label>
+          <input
+            type="text"
+            id="name"
+            class="form-control"
+            v-model="formState.name"
+            :class="{ 'is-invalid': validationErrors.name }"
+            placeholder="VD: Nhập môn Lập trình"
+            required
+          />
+          <div class="invalid-feedback">{{ validationErrors.name }}</div>
+        </div>
+      </div>
+      
+      <div class="col-md-3">
+        <div class="form-group">
+          <label for="credits" class="form-label">Số tín chỉ <span class="text-danger">*</span></label>
+          <input
+            type="number"
+            id="credits"
+            class="form-control"
+            v-model="formState.credits"
+            :class="{ 'is-invalid': validationErrors.credits }"
+            min="2"
+            step="1"
+            required
+          />
+          <div class="invalid-feedback">{{ validationErrors.credits }}</div>
         </div>
       </div>
     </div>
-
-    <div class="row mb-2">
+    
+    <div class="row mb-3">
       <div class="col-md-6">
-        <label class="form-label">Số tín chỉ <span class="text-danger">*</span></label>
-        <input 
-          type="number" 
-          id="course-credits" 
-          v-model.number="form.credits" 
-          class="form-control"
-          :class="{ 'is-invalid': v$.credits.$error, 'is-valid': !v$.credits.$invalid && v$.credits.$dirty }"
-          min="2"
-          required
-        >
-        <div class="invalid-feedback" v-if="v$.credits.$error">
-          Số tín chỉ phải lớn hơn hoặc bằng 2
+        <div class="form-group">
+          <label for="department" class="form-label">Khoa <span class="text-danger">*</span></label>
+          <select
+            id="department"
+            class="form-select"
+            v-model="formState.department"
+            :class="{ 'is-invalid': validationErrors.department }"
+            required
+          >
+            <option value="" disabled>Chọn khoa</option>
+            <option v-for="dept in departments" :key="dept._id" :value="dept._id">
+              {{ dept.name }}
+            </option>
+          </select>
+          <div class="invalid-feedback">{{ validationErrors.department }}</div>
         </div>
       </div>
-      <div class="col-md-6">
-        <label class="form-label">Khoa phụ trách <span class="text-danger">*</span></label>
-        <select 
-          id="course-department" 
-          v-model="form.department" 
-          class="form-select"
-          :class="{ 'is-invalid': v$.department.$error, 'is-valid': !v$.department.$invalid && v$.department.$dirty }"
-          required
-        >
-          <option value="">-- Chọn khoa --</option>
-          <option v-for="dept in departments" :key="dept._id" :value="dept._id">
-            {{ dept.name }}
-          </option>
-        </select>
-        <div class="invalid-feedback" v-if="v$.department.$error">
-          Vui lòng chọn khoa phụ trách
+      
+      <div class="col-md-6" v-if="!isEditing">
+        <div class="form-group">
+          <label for="prerequisites" class="form-label">Môn học tiên quyết</label>
+          <select
+            id="prerequisites"
+            class="form-select"
+            v-model="formState.prerequisites"
+            multiple
+            :class="{ 'is-invalid': validationErrors.prerequisites }"
+          >
+            <option v-for="course in availableCourses" :key="course._id" :value="course._id">
+              {{ course.courseCode }} - {{ course.name }}
+            </option>
+          </select>
+          <div class="form-text">Giữ Ctrl để chọn nhiều môn học</div>
+          <div class="invalid-feedback">{{ validationErrors.prerequisites }}</div>
         </div>
       </div>
     </div>
-
-    <div class="mb-3">
-      <label class="form-label">Mô tả <span class="text-danger">*</span></label>
-      <textarea 
-        id="course-description" 
-        v-model="form.description" 
-        class="form-control"
-        :class="{ 'is-invalid': v$.description.$error, 'is-valid': !v$.description.$invalid && v$.description.$dirty }"
-        rows="3"
-        required
-      ></textarea>
-      <div class="invalid-feedback" v-if="v$.description.$error">
-        Vui lòng nhập mô tả khóa học
-      </div>
-    </div>
-
-    <div class="mb-3">
-      <label class="form-label">Môn học tiên quyết</label>
-      <div v-if="loading" class="d-flex align-items-center">
-        <div class="spinner-border spinner-border-sm me-2" role="status">
-          <span class="visually-hidden">Loading...</span>
+    
+    <div class="row mb-3">
+      <div class="col-12">
+        <div class="form-group">
+          <label for="description" class="form-label">Mô tả khóa học <span class="text-danger">*</span></label>
+          <textarea
+            id="description"
+            class="form-control"
+            v-model="formState.description"
+            :class="{ 'is-invalid': validationErrors.description }"
+            rows="4"
+            placeholder="Mô tả chi tiết về khóa học"
+            required
+          ></textarea>
+          <div class="invalid-feedback">{{ validationErrors.description }}</div>
         </div>
-        <span>Đang tải danh sách môn học...</span>
       </div>
-      <select 
-        v-else
-        id="course-prerequisites" 
-        v-model="form.prerequisites" 
-        class="form-select"
-        multiple
-      >
-        <option v-for="course in availablePrerequisites" :key="course._id" :value="course._id">
-          {{ course.courseCode }} - {{ course.name }}
-        </option>
-      </select>
-      <small class="form-text text-muted">
-        Giữ phím Ctrl (hoặc Command trên Mac) để chọn nhiều môn học
-      </small>
     </div>
-
-    <div class="mt-4">
-      <button type="submit" class="btn btn-primary mt-3 w-100" :disabled="loading">
-        <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-        {{ isEditing ? 'Cập nhật Khóa Học' : 'Thêm Khóa Học' }}
+    
+    <!-- Nút submit và cancel -->
+    <div class="d-flex justify-content-end gap-2 mt-4">
+      <button type="button" class="btn btn-secondary" @click="cancelForm">Hủy</button>
+      <button type="submit" class="btn btn-primary" :disabled="loading">
+        <span v-if="loading" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+        {{ isEditing ? 'Cập nhật' : 'Thêm' }} Khóa Học
       </button>
-      <button type="button" @click="$emit('cancel')" class="btn btn-secondary mt-2 w-100">Hủy</button>
     </div>
   </form>
 </template>
 
 <script>
-import { ref, computed, watch, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useStore } from 'vuex'
-import { useVuelidate } from '@vuelidate/core'
-import { required, minValue, helpers } from '@vuelidate/validators'
 
 export default {
   name: 'CourseForm',
@@ -140,128 +142,165 @@ export default {
   setup(props, { emit }) {
     const store = useStore()
     
-    const form = ref({
+    // Create a reactive form state that's separate from the props
+    const formState = reactive({
       courseCode: '',
       name: '',
-      credits: 2,
+      credits: 3,
       department: '',
       description: '',
       prerequisites: []
     })
     
-    // Validation rules
-    const rules = computed(() => {
-      return {
-        courseCode: { 
-          required: helpers.withMessage('Mã khóa học là bắt buộc', required),
-          alphanumeric: helpers.withMessage(
-            'Mã khóa học chỉ được chứa chữ cái và số',
-            (value) => /^[a-zA-Z0-9]+$/.test(value)
-          )
-        },
-        name: { 
-          required: helpers.withMessage('Tên khóa học là bắt buộc', required) 
-        },
-        credits: { 
-          required: helpers.withMessage('Số tín chỉ là bắt buộc', required),
-          minValue: helpers.withMessage(
-            'Số tín chỉ phải lớn hơn hoặc bằng 2',
-            minValue(2)
-          )
-        },
-        department: { 
-          required: helpers.withMessage('Khoa phụ trách là bắt buộc', required) 
-        },
-        description: { 
-          required: helpers.withMessage('Mô tả khóa học là bắt buộc', required) 
-        }
-      }
-    })
+    const loading = ref(false)
+    const validationErrors = reactive({})
     
-    const v$ = useVuelidate(rules, form)
-    
+    // Get departments and courses from store
     const departments = computed(() => store.state.department.departments)
-    const courses = computed(() => store.state.course.courses)
-    const loading = computed(() => store.state.course.loading)
+    const courses = computed(() => store.state.course.courses || [])
     
-    const availablePrerequisites = computed(() => {
-      if (!Array.isArray(courses.value)) return [];
-      
+    // Filter available courses for prerequisites (exclude current course if editing)
+    const availableCourses = computed(() => {
       return courses.value.filter(course => {
-        if (props.isEditing) {
-          return course.courseCode !== props.courseData.courseCode
+        // If editing, exclude the current course
+        if (props.isEditing && course.courseCode === formState.courseCode) {
+          return false
         }
         return true
       })
     })
     
-    const handleSubmit = async () => {
-      const isValid = await v$.value.$validate()
-      if (!isValid) return
-      
-      let formData = {};
-      
-      if (props.isEditing) {
-        formData = {
-          name: form.value.name,
-          credits: Number(form.value.credits),
-          department: form.value.department,
-          description: form.value.description
-        };
-      } else {
-        formData = {
-          courseCode: form.value.courseCode,
-          name: form.value.name,
-          credits: Number(form.value.credits),
-          department: form.value.department,
-          description: form.value.description,
-          prerequisites: Array.isArray(form.value.prerequisites) ? form.value.prerequisites : []
-        };
-      }
-      
-      emit('submit', formData);
-    }
-    
-    watch(() => props.courseData, (newVal) => {
-      if (newVal && Object.keys(newVal).length > 0) {
-        form.value = {
-          courseCode: newVal.courseCode || '',
-          name: newVal.name || '',
-          credits: newVal.credits || 2,
-          department: newVal.department?._id || newVal.department || '',
-          description: newVal.description || '',
-          prerequisites: newVal.prerequisites || []
+    // Populate form data when props change
+    watch(() => props.courseData, (newData) => {
+      if (newData && Object.keys(newData).length > 0) {
+        formState.courseCode = newData.courseCode || ''
+        formState.name = newData.name || ''
+        formState.credits = newData.credits || 3
+        
+        // Handle department - can be an object or just an ID
+        if (newData.department) {
+          formState.department = typeof newData.department === 'object' 
+            ? newData.department._id 
+            : newData.department
+        } else {
+          formState.department = ''
+        }
+        
+        formState.description = newData.description || ''
+        
+        // Handle prerequisites - ensure it's an array of IDs
+        if (newData.prerequisites && Array.isArray(newData.prerequisites)) {
+          formState.prerequisites = newData.prerequisites.map(prereq => 
+            typeof prereq === 'object' ? prereq._id : prereq
+          )
+        } else {
+          formState.prerequisites = []
         }
       }
     }, { immediate: true, deep: true })
     
+    // Validate form data
+    const validateForm = () => {
+      const errors = {}
+      
+      // Validate course code (only if not editing)
+      if (!props.isEditing && !formState.courseCode.trim()) {
+        errors.courseCode = 'Mã khóa học không được để trống'
+      } else if (!props.isEditing && !/^[A-Za-z0-9]{3,10}$/.test(formState.courseCode)) {
+        errors.courseCode = 'Mã khóa học phải có 3-10 ký tự và không chứa ký tự đặc biệt'
+      }
+      
+      // Validate name
+      if (!formState.name.trim()) {
+        errors.name = 'Tên khóa học không được để trống'
+      } else if (formState.name.length < 3) {
+        errors.name = 'Tên khóa học phải có ít nhất 3 ký tự'
+      }
+      
+      // Validate credits
+      if (!formState.credits) {
+        errors.credits = 'Số tín chỉ không được để trống'
+      } else if (formState.credits < 2) {
+        errors.credits = 'Số tín chỉ phải lớn hơn hoặc bằng 2'
+      } else if (!Number.isInteger(Number(formState.credits))) {
+        errors.credits = 'Số tín chỉ phải là số nguyên'
+      }
+      
+      // Validate department
+      if (!formState.department) {
+        errors.department = 'Vui lòng chọn khoa'
+      }
+      
+      // Validate description
+      if (!formState.description.trim()) {
+        errors.description = 'Mô tả khóa học không được để trống'
+      } else if (formState.description.length < 10) {
+        errors.description = 'Mô tả khóa học phải có ít nhất 10 ký tự'
+      }
+      
+      Object.assign(validationErrors, errors)
+      return Object.keys(errors).length === 0
+    }
+    
+    // Submit form
+    const submitForm = async () => {
+      if (!validateForm()) {
+        return
+      }
+      
+      loading.value = true
+      
+      try {
+        // Create a copy of form data to submit
+        const submitData = {
+          courseCode: formState.courseCode,
+          name: formState.name,
+          credits: Number(formState.credits),
+          department: formState.department,
+          description: formState.description,
+          prerequisites: formState.prerequisites
+        }
+        
+        // Emit the submit event with form data
+        emit('submit', submitData)
+      } catch (error) {
+        console.error('Error in form submission:', error)
+      } finally {
+        loading.value = false
+      }
+    }
+    
+    // Cancel form
+    const cancelForm = () => {
+      emit('cancel')
+    }
+    
+    // Load initial data
     onMounted(async () => {
       if (departments.value.length === 0) {
         await store.dispatch('department/fetchDepartments')
       }
       
-      await store.dispatch('course/fetchCourses')
+      if (courses.value.length === 0) {
+        await store.dispatch('course/fetchCourses')
+      }
     })
     
     return {
-      form,
-      v$,
-      departments,
-      availablePrerequisites,
+      formState,
       loading,
-      handleSubmit
+      validationErrors,
+      departments,
+      availableCourses,
+      submitForm,
+      cancelForm
     }
   }
 }
 </script>
 
 <style scoped>
-.section-title {
-  background-color: #e9ecef;
-  padding: 8px 12px;
-  margin-top: 15px;
-  margin-bottom: 15px;
-  border-radius: 5px;
-  font-weight: bold;
+select[multiple] {
+  height: 150px;
 }
 </style>

@@ -160,19 +160,22 @@ export default {
   },
   
   updateCourse(courseCode, courseData) {
-    // Make sure to only include fields allowed for update
-    const allowedFields = ['name', 'credits', 'department', 'description'];
+    // Đảm bảo chỉ gửi các trường được phép
+    const allowedData = {}
+    const allowedFields = ['name', 'credits', 'department', 'description']
     
-    // Filter out any fields that aren't allowed for updates
-    const updateData = {};
     for (const field of allowedFields) {
       if (field in courseData) {
-        updateData[field] = courseData[field];
+        allowedData[field] = courseData[field]
       }
     }
     
-    console.log(`API Updating course ${courseCode} with data:`, updateData);
-    return apiClient.patch(`/v1/api/courses/${courseCode}`, updateData);
+    console.log(`API Updating course ${courseCode} with data:`, allowedData);
+    return apiClient.patch(`/v1/api/courses/${courseCode}`, allowedData)
+      .catch(error => {
+        console.error(`Error updating course ${courseCode}:`, error.response || error);
+        throw error;
+      });
   },
   
   deleteCourse(courseCode) {
@@ -184,16 +187,20 @@ export default {
       });
   },
   
-  // Special method just for toggling course active status
-  toggleCourseActiveStatus(courseCode, isActive) {
-    console.log(`API Toggle course ${courseCode} active status to ${isActive}`);
-    return apiClient.patch(`/v1/api/courses/${courseCode}`, { isActive })
-      .catch(error => {
-        console.error(`Error toggling course ${courseCode} status:`, error.response || error);
-        throw error;
-      });
+  // Phương thức chuyên biệt để activate/deactivate khóa học
+  // Sử dụng API deleteCourse để deactivate - backend đã xử lý việc này
+  toggleCourseStatus(courseCode, isActive) {
+    if (isActive === false) {
+      // Sử dụng deleteCourse để deactivate khóa học
+      console.log(`Deactivating course ${courseCode} via delete API`);
+      return this.deleteCourse(courseCode);
+    } else {
+      // Nếu không có API mở lại khóa học, bạn có thể thêm API đó hoặc 
+      // thông báo cho người dùng rằng chức năng này chưa được hỗ trợ
+      console.error(`API for activating course ${courseCode} is not available`);
+      return Promise.reject(new Error('API kích hoạt lại khóa học chưa được hỗ trợ'));
+    }
   },
-  
   // Class endpoints
   getClasses(params = {}) {
     let queryString = ''
