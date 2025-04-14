@@ -83,28 +83,39 @@ export default {
         
         if (isEditing.value) {
           // Update existing course
+          console.log(`Updating course with code: ${selectedCourse.value.courseCode}`);
+          
+          // For updates, make sure we're not sending courseCode or prerequisites
+          const updateData = {
+            name: courseData.name,
+            credits: courseData.credits,
+            department: courseData.department,
+            description: courseData.description
+          };
+          
           await store.dispatch('course/updateCourse', {
             courseCode: selectedCourse.value.courseCode,
-            data: courseData
-          })
-          success.value = `Cập nhật khóa học ${courseData.name} thành công!`
+            data: updateData
+          });
+          
+          success.value = `Cập nhật khóa học ${courseData.name} thành công!`;
         } else {
           // Create new course
-          await store.dispatch('course/createCourse', courseData)
-          success.value = `Thêm khóa học ${courseData.name} thành công!`
+          await store.dispatch('course/createCourse', courseData);
+          success.value = `Thêm khóa học ${courseData.name} thành công!`;
         }
         
         // Refresh courses data
-        await store.dispatch('course/fetchCourses')
+        await store.dispatch('course/fetchCourses');
         
         // Reset form
-        showForm.value = false
-        selectedCourse.value = {}
+        showForm.value = false;
+        selectedCourse.value = {};
         
         // Clear success message after 5 seconds
         setTimeout(() => {
-          success.value = ''
-        }, 5000)
+          success.value = '';
+        }, 5000);
       } catch (err) {
         console.error('Error saving course:', err);
         
@@ -126,35 +137,92 @@ export default {
     // Delete a course
     const deleteCourse = async (course) => {
       try {
-        await store.dispatch('course/deleteCourse', course.courseCode)
-        success.value = `Xóa khóa học ${course.name} thành công!`
+        console.log('Attempting to delete course:', course);
+        
+        // Check if course can be completely deleted (within 30 min and no classes)
+        const createdAt = new Date(course.createdAt);
+        const now = new Date();
+        const diffInMinutes = Math.floor((now - createdAt) / (1000 * 60));
+        const canCompletelyDelete = diffInMinutes <= 30 && !course.hasClasses;
+        
+        if (canCompletelyDelete) {
+          console.log('Course can be completely deleted');
+          const result = await store.dispatch('course/deleteCourse', course.courseCode);
+          
+          if (result.success) {
+            success.value = 'Xóa khóa học thành công!';
+          } else {
+            // If deletion failed but deactivation succeeded
+            success.value = 'Không thể xóa khóa học, đã đóng khóa học thành công!';
+          }
+        } else {
+          console.log('Course cannot be deleted, deactivating instead');
+          const result = await store.dispatch('course/toggleCourseActiveStatus', {
+            courseCode: course.courseCode,
+            isActive: false
+          });
+          
+          if (result.success) {
+            success.value = 'Đã đóng khóa học thành công!';
+          }
+        }
+        
+        // Refresh courses data
+        await store.dispatch('course/fetchCourses');
         
         // Clear success message after 5 seconds
         setTimeout(() => {
-          success.value = ''
-        }, 5000)
+          success.value = '';
+        }, 5000);
       } catch (err) {
-        error.value = `Lỗi: ${err.message || 'Đã xảy ra lỗi khi xóa khóa học'}`
+        console.error('Error deleting/deactivating course:', err);
+        
+        let errorMessage = '';
+        if (err.response && err.response.data) {
+          if (err.response.data.message) {
+            errorMessage = err.response.data.message;
+          }
+        }
+        
+        error.value = errorMessage || err.message || 'Đã xảy ra lỗi khi xóa/đóng khóa học';
       }
     }
     
     // Toggle course active status
     const toggleCourseActiveStatus = async (course) => {
       try {
-        await store.dispatch('course/toggleCourseActiveStatus', {
-          courseCode: course.courseCode,
-          isActive: !course.isActive
-        })
+        console.log('Toggling course active status:', course);
         
-        const action = course.isActive ? 'đóng' : 'mở lại'
-        success.value = `${action} khóa học ${course.name} thành công!`
+        const newStatus = !course.isActive;
+        const result = await store.dispatch('course/toggleCourseActiveStatus', {
+          courseCode: course.courseCode,
+          isActive: newStatus
+        });
+        
+        if (result.success) {
+          success.value = newStatus 
+            ? `Mở lại khóa học ${course.name} thành công!` 
+            : `Đóng khóa học ${course.name} thành công!`;
+        }
+        
+        // Refresh courses data
+        await store.dispatch('course/fetchCourses');
         
         // Clear success message after 5 seconds
         setTimeout(() => {
-          success.value = ''
-        }, 5000)
+          success.value = '';
+        }, 5000);
       } catch (err) {
-        error.value = `Lỗi: ${err.message || `Đã xảy ra lỗi khi ${course.isActive ? 'đóng' : 'mở lại'} khóa học`}`
+        console.error('Error toggling course status:', err);
+        
+        let errorMessage = '';
+        if (err.response && err.response.data) {
+          if (err.response.data.message) {
+            errorMessage = err.response.data.message;
+          }
+        }
+        
+        error.value = errorMessage || err.message || `Đã xảy ra lỗi khi ${course.isActive ? 'đóng' : 'mở lại'} khóa học`;
       }
     }
     
@@ -202,5 +270,4 @@ export default {
 </script>
 
 <style scoped>
-/* Any component-specific styles can go here */
 </style>

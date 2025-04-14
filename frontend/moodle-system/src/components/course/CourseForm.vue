@@ -184,7 +184,6 @@ export default {
     const courses = computed(() => store.state.course.courses)
     const loading = computed(() => store.state.course.loading)
     
-    // Filter out the current course from prerequisites to avoid circular references
     const availablePrerequisites = computed(() => {
       if (!Array.isArray(courses.value)) return [];
       
@@ -200,18 +199,27 @@ export default {
       const isValid = await v$.value.$validate()
       if (!isValid) return
       
-      // Create a clean copy of the form data to send to the API
-      const formData = {
-        courseCode: form.value.courseCode,
-        name: form.value.name,
-        credits: Number(form.value.credits), // Ensure this is a number
-        department: form.value.department,
-        description: form.value.description,
-        prerequisites: Array.isArray(form.value.prerequisites) ? form.value.prerequisites : []
+      let formData = {};
+      
+      if (props.isEditing) {
+        formData = {
+          name: form.value.name,
+          credits: Number(form.value.credits),
+          department: form.value.department,
+          description: form.value.description
+        };
+      } else {
+        formData = {
+          courseCode: form.value.courseCode,
+          name: form.value.name,
+          credits: Number(form.value.credits),
+          department: form.value.department,
+          description: form.value.description,
+          prerequisites: Array.isArray(form.value.prerequisites) ? form.value.prerequisites : []
+        };
       }
       
-      console.log('Submitting course form data:', formData)
-      emit('submit', formData)
+      emit('submit', formData);
     }
     
     watch(() => props.courseData, (newVal) => {
@@ -228,12 +236,10 @@ export default {
     }, { immediate: true, deep: true })
     
     onMounted(async () => {
-      // Load departments if not already loaded
       if (departments.value.length === 0) {
         await store.dispatch('department/fetchDepartments')
       }
       
-      // Always load courses to ensure we have the latest data
       await store.dispatch('course/fetchCourses')
     })
     

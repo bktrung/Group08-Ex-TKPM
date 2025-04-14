@@ -252,50 +252,52 @@ export default {
   setup(props, { emit }) {
     const store = useStore()
     
-    // Pagination state
     const currentPage = ref(1)
     const pageSize = ref(10)
     
-    // Filtering state
     const searchQuery = ref('')
     const selectedDepartment = ref('')
     const sortField = ref('courseCode')
     const sortDirection = ref('asc')
     
-    // Selected course for modals
     const selectedCourse = ref(null)
     const prerequisiteCourses = ref([])
     
-    // Modal refs
     const deleteModalRef = ref(null)
     const toggleActiveModalRef = ref(null)
     const descriptionModalRef = ref(null)
     const prerequisitesModalRef = ref(null)
     
-    // Bootstrap modal instances
     let deleteModal = null
     let toggleActiveModal = null
     let descriptionModal = null
     let prerequisitesModal = null
     
-    // Computed properties
     const courses = computed(() => {
-      const coursesFromStore = store.state.course.courses;
-      console.log('Courses from store in CourseList:', coursesFromStore);
-      return coursesFromStore;
+      const courseState = store.state.course;
+      
+      if (courseState && courseState.courses) {
+        if (courseState.courses.courses && Array.isArray(courseState.courses.courses)) {
+          return courseState.courses.courses;
+        }
+        
+        if (Array.isArray(courseState.courses)) {
+          return courseState.courses;
+        }
+      }
+      
+      console.warn('No valid courses array found in state');
+      return [];
     })
     
     const departments = computed(() => {
       const departmentsFromStore = store.state.department.departments;
-      console.log('Departments from store in CourseList:', departmentsFromStore);
       return departmentsFromStore;
     })
     
     const loading = computed(() => store.state.course.loading)
     
-    // Filtered and sorted courses
     const filteredCourses = computed(() => {
-      console.log('Computing filtered courses, raw courses:', courses.value);
       
       if (!Array.isArray(courses.value)) {
         console.warn('courses.value is not an array:', courses.value);
@@ -303,14 +305,11 @@ export default {
       }
       
       if (courses.value.length === 0) {
-        console.log('courses.value is an empty array');
         return [];
       }
       
       let filtered = [...courses.value];
-      console.log('Initial filtered courses:', filtered);
       
-      // Filter by department
       if (selectedDepartment.value) {
         filtered = filtered.filter(course => {
           const deptId = typeof course.department === 'object' 
@@ -318,25 +317,20 @@ export default {
             : course.department;
           return deptId === selectedDepartment.value;
         });
-        console.log('After department filtering:', filtered);
       }
       
-      // Filter by search query
       if (searchQuery.value) {
         const query = searchQuery.value.toLowerCase()
         filtered = filtered.filter(course => 
           course.courseCode.toLowerCase().includes(query) || 
           course.name.toLowerCase().includes(query)
         )
-        console.log('After search query filtering:', filtered);
       }
       
-      // Sort courses
       filtered.sort((a, b) => {
         let aValue = a[sortField.value]
         let bValue = b[sortField.value]
         
-        // Handle department sorting
         if (sortField.value === 'department') {
           aValue = getDepartmentName(a.department)
           bValue = getDepartmentName(b.department)
@@ -354,25 +348,21 @@ export default {
         }
       })
       
-      console.log('Final filtered courses:', filtered);
       return filtered
     })
     
-    // Total pages for pagination
     const totalPages = computed(() => {
       return Math.ceil(filteredCourses.value.length / pageSize.value) || 1
     })
     
-    // Current page of courses
     const paginatedCourses = computed(() => {
       const start = (currentPage.value - 1) * pageSize.value
       const end = start + pageSize.value
       return filteredCourses.value.slice(start, end)
     })
     
-    // Methods
     const filterCourses = () => {
-      currentPage.value = 1 // Reset to first page when filtering
+      currentPage.value = 1
     }
     
     const resetFilter = () => {
@@ -438,7 +428,6 @@ export default {
     const showPrerequisitesModal = (course) => {
       selectedCourse.value = course
       
-      // Find all prerequisite courses
       if (course.prerequisites && course.prerequisites.length > 0) {
         prerequisiteCourses.value = course.prerequisites.map(prereqId => {
           const prereq = courses.value.find(c => {
@@ -485,7 +474,6 @@ export default {
       return prereqList.join(', ')
     }
     
-    // Check if a course can be deleted (within 30 minutes of creation)
     const canDelete = (course) => {
       if (!course.createdAt) return false
       
@@ -496,14 +484,11 @@ export default {
       return diffInMinutes <= 30
     }
     
-    // Watch for changes in pageSize
     watch(pageSize, () => {
-      // Reset to first page when changing page size
       const currentFirstItem = (currentPage.value - 1) * pageSize.value + 1
       currentPage.value = Math.ceil(currentFirstItem / pageSize.value) || 1
     })
     
-    // Initialize modals
     onMounted(() => {
       if (document.getElementById('deleteModal')) {
         deleteModal = new Modal(document.getElementById('deleteModal'))

@@ -29,6 +29,6 @@ export default createStore({
     program,
     status,
     course, 
-    'class': classModule  // Use classModule for the 'class' key with quotes to avoid issues
+    'class': classModule
   }
 })

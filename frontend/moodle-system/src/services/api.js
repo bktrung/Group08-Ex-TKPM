@@ -115,91 +115,117 @@ export default {
     return apiClient.get(`/v1/api/address/children/${geonameId}`)
   },
 
-  // Course endpoints
-getCourses(params = {}) {
-  let queryString = ''
-  if (params.departmentId) {
-    queryString += `departmentId=${params.departmentId}&`
-  }
-  if (params.page) {
-    queryString += `page=${params.page}&`
-  }
-  if (params.limit) {
-    queryString += `limit=${params.limit}&`
-  }
+  getCourses(params = {}) {
+    let queryString = ''
+    if (params.departmentId) {
+      queryString += `departmentId=${params.departmentId}&`
+    }
+    if (params.page) {
+      queryString += `page=${params.page}&`
+    }
+    if (params.limit) {
+      queryString += `limit=${params.limit}&`
+    }
+    
+    queryString = queryString ? `?${queryString.slice(0, -1)}` : ''
+    console.log(`Fetching courses with URL: /v1/api/courses${queryString}`);
+    return apiClient.get(`/v1/api/courses${queryString}`)
+      .then(response => {
+        console.log('Raw course API response:', response);
+        return response;
+      })
+      .catch(error => {
+        console.error('Error in API getCourses:', error);
+        throw error;
+      });
+  },
   
-  queryString = queryString ? `?${queryString.slice(0, -1)}` : ''
-  console.log(`Fetching courses with URL: /v1/api/courses${queryString}`);
-  return apiClient.get(`/v1/api/courses${queryString}`)
-    .then(response => {
-      console.log('Raw course API response:', response);
-      return response;
-    })
-    .catch(error => {
-      console.error('Error in API getCourses:', error);
-      throw error;
-    });
-},
-
-getCourse(courseCode) {
-  return apiClient.get(`/v1/api/courses/${courseCode}`)
-},
-
-createCourse(courseData) {
-  // Ensure courseData has the required structure
-  const validatedData = {
-    courseCode: courseData.courseCode,
-    name: courseData.name,
-    credits: Number(courseData.credits), // Ensure credits is a number
-    department: courseData.department,
-    description: courseData.description,
-    prerequisites: Array.isArray(courseData.prerequisites) ? courseData.prerequisites : []
-  }
+  getCourse(courseCode) {
+    return apiClient.get(`/v1/api/courses/${courseCode}`)
+  },
   
-  console.log('API Creating course with data:', validatedData)
-  return apiClient.post('/v1/api/courses', validatedData)
-},
-
-updateCourse(courseCode, courseData) {
-  return apiClient.patch(`/v1/api/courses/${courseCode}`, courseData)
-},
-
-deleteCourse(courseCode) {
-  return apiClient.delete(`/v1/api/courses/${courseCode}`)
-},
-
-// Class endpoints
-getClasses(params = {}) {
-  let queryString = ''
-  if (params.courseId) {
-    queryString += `courseId=${params.courseId}&`
-  }
-  if (params.academicYear) {
-    queryString += `academicYear=${params.academicYear}&`
-  }
-  if (params.semester) {
-    queryString += `semester=${params.semester}&`
-  }
-  if (params.page) {
-    queryString += `page=${params.page}&`
-  }
-  if (params.limit) {
-    queryString += `limit=${params.limit}&`
-  }
+  createCourse(courseData) {
+    // Ensure courseData has the required structure
+    const validatedData = {
+      courseCode: courseData.courseCode,
+      name: courseData.name,
+      credits: Number(courseData.credits), // Ensure credits is a number
+      department: courseData.department,
+      description: courseData.description,
+      prerequisites: Array.isArray(courseData.prerequisites) ? courseData.prerequisites : []
+    }
+    
+    console.log('API Creating course with data:', validatedData)
+    return apiClient.post('/v1/api/courses', validatedData)
+  },
   
-  queryString = queryString ? `?${queryString.slice(0, -1)}` : ''
-  return apiClient.get(`/v1/api/classes${queryString}`)
-},
-
-getClass(classCode) {
-  return apiClient.get(`/v1/api/classes/${classCode}`)
-},
-
-createClass(classData) {
-  return apiClient.post('/v1/api/classes', classData)
-},
-
-updateClass(classCode, classData) {
-  return apiClient.patch(`/v1/api/classes/${classCode}`, classData)
-}
+  updateCourse(courseCode, courseData) {
+    // Make sure to only include fields allowed for update
+    const allowedFields = ['name', 'credits', 'department', 'description'];
+    
+    // Filter out any fields that aren't allowed for updates
+    const updateData = {};
+    for (const field of allowedFields) {
+      if (field in courseData) {
+        updateData[field] = courseData[field];
+      }
+    }
+    
+    console.log(`API Updating course ${courseCode} with data:`, updateData);
+    return apiClient.patch(`/v1/api/courses/${courseCode}`, updateData);
+  },
+  
+  deleteCourse(courseCode) {
+    console.log(`API Deleting course ${courseCode}`);
+    return apiClient.delete(`/v1/api/courses/${courseCode}`)
+      .catch(error => {
+        console.error(`Error deleting course ${courseCode}:`, error.response || error);
+        throw error;
+      });
+  },
+  
+  // Special method just for toggling course active status
+  toggleCourseActiveStatus(courseCode, isActive) {
+    console.log(`API Toggle course ${courseCode} active status to ${isActive}`);
+    return apiClient.patch(`/v1/api/courses/${courseCode}`, { isActive })
+      .catch(error => {
+        console.error(`Error toggling course ${courseCode} status:`, error.response || error);
+        throw error;
+      });
+  },
+  
+  // Class endpoints
+  getClasses(params = {}) {
+    let queryString = ''
+    if (params.courseId) {
+      queryString += `courseId=${params.courseId}&`
+    }
+    if (params.academicYear) {
+      queryString += `academicYear=${params.academicYear}&`
+    }
+    if (params.semester) {
+      queryString += `semester=${params.semester}&`
+    }
+    if (params.page) {
+      queryString += `page=${params.page}&`
+    }
+    if (params.limit) {
+      queryString += `limit=${params.limit}&`
+    }
+    
+    queryString = queryString ? `?${queryString.slice(0, -1)}` : ''
+    return apiClient.get(`/v1/api/classes${queryString}`)
+  },
+  
+  getClass(classCode) {
+    return apiClient.get(`/v1/api/classes/${classCode}`)
+  },
+  
+  createClass(classData) {
+    return apiClient.post('/v1/api/classes', classData)
+  },
+  
+  updateClass(classCode, classData) {
+    return apiClient.patch(`/v1/api/classes/${classCode}`, classData)
+  }
 }
