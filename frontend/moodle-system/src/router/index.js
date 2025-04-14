@@ -7,6 +7,7 @@ import DepartmentManage from '@/views/DepartmentManage.vue'
 import ProgramManage from '@/views/ProgramManage.vue'
 import StatusManage from '@/views/StatusManage.vue'
 import StatusTransition from '@/views/StatusTransition.vue'
+import AcademicAffairsRegistration from '@/views/AcademicAffairsRegistration.vue'
 import CourseManage from '@/views/CourseManage.vue'
 import ClassManage from '@/views/ClassManage.vue'
 
@@ -46,6 +47,11 @@ const routes = [
     path: '/status-transitions',
     name: 'StatusTransition',
     component: StatusTransition
+  },
+  {
+    path: '/academic-affairs-registration',
+    name: 'AcademicAffairsRegistration',
+    component: AcademicAffairsRegistration
   },
   
   {

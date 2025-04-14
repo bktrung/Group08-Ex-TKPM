@@ -45,6 +45,11 @@
           <i class="bi bi-mortarboard me-2"></i> Chương trình đào tạo
         </router-link>
       </li>
+      <li>
+        <router-link to="/academic-affairs-registration" class="nav-link" :class="{ active: $route.path === '/academic-affairs-registration' }">
+          Quản lí đăng kí môn học
+        </router-link>
+      </li>
     </ul>
   </div>
 </template>
