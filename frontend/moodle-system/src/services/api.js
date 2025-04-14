@@ -128,10 +128,8 @@ export default {
     }
     
     queryString = queryString ? `?${queryString.slice(0, -1)}` : ''
-    console.log(`Fetching courses with URL: /v1/api/courses${queryString}`);
     return apiClient.get(`/v1/api/courses${queryString}`)
       .then(response => {
-        console.log('Raw course API response:', response);
         return response;
       })
       .catch(error => {
@@ -203,25 +201,35 @@ export default {
   },
   // Class endpoints
   getClasses(params = {}) {
-    let queryString = ''
+    let queryString = '';
     if (params.courseId) {
-      queryString += `courseId=${params.courseId}&`
+      queryString += `courseId=${params.courseId}&`;
     }
     if (params.academicYear) {
-      queryString += `academicYear=${params.academicYear}&`
+      queryString += `academicYear=${params.academicYear}&`;
     }
     if (params.semester) {
-      queryString += `semester=${params.semester}&`
+      queryString += `semester=${params.semester}&`;
     }
     if (params.page) {
-      queryString += `page=${params.page}&`
+      queryString += `page=${params.page}&`;
     }
     if (params.limit) {
-      queryString += `limit=${params.limit}&`
+      queryString += `limit=${params.limit}&`;
     }
     
-    queryString = queryString ? `?${queryString.slice(0, -1)}` : ''
+    queryString = queryString ? `?${queryString.slice(0, -1)}` : '';
+    console.log(`Fetching classes with URL: /v1/api/classes${queryString}`);
+    
     return apiClient.get(`/v1/api/classes${queryString}`)
+      .then(response => {
+        console.log('Raw class API response:', response);
+        return response;
+      })
+      .catch(error => {
+        console.error('Error in API getClasses:', error.response || error);
+        throw error;
+      });
   },
   
   getClass(classCode) {

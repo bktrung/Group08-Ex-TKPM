@@ -39,16 +39,57 @@ export default {
   actions: {
     // Fetch all classes or filtered classes
     async fetchClasses({ commit }, params = {}) {
-      commit('SET_LOADING', true)
+      commit('SET_LOADING', true);
       try {
-        const response = await api.getClasses(params)
-        commit('SET_CLASSES', response.data.metadata.classes || [])
-        return response.data.metadata
+        const response = await api.getClasses(params);
+        console.log('API response for classes:', response.data);
+        
+        // Check if response has the expected structure
+        if (response.data && response.data.metadata) {
+          const metadata = response.data.metadata;
+          console.log('Response metadata:', metadata);
+          
+          // Check different possible locations of classes array
+          let classesArray = [];
+          
+          if (metadata.classes && Array.isArray(metadata.classes)) {
+            // Direct classes array
+            classesArray = metadata.classes;
+            console.log('Found classes array directly in metadata.classes');
+          } else if (metadata.docs && Array.isArray(metadata.docs)) {
+            // MongoDB pagination response format
+            classesArray = metadata.docs;
+            console.log('Found classes array in metadata.docs');
+          } else {
+            // Try to find any array property that might contain classes
+            for (const key in metadata) {
+              if (Array.isArray(metadata[key]) && metadata[key].length > 0) {
+                // Check if first item has classCode property which suggests it's a class
+                if (metadata[key][0] && metadata[key][0].classCode) {
+                  classesArray = metadata[key];
+                  console.log(`Found classes array in metadata.${key}`);
+                  break;
+                }
+              }
+            }
+          }
+          
+          console.log('Extracted classes:', classesArray);
+          commit('SET_CLASSES', classesArray);
+          return metadata;
+        } else {
+          console.error('Unexpected API response structure:', response.data);
+          commit('SET_CLASSES', []);
+          return { classes: [] };
+        }
       } catch (error) {
-        commit('SET_ERROR', error.message || 'Error fetching classes')
-        throw error
+        console.error('Error fetching classes:', error);
+        commit('SET_ERROR', error.message || 'Error fetching classes');
+        // Set empty array on error to prevent issues with computed properties
+        commit('SET_CLASSES', []);
+        throw error;
       } finally {
-        commit('SET_LOADING', false)
+        commit('SET_LOADING', false);
       }
     },
     

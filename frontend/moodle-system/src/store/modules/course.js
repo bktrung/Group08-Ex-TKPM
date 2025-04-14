@@ -49,12 +49,10 @@ export default {
       commit('SET_LOADING', true)
       try {
         const response = await api.getCourses(params)
-        console.log('API response for courses:', response.data);
         
         // Check if response has the expected structure
         if (response.data && response.data.metadata) {
           const metadata = response.data.metadata;
-          console.log('Response metadata:', metadata);
           
           // Check different possible locations of courses array
           let coursesArray = [];
@@ -62,14 +60,11 @@ export default {
           if (metadata.courses && Array.isArray(metadata.courses)) {
             // Direct courses array
             coursesArray = metadata.courses;
-            console.log('Found courses array directly in metadata.courses');
           } else if (metadata.courses && metadata.courses.courses && Array.isArray(metadata.courses.courses)) {
             // Nested courses
             coursesArray = metadata.courses.courses;
-            console.log('Found courses array in metadata.courses.courses');
           }
           
-          console.log('Extracted courses:', coursesArray);
           commit('SET_COURSES', coursesArray);
           return metadata;
         } else {

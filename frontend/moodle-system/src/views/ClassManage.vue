@@ -512,28 +512,54 @@ export default {
     }
     
     // Load data
+    // In ClassManage.vue, modify the onMounted function to add better debugging:
+
     onMounted(async () => {
       try {
+        // Clear filters first
+        resetFilter();
+        
+        console.log('Fetching classes and courses...');
         await Promise.all([
           store.dispatch('class/fetchClasses'),
           store.dispatch('course/fetchCourses')
-        ])
+        ]);
         
-        // Set default academic year to current year
-        selectedAcademicYear.value = academicYears.value[1]
+        // Add debugging to check what's in the store
+        console.log('Classes in store:', store.state.class.classes);
+        console.log('Filtered classes:', filteredClasses.value);
+        
+        // If no classes were found but they should exist
+        if (!Array.isArray(store.state.class.classes) || store.state.class.classes.length === 0) {
+          console.log('No classes found, trying direct API call...');
+          
+          // Try again with direct API call
+          const apiResponse = await store.dispatch('class/fetchClasses', {
+            page: 1,
+            limit: 50 // Get more classes to ensure we get something
+          });
+          
+          console.log('Direct API response:', apiResponse);
+        }
+        
+        // Set default academic year to current year only if we have classes
+        if (store.state.class.classes.length > 0) {
+          selectedAcademicYear.value = academicYears.value[1];
+        }
         
         // Initialize modals
         if (document.getElementById('scheduleModal')) {
-          scheduleModal = new Modal(document.getElementById('scheduleModal'))
+          scheduleModal = new Modal(document.getElementById('scheduleModal'));
         }
         
         if (document.getElementById('toggleStatusModal')) {
-          toggleStatusModal = new Modal(document.getElementById('toggleStatusModal'))
+          toggleStatusModal = new Modal(document.getElementById('toggleStatusModal'));
         }
       } catch (err) {
-        error.value = `Lỗi: ${err.message || 'Đã xảy ra lỗi khi tải dữ liệu'}`
+        console.error('Error loading data:', err);
+        error.value = `Lỗi: ${err.message || 'Đã xảy ra lỗi khi tải dữ liệu'}`;
       }
-    })
+    });
     
     return {
       showForm,
