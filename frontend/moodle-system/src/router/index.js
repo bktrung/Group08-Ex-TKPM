@@ -10,6 +10,7 @@ import StatusTransition from '@/views/StatusTransition.vue'
 import AcademicAffairsRegistration from '@/views/AcademicAffairsRegistration.vue'
 import CourseManage from '@/views/CourseManage.vue'
 import ClassManage from '@/views/ClassManage.vue'
+import RegisterCourse from '@/views/RegisterCourse.vue'
 
 const routes = [
   {
@@ -63,6 +64,11 @@ const routes = [
     path: '/classes',
     name: 'ClassManage',
     component: ClassManage
+  },
+  {
+    path: '/register-course',
+    name: 'registerCourse',
+    component: RegisterCourse,
   }
 ]
 

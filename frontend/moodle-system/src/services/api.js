@@ -230,5 +230,14 @@ export default {
   
   createClass(classData) {
     return apiClient.post('/v1/api/classes', classData)
+  },
+
+  getClassByCourse(courseId) {
+    return apiClient.get(`/v1/api/classes${courseId}`)
+  },
+
+  enrollCourse(enrollment){
+    return apiClient.post('/v1/api/enrollment', enrollment)
   }
+
 }

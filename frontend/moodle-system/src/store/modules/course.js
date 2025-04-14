@@ -2,24 +2,17 @@ import api from '@/services/api'
 
 export default {
   namespaced: true,
-<<<<<<< HEAD
   
-=======
->>>>>>> d64e402 (feat(frontend) Register class  by academic affairs)
   state: {
     courses: [],
     loading: false,
     error: null
   },
-<<<<<<< HEAD
   
-=======
->>>>>>> d64e402 (feat(frontend) Register class  by academic affairs)
   mutations: {
     SET_COURSES(state, courses) {
       state.courses = courses
     },
-<<<<<<< HEAD
     ADD_COURSE(state, course) {
       if (!Array.isArray(state.courses)) {
         state.courses = []
@@ -41,8 +34,6 @@ export default {
         course.isActive = isActive
       }
     },
-=======
->>>>>>> d64e402 (feat(frontend) Register class  by academic affairs)
     SET_LOADING(state, loading) {
       state.loading = loading
     },
@@ -50,7 +41,6 @@ export default {
       state.error = error
     }
   },
-<<<<<<< HEAD
   
   actions: {
     // Fetch all courses
@@ -109,22 +99,11 @@ export default {
         console.error('Error creating course:', error.response || error);
         commit('SET_ERROR', error.response?.data?.message || error.message || 'Error creating course')
         throw error
-=======
-  actions: {
-    async fetchCourses({ commit }) {
-      commit('SET_LOADING', true)
-      try {
-        const response = await api.getCourses()
-        commit('SET_COURSES', response.data.metadata.courses.courses)
-      } catch (error) {
-        commit('SET_ERROR', error.message)
->>>>>>> d64e402 (feat(frontend) Register class  by academic affairs)
       } finally {
         commit('SET_LOADING', false)
       }
     },
     
-<<<<<<< HEAD
     async updateCourse({ commit, dispatch }, { courseCode, data }) {
       commit('SET_LOADING', true)
       try {
@@ -248,61 +227,6 @@ export default {
           : course.department
         return courseDeptId === departmentId
       })
-=======
-    // async createDepartment({ commit, dispatch }, department) {
-    //   commit('SET_LOADING', true)
-    //   try {
-    //     const response = await api.createDepartment(department)
-    //     await dispatch('fetchDepartments')
-    //     return response.data
-    //   } catch (error) {
-    //     commit('SET_ERROR', error.message)
-    //     throw error
-    //   } finally {
-    //     commit('SET_LOADING', false)
-    //   }
-    // },
-    
-    // async updateDepartment({ commit, dispatch }, { id, department }) {
-    //   commit('SET_LOADING', true)
-    //   try {
-    //     const response = await api.updateDepartment(id, department)
-    //     await dispatch('fetchDepartments')
-    //     return response.data
-    //   } catch (error) {
-    //     commit('SET_ERROR', error.message)
-    //     throw error
-    //   } finally {
-    //     commit('SET_LOADING', false)
-    //   }
-    // },
-    
-    // async deleteDepartment({ commit, dispatch }, id) {
-    //   commit('SET_LOADING', true)
-    //   try {
-    //     const response = await api.deleteDepartment(id)
-    //     await dispatch('fetchDepartments')
-    //     return response.data
-    //   } catch (error) {
-    //     commit('SET_ERROR', error.message)
-    //     throw error
-    //   } finally {
-    //     commit('SET_LOADING', false)
-    //   }
-    // }
-  },
-  getters: {
-    // getDepartmentById: (state) => (id) => {
-    //   return state.departments.find(department => department._id === id)
-    // },
-    // getDepartmentName: (state) => (id) => {
-    //   const department = state.departments.find(department => department._id === id)
-    //   return department ? department.name : ''
-    // }
-    getCoursesByName: (state) => (id) => {
-        const course = state.courses.find(course => course._id === id)
-        return course ? course.name : ''
->>>>>>> d64e402 (feat(frontend) Register class  by academic affairs)
     }
   }
 }

@@ -5,7 +5,7 @@
 
       <div class="card-buttons">
         <!-- Nút mở modal -->
-        <div class="card" @click="showModal = true" style="cursor: pointer;">
+        <div class="card" @click="goToRegisterPage" style="cursor: pointer;">
           <h3>📚 Đăng ký môn học</h3>
           <p>Thêm sinh viên vào lớp học mà họ muốn học.</p>
         </div>
@@ -17,17 +17,29 @@
       </div>
     </div>
 
-    <!-- Modal -->
-    <RegisterCourseModal :showModal="showModal" @close="showModal = false" />
+
 
   </div>
 </template>
 
-<script setup>
-import { ref } from 'vue'
-import RegisterCourseModal from '@/components/register/RegisterCourseModal.vue' // hoặc path đúng với project của bạn
+<script>
 
-const showModal = ref(false)
+import { useRouter } from 'vue-router'
+
+export default {
+  props: {
+  },
+  setup() {
+    const router = useRouter()
+
+    const goToRegisterPage = () => {
+      router.push('/register-course')
+    }
+
+    return { goToRegisterPage }
+  }
+}
+
 </script>
 
 

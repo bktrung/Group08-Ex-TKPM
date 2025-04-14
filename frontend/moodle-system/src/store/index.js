@@ -5,6 +5,7 @@ import program from './modules/program'
 import status from './modules/status'
 import course from './modules/course'
 import classModule from './modules/class' // Renamed to avoid using reserved keyword
+import enrollment from './modules/enrollment'
 
 export default createStore({
   state: {
@@ -29,6 +30,7 @@ export default createStore({
     program,
     status,
     course, 
-    'class': classModule
+    'class': classModule,
+    enrollment
   }
 })
