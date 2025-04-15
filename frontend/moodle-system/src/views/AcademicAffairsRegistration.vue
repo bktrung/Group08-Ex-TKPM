@@ -10,7 +10,7 @@
           <p>Thêm sinh viên vào lớp học mà họ muốn học.</p>
         </div>
 
-        <div class="card danger">
+        <div class="card danger" @click="goToDropPage">
           <h3>🗑️ Xóa sinh viên khỏi lớp</h3>
           <p>Loại bỏ sinh viên khỏi lớp học hiện tại.</p>
         </div>
@@ -36,7 +36,11 @@ export default {
       router.push('/register-course')
     }
 
-    return { goToRegisterPage }
+    const goToDropPage = () => {
+      router.push('/drop-course')
+    }
+
+    return { goToRegisterPage, goToDropPage }
   }
 }
 

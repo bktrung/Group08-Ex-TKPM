@@ -11,6 +11,8 @@ import AcademicAffairsRegistration from '@/views/AcademicAffairsRegistration.vue
 import CourseManage from '@/views/CourseManage.vue'
 import ClassManage from '@/views/ClassManage.vue'
 import RegisterCourse from '@/views/RegisterCourse.vue'
+import DropCourse from '@/views/DropCourse.vue'
+import GradeTable from '@/views/GradeTable.vue'
 
 const routes = [
   {
@@ -69,6 +71,16 @@ const routes = [
     path: '/register-course',
     name: 'registerCourse',
     component: RegisterCourse,
+  },
+  {
+    path: '/drop-course',
+    name: 'dropCourse',
+    component: DropCourse,
+  },
+  {
+    path: '/grade-table',
+    name: 'grade-table',
+    component: GradeTable
   }
 ]
 

@@ -50,6 +50,11 @@
           Quản lí đăng kí môn học
         </router-link>
       </li>
+      <li>
+        <router-link to="/grade-table" class="nav-link" :class="{ active: $route.path === '/grade-table' }">
+          Bảng điểm
+        </router-link>
+      </li>
     </ul>
   </div>
 </template>

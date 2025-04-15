@@ -151,9 +151,8 @@ export default {
 
         // Computed properties
         const classes = computed(() => store.state.class.classes)
-        
+
         const filteredClasses = computed(() => {
-            console.log('Filtering classes for courseId:', props.courseId)
             return classes.value.filter(classItem => {
                 return classItem.course._id === props.courseId
             })
