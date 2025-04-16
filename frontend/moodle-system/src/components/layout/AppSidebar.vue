@@ -5,29 +5,44 @@
     </router-link>
     <hr>
     <ul class="nav nav-pills flex-column mb-auto">
+      <!-- Existing navigation items -->
       <li class="nav-item">
         <router-link to="/" class="nav-link" :class="{ active: $route.path === '/' }">
-          Danh sách sinh viên
+          <i class="bi bi-people me-2"></i> Danh sách sinh viên
+        </router-link>
+      </li>
+      
+      <!-- New navigation items for course and class management -->
+      <li>
+        <router-link to="/courses" class="nav-link" :class="{ active: $route.path === '/courses' }">
+          <i class="bi bi-book me-2"></i> Quản lý khóa học
         </router-link>
       </li>
       <li>
+        <router-link to="/classes" class="nav-link" :class="{ active: $route.path === '/classes' }">
+          <i class="bi bi-calendar3 me-2"></i> Quản lý lớp học
+        </router-link>
+      </li>
+      
+      <!-- Other existing items -->
+      <li>
         <router-link to="/departments" class="nav-link" :class="{ active: $route.path === '/departments' }">
-          Danh sách khoa
+          <i class="bi bi-building me-2"></i> Danh sách khoa
         </router-link>
       </li>
       <li>
         <router-link to="/status-types" class="nav-link" :class="{ active: $route.path === '/status-types' }">
-          Danh sách tình trạng sinh viên
+          <i class="bi bi-patch-check me-2"></i> Tình trạng sinh viên
         </router-link>
       </li>
       <li>
         <router-link to="/status-transitions" class="nav-link" :class="{ active: $route.path === '/status-transitions' }">
-          Quy tắc chuyển trạng thái
+          <i class="bi bi-arrow-left-right me-2"></i> Quy tắc chuyển trạng thái
         </router-link>
       </li>
       <li>
         <router-link to="/programs" class="nav-link" :class="{ active: $route.path === '/programs' }">
-          Danh sách chương trình đào tạo
+          <i class="bi bi-mortarboard me-2"></i> Chương trình đào tạo
         </router-link>
       </li>
     </ul>

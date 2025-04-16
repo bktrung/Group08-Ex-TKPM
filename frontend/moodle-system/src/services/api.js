@@ -113,5 +113,122 @@ export default {
   },
   getLocationChildren(geonameId) {
     return apiClient.get(`/v1/api/address/children/${geonameId}`)
+  },
+
+  getCourses(params = {}) {
+    let queryString = ''
+    if (params.departmentId) {
+      queryString += `departmentId=${params.departmentId}&`
+    }
+    if (params.page) {
+      queryString += `page=${params.page}&`
+    }
+    if (params.limit) {
+      queryString += `limit=${params.limit}&`
+    }
+    
+    queryString = queryString ? `?${queryString.slice(0, -1)}` : ''
+    return apiClient.get(`/v1/api/courses${queryString}`)
+      .then(response => {
+        return response;
+      })
+      .catch(error => {
+        console.error('Error in API getCourses:', error);
+        throw error;
+      });
+  },
+  
+  getCourse(courseCode) {
+    return apiClient.get(`/v1/api/courses/${courseCode}`)
+  },
+  
+  createCourse(courseData) {
+    const validatedData = {
+      courseCode: courseData.courseCode,
+      name: courseData.name,
+      credits: Number(courseData.credits),
+      department: courseData.department,
+      description: courseData.description,
+      prerequisites: Array.isArray(courseData.prerequisites) ? courseData.prerequisites : []
+    }
+    
+    console.log('API Creating course with data:', validatedData)
+    return apiClient.post('/v1/api/courses', validatedData)
+  },
+  
+  updateCourse(courseCode, courseData) {
+    const allowedData = {}
+    const allowedFields = ['name', 'credits', 'department', 'description']
+    
+    for (const field of allowedFields) {
+      if (field in courseData) {
+        allowedData[field] = courseData[field]
+      }
+    }
+    
+    console.log(`API Updating course ${courseCode} with data:`, allowedData);
+    return apiClient.patch(`/v1/api/courses/${courseCode}`, allowedData)
+      .catch(error => {
+        console.error(`Error updating course ${courseCode}:`, error.response || error);
+        throw error;
+      });
+  },
+  
+  deleteCourse(courseCode) {
+    console.log(`API Deleting course ${courseCode}`);
+    return apiClient.delete(`/v1/api/courses/${courseCode}`)
+      .catch(error => {
+        console.error(`Error deleting course ${courseCode}:`, error.response || error);
+        throw error;
+      });
+  },
+  
+  toggleCourseStatus(courseCode, isActive) {
+    if (isActive === false) {
+      return this.deleteCourse(courseCode);
+    } else {
+      console.error(`API for activating course ${courseCode} is not available`);
+      return Promise.reject(new Error('API kích hoạt lại khóa học chưa được hỗ trợ'));
+    }
+  },
+  // Class endpoints
+  getClasses(params = {}) {
+    let queryString = '';
+    if (params.courseId) {
+      queryString += `courseId=${params.courseId}&`;
+    }
+    if (params.academicYear) {
+      queryString += `academicYear=${params.academicYear}&`;
+    }
+    if (params.semester) {
+      queryString += `semester=${params.semester}&`;
+    }
+    if (params.page) {
+      queryString += `page=${params.page}&`;
+    }
+    if (params.limit) {
+      queryString += `limit=${params.limit}&`;
+    }
+    
+    queryString = queryString ? `?${queryString.slice(0, -1)}` : '';
+    console.log(`Fetching classes with URL: /v1/api/classes${queryString}`);
+    
+    return apiClient.get(`/v1/api/classes${queryString}`)
+      .then(response => {
+        console.log('Raw class API response:', response);
+        return response;
+      })
+      .catch(error => {
+        console.error('Error in API getClasses:', error.response || error);
+        throw error;
+      });
+  },
+  
+  getClass(classCode) {
+    return apiClient.get(`/v1/api/classes/${classCode}`)
+  },
+  
+  createClass(classData) {
+    return apiClient.post('/v1/api/classes', classData)
   }
 }
