@@ -7,8 +7,12 @@ import DepartmentManage from '@/views/DepartmentManage.vue'
 import ProgramManage from '@/views/ProgramManage.vue'
 import StatusManage from '@/views/StatusManage.vue'
 import StatusTransition from '@/views/StatusTransition.vue'
+import AcademicAffairsRegistration from '@/views/AcademicAffairsRegistration.vue'
 import CourseManage from '@/views/CourseManage.vue'
 import ClassManage from '@/views/ClassManage.vue'
+import RegisterCourse from '@/views/RegisterCourse.vue'
+import DropCourse from '@/views/DropCourse.vue'
+import GradeTable from '@/views/GradeTable.vue'
 
 const routes = [
   {
@@ -47,6 +51,11 @@ const routes = [
     name: 'StatusTransition',
     component: StatusTransition
   },
+  {
+    path: '/academic-affairs-registration',
+    name: 'AcademicAffairsRegistration',
+    component: AcademicAffairsRegistration
+  },
   
   {
     path: '/courses',
@@ -57,6 +66,21 @@ const routes = [
     path: '/classes',
     name: 'ClassManage',
     component: ClassManage
+  },
+  {
+    path: '/register-course',
+    name: 'registerCourse',
+    component: RegisterCourse,
+  },
+  {
+    path: '/drop-course',
+    name: 'dropCourse',
+    component: DropCourse,
+  },
+  {
+    path: '/grade-table',
+    name: 'grade-table',
+    component: GradeTable
   }
 ]
 

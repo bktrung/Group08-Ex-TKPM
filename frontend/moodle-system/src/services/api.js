@@ -126,7 +126,7 @@ export default {
     if (params.limit) {
       queryString += `limit=${params.limit}&`
     }
-    
+
     queryString = queryString ? `?${queryString.slice(0, -1)}` : ''
     return apiClient.get(`/v1/api/courses${queryString}`)
       .then(response => {
@@ -137,11 +137,11 @@ export default {
         throw error;
       });
   },
-  
+
   getCourse(courseCode) {
     return apiClient.get(`/v1/api/courses/${courseCode}`)
   },
-  
+
   createCourse(courseData) {
     const validatedData = {
       courseCode: courseData.courseCode,
@@ -151,21 +151,21 @@ export default {
       description: courseData.description,
       prerequisites: Array.isArray(courseData.prerequisites) ? courseData.prerequisites : []
     }
-    
+
     console.log('API Creating course with data:', validatedData)
     return apiClient.post('/v1/api/courses', validatedData)
   },
-  
+
   updateCourse(courseCode, courseData) {
     const allowedData = {}
     const allowedFields = ['name', 'credits', 'department', 'description']
-    
+
     for (const field of allowedFields) {
       if (field in courseData) {
         allowedData[field] = courseData[field]
       }
     }
-    
+
     console.log(`API Updating course ${courseCode} with data:`, allowedData);
     return apiClient.patch(`/v1/api/courses/${courseCode}`, allowedData)
       .catch(error => {
@@ -173,7 +173,7 @@ export default {
         throw error;
       });
   },
-  
+
   deleteCourse(courseCode) {
     console.log(`API Deleting course ${courseCode}`);
     return apiClient.delete(`/v1/api/courses/${courseCode}`)
@@ -182,7 +182,7 @@ export default {
         throw error;
       });
   },
-  
+
   toggleCourseStatus(courseCode, isActive) {
     if (isActive === false) {
       return this.deleteCourse(courseCode);
@@ -209,10 +209,10 @@ export default {
     if (params.limit) {
       queryString += `limit=${params.limit}&`;
     }
-    
+
     queryString = queryString ? `?${queryString.slice(0, -1)}` : '';
     console.log(`Fetching classes with URL: /v1/api/classes${queryString}`);
-    
+
     return apiClient.get(`/v1/api/classes${queryString}`)
       .then(response => {
         console.log('Raw class API response:', response);
@@ -223,12 +223,33 @@ export default {
         throw error;
       });
   },
-  
+
   getClass(classCode) {
     return apiClient.get(`/v1/api/classes/${classCode}`)
   },
-  
+
   createClass(classData) {
     return apiClient.post('/v1/api/classes', classData)
+  },
+
+  getClassByCourse(courseId) {
+    return apiClient.get(`/v1/api/classes${courseId}`)
+  },
+
+  enrollCourse(enrollment) {
+    return apiClient.post('/v1/api/enrollment', enrollment)
+  },
+
+  dropCourse(enrollment) {
+    return apiClient.post('/v1/api/enrollment/drop', enrollment)
+  },
+
+  getTranscript(studentId) {
+    return apiClient.get(`/v1/api/transcript/${studentId}`)
+  },
+
+  getDropCourseHistory(studentId) {
+    return apiClient.get(`/v1/api/enrollment/drop-history/${studentId}`)
   }
+
 }

@@ -45,6 +45,16 @@
           <i class="bi bi-mortarboard me-2"></i> Chương trình đào tạo
         </router-link>
       </li>
+      <li>
+        <router-link to="/academic-affairs-registration" class="nav-link" :class="{ active: $route.path === '/academic-affairs-registration' }">
+          <i class="bi bi-journal-plus me-2"></i> Quản lí đăng kí môn học
+        </router-link>
+      </li>
+      <li>
+        <router-link to="/grade-table" class="nav-link" :class="{ active: $route.path === '/grade-table' }">
+          <i class="bi bi-table me-2"></i> Bảng điểm
+        </router-link>
+      </li>
     </ul>
   </div>
 </template>
