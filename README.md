@@ -336,3 +336,47 @@ Chạy lệnh `npm run start` để chạy cả frontend và backend, sau đó t
    ![image](https://github.com/user-attachments/assets/8bfba3ff-cf00-47bb-8ac1-80a2aeafad18)
     
    ![image](https://github.com/user-attachments/assets/e33eff82-5666-4981-93b6-c78cda9a06c8)
+
+#### 16. Thêm khóa học mới
+   - Nhập được thông tin: mã khóa học, tên khóa học, số tín chỉ, khoa phụ trách, mô tả, môn tiên quyết (nếu có) & hệ thống kiểm tra xem môn tiên quyết có tồn tại không trước khi lưu.
+   ![image](https://github.com/user-attachments/assets/87bf099d-5afd-4ab2-a89d-de4cc7ca6fcc)
+   - Khóa học phải có số tín chỉ hợp lệ (>=2).
+   ![image](https://github.com/user-attachments/assets/2799f63c-65fc-4036-bf29-62e66434b8e0)
+   
+   
+#### 17. Xóa khóa học
+   - Có thể xóa khóa học chỉ trong vòng 30 phút sau khi tạo
+   ![image](https://github.com/user-attachments/assets/f5298ce3-3f4c-4188-82a4-b84b25736410)
+   - Chỉ có thể xóa khóa học, nếu chưa có lớp học nào được mở cho môn đó.
+   ![image](https://github.com/user-attachments/assets/f917114d-a10a-4282-845e-e6b9b703067f)
+   ![image](https://github.com/user-attachments/assets/4a21dc1b-5f07-4ad1-bbcf-e8f344adbe84)
+   - Nếu có lớp học/sinh viên đăng ký, không thể xóa, chỉ có thể đánh dấu khóa học là không còn được mở (deactivate)
+   ![image](https://github.com/user-attachments/assets/48d0d9b2-4dd2-4956-b790-6eb2af842a29)
+   ![image](https://github.com/user-attachments/assets/cb712450-4f6e-413b-a4d7-c499a7b3043f)
+   - Nếu khóa học bị deactivate, nó vẫn xuất hiện trong lịch sử nhưng không thể thêm lớp học mới.
+   ![image](https://github.com/user-attachments/assets/76c2b521-b62d-48c9-a3e6-9b508cacdc45)
+   ![image](https://github.com/user-attachments/assets/202d0fc3-0d2d-4ebb-bae9-9fe6830215cc)
+
+
+
+#### 18. Cập nhật thông tin khóa học
+   - Có thể chỉnh sửa tên khóa học, mô tả, khoa phụ trách & không thể thay đổi mã khóa học
+   ![image](https://github.com/user-attachments/assets/79aee3e8-43f0-4442-b54d-09a015cb7713)
+   - Không thể thay đổi số tín chỉ nếu đã có sinh viên đăng ký
+   ![image](https://github.com/user-attachments/assets/b74d933d-5ab2-451c-9bd7-b78a54290ef4)
+
+#### 19. Mở lớp học cho một khóa học cụ thể
+   - Nhập thông tin: mã lớp học, mã khóa học, năm học, học kỳ, giảng viên, số lượng tối đa, lịch học, phòng học.
+   ![image](https://github.com/user-attachments/assets/24c48b3a-91cd-4780-af1e-e272aa4eff2f)
+   - Một khóa học có thể có nhiều lớp trong cùng một học kỳ.
+   ![image](https://github.com/user-attachments/assets/b1e66149-83c9-467c-8640-e990c8449aff)
+
+
+   
+
+
+
+
+
+   
+   
