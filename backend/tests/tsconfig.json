@@ -1,0 +1,11 @@
+{
+    "extends": "../tsconfig.json",
+    "compilerOptions": {
+      "rootDir": "..",  // Set rootDir to the parent directory to include both src and tests
+      "noEmit": true,   // We don't want to emit compiled files from test config
+      "types": ["jest", "node"],  // Add jest types for better test intellisense
+      "esModuleInterop": true     // Needed for importing modules in tests
+    },
+    "include": ["./**/*", "../src/**/*"],  // Include both tests and source files
+    "exclude": ["../node_modules", "../dist"]
+}
