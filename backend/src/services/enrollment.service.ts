@@ -105,6 +105,16 @@ class EnrollmentService {
 			throw new NotFoundError("Lớp học không tồn tại");
 		}
 
+		// Check if enrollment exists
+		const existingEnrollment = await findEnrollment(
+			getDocumentId(existingStudent),
+			getDocumentId(existingClass)
+		);
+		if (!existingEnrollment) {
+			throw new NotFoundError("Sinh viên chưa đăng ký lớp học này");
+		}
+		///
+
 		// check if possible to drop class
 		const semester = await findSemester(
 			existingClass.academicYear,
@@ -141,8 +151,8 @@ class EnrollmentService {
 			throw new NotFoundError("Sinh viên không tồn tại");
 		}
 
-		const dropHistory = await findDropHistoryByStudent(studentId);
-		if (!dropHistory) {
+		const dropHistory = await findDropHistoryByStudent(getDocumentId(existingStudent));
+		if (!dropHistory || dropHistory.length === 0) {
 			throw new NotFoundError("Không tìm thấy lịch sử huỷ lớp học");
 		}
 

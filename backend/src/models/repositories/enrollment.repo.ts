@@ -70,7 +70,7 @@ export const getCompletedCourseIdsByStudent = async (student: string | Types.Obj
 export const dropEnrollment = async (
 	student_id: string | Types.ObjectId, 
 	class_id: string | Types.ObjectId, 
-	dropReason: string
+	dropReason: string 
 ) => {
 	const updatedEnrollment = await Enrollment.findOneAndUpdate(
 		{ student: student_id, class: class_id },
@@ -92,7 +92,7 @@ export const dropEnrollment = async (
 	return updatedEnrollment;
 }
 
-export const findDropHistoryByStudent = async (studentId: string) => {
+export const findDropHistoryByStudent = async (studentId: string | Types.ObjectId) => {
 	return await Enrollment.find({
 		studentId,
 		status: EnrollmentStatus.DROPPED

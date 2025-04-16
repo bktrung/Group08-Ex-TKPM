@@ -27,5 +27,4 @@ router.use("/v1/api/semesters", semester);
 router.use("/v1/api/grades", grade);
 router.use("/v1/api/transcript", transcript);
 
-
 export default router;
