@@ -94,7 +94,9 @@ export const dropEnrollment = async (
 
 export const findDropHistoryByStudent = async (studentId: string | Types.ObjectId) => {
 	return await Enrollment.find({
-		studentId,
+		student: studentId,
 		status: EnrollmentStatus.DROPPED
-	})
+	}).populate('student', 'studentId fullName')
+	  .populate('class', 'classCode')
+	  .lean();
 }
