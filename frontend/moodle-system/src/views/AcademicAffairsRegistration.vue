@@ -7,12 +7,12 @@
         <!-- Nút mở modal -->
         <div class="card" @click="goToRegisterPage" style="cursor: pointer;">
           <h3>📚 Đăng ký môn học</h3>
-          <p>Thêm sinh viên vào lớp học mà họ muốn học.</p>
+          <p>Thêm sinh viên vào lớp học.</p>
         </div>
 
         <div class="card danger" @click="goToDropPage">
           <h3>🗑️ Xóa sinh viên khỏi lớp</h3>
-          <p>Loại bỏ sinh viên khỏi lớp học hiện tại.</p>
+          <p>Hủy đăng kí lớp học.</p>
         </div>
       </div>
     </div>

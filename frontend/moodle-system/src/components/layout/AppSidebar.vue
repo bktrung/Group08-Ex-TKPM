@@ -47,12 +47,12 @@
       </li>
       <li>
         <router-link to="/academic-affairs-registration" class="nav-link" :class="{ active: $route.path === '/academic-affairs-registration' }">
-          Quản lí đăng kí môn học
+          <i class="bi bi-journal-plus me-2"></i> Quản lí đăng kí môn học
         </router-link>
       </li>
       <li>
         <router-link to="/grade-table" class="nav-link" :class="{ active: $route.path === '/grade-table' }">
-          Bảng điểm
+          <i class="bi bi-table me-2"></i> Bảng điểm
         </router-link>
       </li>
     </ul>

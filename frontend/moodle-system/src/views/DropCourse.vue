@@ -1,6 +1,7 @@
 <template>
     <div class="container py-4">
         <h3>Hủy đăng kí môn học</h3>
+
         <!-- Form input -->
         <div class="mb-3">
             <label class="form-label">Mã số sinh viên (MSSV)</label>
@@ -76,92 +77,146 @@
                 </div>
             </div>
         </div>
+
+        <!-- Filter MSSV -->
+        <div class="mt-5 mb-3">
+            <label class="form-label">Tìm lịch sử theo MSSV</label>
+            <div class="input-group">
+                <input v-model="searchMSSV" class="form-control" placeholder="Nhập MSSV để lọc" />
+                <button class="btn btn-primary" @click="loadHistory">Tìm kiếm</button>
+            </div>
+        </div>
+        <!-- Drop history table -->
+        <div v-if="dropHistory && dropHistory.length > 0" class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>MSSV</th>
+                        <th>Họ tên</th>
+                        <th>Mã lớp</th>
+                        <th>Lý do</th>
+                        <th>Ngày đăng kí</th>
+                        <th>Ngày hủy</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="entry in dropHistory" :key="entry._id">
+                        <td>{{ entry.student.studentId }}</td>
+                        <td>{{ entry.student.fullName }}</td>
+                        <td>{{ entry.class.classCode }}</td>
+                        <td>{{ entry.dropReason }}</td>
+                        <td>{{ formatDate(entry.enrollmentDate) }}</td>
+                        <td>{{ formatDate(entry.dropDate) }}</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div v-else class="text-muted">Không có lịch sử hủy nào.</div>
     </div>
 </template>
 
-<script>
+<script setup>
 import { ref, nextTick, onMounted } from 'vue'
 import { Modal } from 'bootstrap'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 
-export default {
-    name: 'DropCourse',
-    setup() {
-        const store = useStore()
-        const router = useRouter()
+const store = useStore()
+const router = useRouter()
 
-        const studentId = ref('')
-        const classCode = ref('')
-        const reason = ref('')
+const studentId = ref('')
+const classCode = ref('')
+const reason = ref('')
+const dropError = ref('')
 
-        const confirmModalRef = ref(null)
-        let confirmModal = null
+const confirmModalRef = ref(null)
+let confirmModal = null
 
-        const dropError = ref('')
+const dropHistory = ref([])
+const searchMSSV = ref('')
 
-        onMounted(async () => {
-            await nextTick()
-            confirmModal = new Modal(confirmModalRef.value)
+onMounted(async () => {
+    await nextTick()
+    confirmModal = new Modal(confirmModalRef.value)
+})
+
+const confirmDelete = () => {
+    dropError.value = ''
+    if (!studentId.value.trim() || !classCode.value.trim() || !reason.value.trim()) {
+        dropError.value = 'Vui lòng nhập đầy đủ thông tin.'
+        showModal('errorModal')
+        return
+    }
+    confirmModal.show()
+}
+
+const loadHistory = async () => {
+    try {
+        await store.dispatch('enrollment/getDropHistory', searchMSSV.value)
+        dropHistory.value = store.state.enrollment.history || []
+        console.log(dropHistory.value)
+
+        const error = store.state.enrollment.historyError
+        if (error) {
+            dropHistory.value = []
+            dropError.value = error
+            showModal('errorModal')
+        } else {
+            dropError.value = ''
+        }
+
+    } catch (err) {
+        dropError.value = 'Không thể tải lịch sử hủy.'
+        showModal('errorModal')
+    }
+}
+
+const hideConfirmModal = () => {
+    confirmModal?.hide()
+}
+
+const showModal = async (id) => {
+    await nextTick()
+    const modal = new Modal(document.getElementById(id))
+    modal.show()
+}
+
+const goBack = () => {
+    router.back()
+}
+
+const resetForm = () => {
+    studentId.value = ''
+    classCode.value = ''
+    reason.value = ''
+}
+
+const performDelete = async () => {
+    hideConfirmModal()
+    try {
+        await store.dispatch('enrollment/dropEnrollment', {
+            studentId: studentId.value,
+            classCode: classCode.value,
+            dropReason: reason.value
         })
 
-        const showModal = (id) => {
-            const modal = new Modal(document.getElementById(id))
-            modal.show()
+        const error = store.state.enrollment.error
+        if (error) {
+            dropError.value = error
+            showModal('errorModal')
+        } else {
+            resetForm()
+            showModal('successModal')
         }
-
-        const goBack = () => {
-            router.back()  // Hoặc router.go(-1)
-        }
-
-        const confirmDelete = () => {
-            if (!studentId.value.trim() || !classCode.value.trim() || !reason.value.trim()) {
-                dropError.value = 'Vui lòng nhập đầy đủ thông tin.'
-                showModal('errorModal')
-                return
-            }
-            confirmModal.show()
-        }
-
-        const hideConfirmModal = () => {
-            confirmModal.hide()
-        }
-
-        const performDelete = async () => {
-            hideConfirmModal()
-
-            try {
-                await store.dispatch('enrollment/dropEnrollment', {
-                    studentId: studentId.value,
-                    classCode: classCode.value,
-                    dropReason: reason.value
-                })
-
-                const error = store.state.enrollment.error
-                if (error) {
-                    dropError.value = error
-                    showModal('errorModal')
-                } else {
-                    showModal('successModal')
-                }
-            } catch (err) {
-                dropError.value = err.message || 'Lỗi không xác định.'
-                showModal('errorModal')
-            }
-        }
-
-        return {
-            studentId,
-            classCode,
-            reason,
-            confirmModalRef,
-            confirmDelete,
-            hideConfirmModal,
-            performDelete,
-            dropError,
-            goBack
-        }
+    } catch (err) {
+        dropError.value = err.message || 'Lỗi không xác định.'
+        showModal('errorModal')
     }
+}
+
+const formatDate = (isoString) => {
+    const d = new Date(isoString)
+    return d.toLocaleString('vi-VN')
 }
 </script>
 
