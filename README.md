@@ -281,7 +281,7 @@ Chạy lệnh `npm run start` để chạy cả frontend và backend, sau đó t
 
 ## Hướng dẫn chạy unit test
 1. Mở terminal, di chuyển tới thư mục backend
-2. Chạy lệnh `npm install --save-dev mongodb-memory-server`
+2. Chạy lệnh `npm install --save-dev jest @types/jest ts-jest mongodb-memory-server @shelf/jest-mongodb`
 3. Chạy lệnh `npm run test` để chạy tất cả các unit test
 
 ## Hướng dẫn sử dụng các chức năng
