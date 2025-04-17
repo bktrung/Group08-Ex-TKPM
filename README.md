@@ -2,93 +2,161 @@
 
 ## Cấu trúc source code
 ```
-bktrung-group08-ex-tkpm/
+Directory structure:
+└── bktrung-group08-ex-tkpm/
     ├── README.md
     ├── docker-compose.yml
     ├── package.json
     ├── backend/
     │   ├── config.json
     │   ├── Dockerfile
+    │   ├── jest.config.js
     │   ├── package-lock.json
     │   ├── package.json
     │   ├── setup_initial_data.sh
     │   ├── tsconfig.json
+    │   ├── .dockerignore
     │   ├── .gitignore
-    │   └── src/
-    │       ├── index.ts
-    │       ├── configs/
-    │       │   ├── config.mongodb.ts
-    │       │   └── init.config.ts
-    │       ├── controllers/
-    │       │   ├── address.controller.ts
-    │       │   ├── department.controller.ts
-    │       │   ├── export.controller.ts
-    │       │   ├── import.controller.ts
-    │       │   ├── program.controller.ts
-    │       │   └── student.controller.ts
-    │       ├── dbs/
-    │       │   └── init.mongodb.ts
-    │       ├── dto/
-    │       │   ├── address/
-    │       │   │   └── index.ts
-    │       │   └── student/
-    │       │       └── index.ts
-    │       ├── helpers/
-    │       │   └── asyncHandler.ts
-    │       ├── middlewares/
-    │       │   ├── error-logger.middleware.ts
-    │       │   ├── upload.middleware.ts
-    │       │   └── validation.middleware.ts
-    │       ├── models/
-    │       │   ├── department.model.ts
-    │       │   ├── program.model.ts
-    │       │   ├── student.model.ts
-    │       │   ├── studentStatus.model.ts
-    │       │   ├── studentStatusTransition.model.ts
-    │       │   ├── hooks/
-    │       │   │   ├── department.hook.ts
-    │       │   │   ├── program.hook.ts
-    │       │   │   └── student.hook.ts
-    │       │   ├── interfaces/
-    │       │   │   ├── department.interface.ts
-    │       │   │   ├── program.interface.ts
-    │       │   │   └── student.interface.ts
-    │       │   └── repositories/
-    │       │       ├── department.repo.ts
-    │       │       ├── program.repo.ts
-    │       │       └── student.repo.ts
-    │       ├── responses/
-    │       │   ├── error.responses.ts
-    │       │   └── success.responses.ts
-    │       ├── routes/
-    │       │   ├── index.ts
-    │       │   ├── address/
-    │       │   │   └── index.ts
-    │       │   ├── department/
-    │       │   │   └── index.ts
-    │       │   ├── export/
-    │       │   │   └── index.ts
-    │       │   ├── import/
-    │       │   │   └── index.ts
-    │       │   ├── program/
-    │       │   │   └── index.ts
-    │       │   └── student/
-    │       │       └── index.ts
-    │       ├── services/
-    │       │   ├── address.service.ts
-    │       │   ├── department.service.ts
-    │       │   ├── export.service.ts
-    │       │   ├── import.service.ts
-    │       │   ├── logger.service.ts
-    │       │   ├── program.service.ts
-    │       │   └── student.service.ts
-    │       ├── utils/
-    │       │   └── index.ts
-    │       └── validators/
-    │           └── student/
-    │               ├── add-student.validator.ts
-    │               ├── import-student.validator.ts
-    │               └── update-student.validator.ts
+    │   ├── src/
+    │   │   ├── index.ts
+    │   │   ├── configs/
+    │   │   │   ├── config.mongodb.ts
+    │   │   │   └── init.config.ts
+    │   │   ├── controllers/
+    │   │   │   ├── address.controller.ts
+    │   │   │   ├── class.controller.ts
+    │   │   │   ├── course.controller.ts
+    │   │   │   ├── department.controller.ts
+    │   │   │   ├── enrollment.controller.ts
+    │   │   │   ├── export.controller.ts
+    │   │   │   ├── grade.controller.ts
+    │   │   │   ├── import.controller.ts
+    │   │   │   ├── program.controller.ts
+    │   │   │   ├── semester.controller.ts
+    │   │   │   ├── student.controller.ts
+    │   │   │   └── transcript.controller.ts
+    │   │   ├── dbs/
+    │   │   │   └── init.mongodb.ts
+    │   │   ├── dto/
+    │   │   │   ├── address/
+    │   │   │   │   └── index.ts
+    │   │   │   ├── class/
+    │   │   │   │   └── index.ts
+    │   │   │   ├── course/
+    │   │   │   │   └── index.ts
+    │   │   │   ├── enrollment/
+    │   │   │   │   └── index.ts
+    │   │   │   ├── grade/
+    │   │   │   │   └── index.ts
+    │   │   │   ├── semester/
+    │   │   │   │   └── index.ts
+    │   │   │   └── student/
+    │   │   │       └── index.ts
+    │   │   ├── helpers/
+    │   │   │   └── asyncHandler.ts
+    │   │   ├── middlewares/
+    │   │   │   ├── error-logger.middleware.ts
+    │   │   │   ├── upload.middleware.ts
+    │   │   │   └── validation.middleware.ts
+    │   │   ├── models/
+    │   │   │   ├── class.model.ts
+    │   │   │   ├── course.model.ts
+    │   │   │   ├── department.model.ts
+    │   │   │   ├── enrollment.model.ts
+    │   │   │   ├── grade.model.ts
+    │   │   │   ├── program.model.ts
+    │   │   │   ├── semester.model.ts
+    │   │   │   ├── student.model.ts
+    │   │   │   ├── studentStatus.model.ts
+    │   │   │   ├── studentStatusTransition.model.ts
+    │   │   │   ├── hooks/
+    │   │   │   │   ├── department.hook.ts
+    │   │   │   │   ├── program.hook.ts
+    │   │   │   │   └── student.hook.ts
+    │   │   │   ├── interfaces/
+    │   │   │   │   ├── class.interface.ts
+    │   │   │   │   ├── course.interface.ts
+    │   │   │   │   ├── department.interface.ts
+    │   │   │   │   ├── enrollment.interface.ts
+    │   │   │   │   ├── grade.interface.ts
+    │   │   │   │   ├── program.interface.ts
+    │   │   │   │   ├── semester.interface.ts
+    │   │   │   │   └── student.interface.ts
+    │   │   │   └── repositories/
+    │   │   │       ├── class.repo.ts
+    │   │   │       ├── course.repo.ts
+    │   │   │       ├── department.repo.ts
+    │   │   │       ├── enrollment.repo.ts
+    │   │   │       ├── grade.repo.ts
+    │   │   │       ├── program.repo.ts
+    │   │   │       ├── semester.repo.ts
+    │   │   │       └── student.repo.ts
+    │   │   ├── responses/
+    │   │   │   ├── error.responses.ts
+    │   │   │   └── success.responses.ts
+    │   │   ├── routes/
+    │   │   │   ├── index.ts
+    │   │   │   ├── address/
+    │   │   │   │   └── index.ts
+    │   │   │   ├── class/
+    │   │   │   │   └── index.ts
+    │   │   │   ├── course/
+    │   │   │   │   └── index.ts
+    │   │   │   ├── department/
+    │   │   │   │   └── index.ts
+    │   │   │   ├── enrollment/
+    │   │   │   │   └── index.ts
+    │   │   │   ├── export/
+    │   │   │   │   └── index.ts
+    │   │   │   ├── grade/
+    │   │   │   │   └── index.ts
+    │   │   │   ├── import/
+    │   │   │   │   └── index.ts
+    │   │   │   ├── program/
+    │   │   │   │   └── index.ts
+    │   │   │   ├── semester/
+    │   │   │   │   └── index.ts
+    │   │   │   ├── student/
+    │   │   │   │   └── index.ts
+    │   │   │   └── transcript/
+    │   │   │       └── index.ts
+    │   │   ├── services/
+    │   │   │   ├── address.service.ts
+    │   │   │   ├── class.service.ts
+    │   │   │   ├── course.service.ts
+    │   │   │   ├── department.service.ts
+    │   │   │   ├── enrollment.service.ts
+    │   │   │   ├── export.service.ts
+    │   │   │   ├── grade.service.ts
+    │   │   │   ├── import.service.ts
+    │   │   │   ├── logger.service.ts
+    │   │   │   ├── program.service.ts
+    │   │   │   ├── semester.service.ts
+    │   │   │   ├── student.service.ts
+    │   │   │   └── transcript.service.ts
+    │   │   ├── utils/
+    │   │   │   └── index.ts
+    │   │   └── validators/
+    │   │       ├── class/
+    │   │       │   └── add-class.validator.ts
+    │   │       ├── course/
+    │   │       │   ├── add-course.validator.ts
+    │   │       │   └── update-course.validator.ts
+    │   │       ├── semester/
+    │   │       │   └── create-semester.validator.ts
+    │   │       └── student/
+    │   │           ├── add-student.validator.ts
+    │   │           ├── import-student.validator.ts
+    │   │           └── update-student.validator.ts
+    │   └── tests/
+    │       ├── tsconfig.json
+    │       └── unit/
+    │           ├── repositories/
+    │           │   ├── department.repo.spec.ts
+    │           │   ├── enrollment.repo.spec.ts
+    │           │   └── student.repo.spec.ts
+    │           └── services/
+    │               └── student-status.service.spec.ts
     ├── frontend/
     │   └── moodle-system/
     │       ├── README.md
@@ -98,6 +166,7 @@ bktrung-group08-ex-tkpm/
     │       ├── nginx.conf
     │       ├── package.json
     │       ├── vue.config.js
+    │       ├── .dockerignore
     │       ├── .eslintrc.js
     │       ├── .gitignore
     │       ├── public/
@@ -107,6 +176,13 @@ bktrung-group08-ex-tkpm/
     │           ├── main.js
     │           ├── assets/
     │           ├── components/
+    │           │   ├── class/
+    │           │   │   ├── ClassForm.vue
+    │           │   │   └── ClassTable.vue
+    │           │   ├── course/
+    │           │   │   ├── CourseForm.vue
+    │           │   │   ├── CourseList.vue
+    │           │   │   └── CourseTable.vue
     │           │   ├── layout/
     │           │   │   ├── AppSidebar.vue
     │           │   │   └── BaseModal.vue
@@ -122,25 +198,35 @@ bktrung-group08-ex-tkpm/
     │           ├── store/
     │           │   ├── index.js
     │           │   └── modules/
+    │           │       ├── class.js
+    │           │       ├── course.js
     │           │       ├── department.js
+    │           │       ├── enrollment.js
     │           │       ├── program.js
     │           │       ├── status.js
-    │           │       └── student.js
+    │           │       ├── student.js
+    │           │       └── transcript.js
     │           ├── utils/
     │           │   ├── format.js
     │           │   └── validation.js
     │           └── views/
+    │               ├── AcademicAffairsRegistration.vue
     │               ├── AddStudent.vue
+    │               ├── ClassManage.vue
+    │               ├── CourseManage.vue
     │               ├── DepartmentManage.vue
+    │               ├── DropCourse.vue
     │               ├── EditStudent.vue
+    │               ├── GradeTable.vue
     │               ├── ProgramManage.vue
+    │               ├── RegisterCourse.vue
     │               ├── StatusManage.vue
     │               ├── StatusTransition.vue
     │               └── StudentList.vue
     └── report/
-        └── The Broken Window Theory & The Boy Scout Rule.pdf
         └── Unit Testing.pptx
-
+        └── The Broken Window Theory & The Boy Scout Rule.pdf
+        
 ```
 
 ## Hướng dẫn cài đặt & chạy chương trình
@@ -371,8 +457,32 @@ Chạy lệnh `npm run start` để chạy cả frontend và backend, sau đó t
    - Một khóa học có thể có nhiều lớp trong cùng một học kỳ.
    ![image](https://github.com/user-attachments/assets/b1e66149-83c9-467c-8640-e990c8449aff)
 
+#### 20. Giáo vụ đăng kí khóa học cho sinh viên
+   - Ở trang quản lí đăng kí khóa học, chọn đăng kí khóa học
+     ![image](https://github.com/user-attachments/assets/0d9b757e-a281-4618-b746-b211bb986a6c)
+   - Tới trang đăng kí khóa học, nhập MSSV của sinh viên cần đăng kí. Tìm kiếm khóa học muốn đăng kí, sau đó chọn lớp muốn đăng kí.
+     ![image](https://github.com/user-attachments/assets/afa5b0ef-2a87-4c46-98ff-7034e636bbcd)
+   - Có thể xem lịch học của lớp muốn đăng kí
+     ![image](https://github.com/user-attachments/assets/990facf8-debe-4678-bd41-afada98c1ae3)
 
-   
+#### 21. Hủy đăng kí khóa học cho sinh viên
+   - Ở trang quản lí đăng kí khóa học, chọn hủy đăng kí khóa học
+     ![image](https://github.com/user-attachments/assets/0d9b757e-a281-4618-b746-b211bb986a6c)
+   - Tới trang hủy đăng kí khóa học, nhập MSSV của sinh viên cần hủy đăng kí, nhập mã lớp cần hủy và lí do hủy.
+     ![image](https://github.com/user-attachments/assets/19cd6b4f-0b4c-4203-98cb-d79a1e716339)
+   - Tra cứu lịch sử hủy đăng kí khóa học theo MSSV
+     ![image](https://github.com/user-attachments/assets/eca07072-b59b-4983-abc7-dad955923c59)
+
+#### 22. In bản điểm chính thức
+   - Ở trang Bảng điểm, nhập MSSV của sinh viên muốn in bảng điểm, nhấn Tạo bảng điểm
+     ![image](https://github.com/user-attachments/assets/acdeff5f-a908-4fcd-9c49-3dd11816889a)
+   - Nhấn Download PDF để tải file về
+
+
+
+
+
+
 
 
 
