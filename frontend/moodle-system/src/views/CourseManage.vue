@@ -85,13 +85,27 @@ export default {
           // Update existing course
           console.log(`Updating course with code: ${selectedCourse.value.courseCode}`);
           
-          // For updates, make sure we're not sending courseCode or prerequisites
-          const updateData = {
-            name: courseData.name,
-            credits: courseData.credits,
-            department: courseData.department,
-            description: courseData.description
-          };
+          const updateData = {};
+          
+          if (courseData.name !== selectedCourse.value.name) {
+            updateData.name = courseData.name;
+          }
+          
+          if (courseData.department !== (typeof selectedCourse.value.department === 'object' 
+            ? selectedCourse.value.department._id 
+            : selectedCourse.value.department)) {
+            updateData.department = courseData.department;
+          }
+          
+          if (courseData.description !== selectedCourse.value.description) {
+            updateData.description = courseData.description;
+          }
+          
+          if (Number(courseData.credits) !== selectedCourse.value.credits) {
+            updateData.credits = Number(courseData.credits);
+          }
+          
+          console.log('Only sending changed fields:', updateData);
           
           await store.dispatch('course/updateCourse', {
             courseCode: selectedCourse.value.courseCode,
@@ -100,26 +114,21 @@ export default {
           
           success.value = `Cập nhật khóa học ${courseData.name} thành công!`;
         } else {
-          // Create new course
           await store.dispatch('course/createCourse', courseData);
           success.value = `Thêm khóa học ${courseData.name} thành công!`;
         }
         
-        // Refresh courses data
         await store.dispatch('course/fetchCourses');
         
-        // Reset form
         showForm.value = false;
         selectedCourse.value = {};
         
-        // Clear success message after 5 seconds
         setTimeout(() => {
           success.value = '';
         }, 5000);
       } catch (err) {
         console.error('Error saving course:', err);
         
-        // Extract detailed error message from response if available
         let errorMessage = '';
         if (err.response && err.response.data) {
           if (err.response.data.message) {
