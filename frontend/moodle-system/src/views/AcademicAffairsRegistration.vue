@@ -1,17 +1,17 @@
 <template>
   <div class="container-fluid px-5 mt-5">
     <div class="screen">
-      <h2>Quản lý đăng kí môn học</h2>
+      <h2>Quản lý đăng kí khóa học</h2>
 
       <div class="card-buttons">
         <!-- Nút mở modal -->
         <div class="card" @click="goToRegisterPage" style="cursor: pointer;">
-          <h3>📚 Đăng ký môn học</h3>
+          <h3>📚 Đăng ký khóa học</h3>
           <p>Thêm sinh viên vào lớp học.</p>
         </div>
 
         <div class="card danger" @click="goToDropPage">
-          <h3>🗑️ Xóa sinh viên khỏi lớp</h3>
+          <h3>🗑️ Hủy đăng kí khóa học</h3>
           <p>Hủy đăng kí lớp học.</p>
         </div>
       </div>

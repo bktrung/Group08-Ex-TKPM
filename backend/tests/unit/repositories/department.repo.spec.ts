@@ -5,7 +5,6 @@ import {
   addDepartment,
   findDepartmentByName,
   findDepartmentById,
-  updateDepartment,
   getDepartments,
 } from "../../../src/models/repositories/department.repo";
 
