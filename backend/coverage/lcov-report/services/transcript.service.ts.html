@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-    <title>Code coverage report for responses/error.responses.ts</title>
+    <title>Code coverage report for services/transcript.service.ts</title>
     <meta charset="utf-8" />
     <link rel="stylesheet" href="../prettify.css" />
     <link rel="stylesheet" href="../base.css" />
@@ -19,34 +19,34 @@
 <body>
 <div class='wrapper'>
     <div class='pad1'>
-        <h1><a href="../index.html">All files</a> / <a href="index.html">responses</a> error.responses.ts</h1>
+        <h1><a href="../index.html">All files</a> / <a href="index.html">services</a> transcript.service.ts</h1>
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">76.47% </span>
+                <span class="strong">93.1% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>13/17</span>
+                <span class='fraction'>54/58</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">10% </span>
+                <span class="strong">79.16% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>1/10</span>
+                <span class='fraction'>19/24</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">33.33% </span>
+                <span class="strong">100% </span>
                 <span class="quiet">Functions</span>
-                <span class='fraction'>2/6</span>
+                <span class='fraction'>10/10</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">76.47% </span>
+                <span class="strong">94.54% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>13/17</span>
+                <span class='fraction'>52/55</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line medium'></div>
+    <div class='status-line high'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -151,183 +151,306 @@
 <a name='L86'></a><a href='#L86'>86</a>
 <a name='L87'></a><a href='#L87'>87</a>
 <a name='L88'></a><a href='#L88'>88</a>
-<a name='L89'></a><a href='#L89'>89</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L89'></a><a href='#L89'>89</a>
+<a name='L90'></a><a href='#L90'>90</a>
+<a name='L91'></a><a href='#L91'>91</a>
+<a name='L92'></a><a href='#L92'>92</a>
+<a name='L93'></a><a href='#L93'>93</a>
+<a name='L94'></a><a href='#L94'>94</a>
+<a name='L95'></a><a href='#L95'>95</a>
+<a name='L96'></a><a href='#L96'>96</a>
+<a name='L97'></a><a href='#L97'>97</a>
+<a name='L98'></a><a href='#L98'>98</a>
+<a name='L99'></a><a href='#L99'>99</a>
+<a name='L100'></a><a href='#L100'>100</a>
+<a name='L101'></a><a href='#L101'>101</a>
+<a name='L102'></a><a href='#L102'>102</a>
+<a name='L103'></a><a href='#L103'>103</a>
+<a name='L104'></a><a href='#L104'>104</a>
+<a name='L105'></a><a href='#L105'>105</a>
+<a name='L106'></a><a href='#L106'>106</a>
+<a name='L107'></a><a href='#L107'>107</a>
+<a name='L108'></a><a href='#L108'>108</a>
+<a name='L109'></a><a href='#L109'>109</a>
+<a name='L110'></a><a href='#L110'>110</a>
+<a name='L111'></a><a href='#L111'>111</a>
+<a name='L112'></a><a href='#L112'>112</a>
+<a name='L113'></a><a href='#L113'>113</a>
+<a name='L114'></a><a href='#L114'>114</a>
+<a name='L115'></a><a href='#L115'>115</a>
+<a name='L116'></a><a href='#L116'>116</a>
+<a name='L117'></a><a href='#L117'>117</a>
+<a name='L118'></a><a href='#L118'>118</a>
+<a name='L119'></a><a href='#L119'>119</a>
+<a name='L120'></a><a href='#L120'>120</a>
+<a name='L121'></a><a href='#L121'>121</a>
+<a name='L122'></a><a href='#L122'>122</a>
+<a name='L123'></a><a href='#L123'>123</a>
+<a name='L124'></a><a href='#L124'>124</a>
+<a name='L125'></a><a href='#L125'>125</a>
+<a name='L126'></a><a href='#L126'>126</a>
+<a name='L127'></a><a href='#L127'>127</a>
+<a name='L128'></a><a href='#L128'>128</a>
+<a name='L129'></a><a href='#L129'>129</a>
+<a name='L130'></a><a href='#L130'>130</a></td><td class="line-coverage quiet"><span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">6x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-yes">1x</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">4x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-yes">2x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-yes">1x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-yes">1x</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">interface StatusCodesType {
-	CONFLICT: number;
-	BAD_REQUEST: number;
-	UNAUTHORIZED: number;
-	NOT_FOUND: number;
-	FORBIDDEN: number;
-}
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1x</span></td><td class="text"><pre class="prettyprint lang-js">import { findCourseById } from "../models/repositories/course.repo";
+import { findEnrollmentsByStudent } from "../models/repositories/enrollment.repo";
+import { findGradeByEnrollment } from "../models/repositories/grade.repo";
+import { findStudent, getStudentInfo } from "../models/repositories/student.repo";
+import { NotFoundError } from "../responses/error.responses";
+import { getDocumentId } from "../utils";
 &nbsp;
-interface ReasonPhrasesType {
-	CONFLICT: string;
-	BAD_REQUEST: string;
-	UNAUTHORIZED: string;
-	NOT_FOUND: string;
-	FORBIDDEN: string;
-}
 &nbsp;
-const StatusCodes: StatusCodesType = {
-	CONFLICT: 409,
-	BAD_REQUEST: 400,
-	UNAUTHORIZED: 401,
-	NOT_FOUND: 404,
-	FORBIDDEN: 403,
-}
+class TranscriptService {
+	private async getStudentInfo(studentId: string) {
+		const student = await getStudentInfo(studentId);
+		if (!student) {
+			throw new NotFoundError("Student not found");
+		}
 &nbsp;
-const ReasonPhrases: ReasonPhrasesType = {
-	CONFLICT: 'Conflict',
-	BAD_REQUEST: 'Bad Request',
-	UNAUTHORIZED: 'Unauthorized',
-	NOT_FOUND: 'Not Found',
-	FORBIDDEN: 'Forbidden',
-}
+		// Type guard to check if a field is a populated object with name property
+		const getName = (field: any): string =&gt; {
+			return field &amp;&amp; typeof field === 'object' &amp;&amp; 'name' in field ? field.name : <span class="branch-1 cbranch-no" title="branch not covered" >'';</span>
+		};
 &nbsp;
-export class ErrorResponse extends Error {
-	status: number;
+		return {
+			studentId: student.studentId,
+			fullName: student.fullName,
+			schoolYear: student.schoolYear,
+			department: getName(student.department),
+			program: getName(student.program),
+		};
+	}
 &nbsp;
-	constructor(message: string, status: number) {
-		super(message);
-		this.status = status;
+	private async getStudentGrades(studentId: string) {
+		const student = await findStudent({ studentId });
+		<span class="missing-if-branch" title="if path not taken" >I</span>if (!student) {
+<span class="cstat-no" title="statement not covered" >			throw new NotFoundError("Student not found");</span>
+		}
 &nbsp;
-		// This is necessary for proper instanceof checks with extended Error classes
-		Object.setPrototypeOf(this, new.target.prototype);
-		Error.captureStackTrace(this, this.constructor);
+&nbsp;
+		const enrollments = await findEnrollmentsByStudent(getDocumentId(student));
+		console.log(`Found ${enrollments.length} enrollments for student ${studentId}`);
+		
+		if (!enrollments.length) {
+			console.log("No enrollments found, returning empty array");
+			return [];
+		}
+&nbsp;
+		const courseEnrollmentMap = new Map();
+&nbsp;
+		const getCourse = (field: any): string =&gt; {
+			// Convert ObjectId to string if needed
+			if (field &amp;&amp; typeof field === 'object' &amp;&amp; 'course' in field) {
+				return field.course.toString();  // Ensure it's a string
+			}
+<span class="cstat-no" title="statement not covered" >			return '';</span>
+		}
+&nbsp;
+		enrollments.forEach(enrollment =&gt; {
+			const courseId = getCourse(enrollment.class);
+			console.log(`Processing enrollment for course ID: ${courseId}`);
+			if (!courseEnrollmentMap.has(courseId) || 
+<span class="branch-1 cbranch-no" title="branch not covered" >				new Date(enrollment.enrollmentDate) &gt; new Date(courseEnrollmentMap.get(courseId).enrollmentDate)</span>
+			) {
+				courseEnrollmentMap.set(courseId, enrollment);
+			}
+		});
+&nbsp;
+		const latestEnrollments = Array.from(courseEnrollmentMap.values());
+&nbsp;
+		const grades = await Promise.all(latestEnrollments.map(async enrollment =&gt; {
+			const courseInfo = await findCourseById(getCourse(enrollment.class));
+			if (!courseInfo) {
+				return null;
+			}
+&nbsp;
+			const gradeInfo = await findGradeByEnrollment(getDocumentId(enrollment));
+&nbsp;
+			<span class="missing-if-branch" title="if path not taken" >I</span>if (!gradeInfo) {
+<span class="cstat-no" title="statement not covered" >				return null;</span>
+			}
+&nbsp;
+			return {
+				courseCode: courseInfo.courseCode,
+				courseName: courseInfo.name,
+				credits: courseInfo.credits,
+				totalScore: gradeInfo.totalScore,
+				gradePoints: gradeInfo.gradePoints,
+			}
+		}));
+&nbsp;
+		return grades.filter(grade =&gt; grade !== null);
+	}
+&nbsp;
+	async generateTranscript(studentId: string) {
+		const studentInfo = await this.getStudentInfo(studentId);
+		const studentGrades = await this.getStudentGrades(studentId);
+&nbsp;
+		// Calculate summary statistics
+		let totalCredits = 0;
+		let weightedTotalScore = 0; // For GPA out of 10
+		let weightedGradePoints = 0; // For GPA out of 4
+&nbsp;
+		// Calculate totals
+		studentGrades.forEach(grade =&gt; {
+			// Skip if grade is null or credits is not a number
+			<span class="missing-if-branch" title="if path not taken" >I</span>if (!grade || typeof grade.credits !== 'number') <span class="cstat-no" title="statement not covered" >return;</span>
+&nbsp;
+			const credits = grade.credits;
+			totalCredits += credits;
+			weightedTotalScore += credits * grade.totalScore;
+			weightedGradePoints += credits * grade.gradePoints;
+		});
+&nbsp;
+		// Calculate GPAs
+		const gpaOutOf10 = totalCredits &gt; 0 ?
+			Number((weightedTotalScore / totalCredits).toFixed(2)) : 0;
+&nbsp;
+		const gpaOutOf4 = totalCredits &gt; 0 ?
+			Number((weightedGradePoints / totalCredits).toFixed(2)) : 0;
+&nbsp;
+		return {
+			studentInfo,
+			courses: studentGrades,
+			summary: {
+				totalCredits,
+				gpaOutOf10,
+				gpaOutOf4
+			}
+		};
 	}
 }
 &nbsp;
-export class ConflictRequestError extends ErrorResponse {
-<span class="fstat-no" title="function not covered" >	constructor(</span>
-		message: string = <span class="branch-0 cbranch-no" title="branch not covered" >ReasonPhrases.CONFLICT,</span>
-		statusCode: number = <span class="branch-0 cbranch-no" title="branch not covered" >StatusCodes.CONFLICT</span>
-	) {
-<span class="cstat-no" title="statement not covered" >		super(message, statusCode);</span>
-	}
-}
-&nbsp;
-export class BadRequestError extends ErrorResponse {
-<span class="fstat-no" title="function not covered" >	constructor(</span>
-		message: string = <span class="branch-0 cbranch-no" title="branch not covered" >ReasonPhrases.BAD_REQUEST,</span>
-		statusCode: number = <span class="branch-0 cbranch-no" title="branch not covered" >StatusCodes.BAD_REQUEST</span>
-	) {
-<span class="cstat-no" title="statement not covered" >		super(message, statusCode);</span>
-	}
-}
-&nbsp;
-export class AuthFailureError extends ErrorResponse {
-<span class="fstat-no" title="function not covered" >	constructor(</span>
-		message: string = <span class="branch-0 cbranch-no" title="branch not covered" >ReasonPhrases.UNAUTHORIZED,</span>
-		statusCode: number = <span class="branch-0 cbranch-no" title="branch not covered" >StatusCodes.UNAUTHORIZED</span>
-	) {
-<span class="cstat-no" title="statement not covered" >		super(message, statusCode);</span>
-	}
-}
-&nbsp;
-export class NotFoundError extends ErrorResponse {
-	constructor(
-		message: string = <span class="branch-0 cbranch-no" title="branch not covered" >ReasonPhrases.NOT_FOUND,</span>
-		statusCode: number = StatusCodes.NOT_FOUND
-	) {
-		super(message, statusCode);
-	}
-}
-&nbsp;
-export class ForbiddenError extends ErrorResponse {
-<span class="fstat-no" title="function not covered" >	constructor(</span>
-		message: string = <span class="branch-0 cbranch-no" title="branch not covered" >ReasonPhrases.FORBIDDEN,</span>
-		statusCode: number = <span class="branch-0 cbranch-no" title="branch not covered" >StatusCodes.FORBIDDEN</span>
-	) {
-<span class="cstat-no" title="statement not covered" >		super(message, statusCode);</span>
-	}
-}</pre></td></tr></table></pre>
+export default new TranscriptService();</pre></td></tr></table></pre>
 
                 <div class='push'></div><!-- for sticky footer -->
             </div><!-- /wrapper -->
