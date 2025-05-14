@@ -10,8 +10,6 @@ import {
 
 let mongoServer: MongoMemoryServer;
 
-jest.setTimeout(30000);
-
 beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
   const uri = mongoServer.getUri();

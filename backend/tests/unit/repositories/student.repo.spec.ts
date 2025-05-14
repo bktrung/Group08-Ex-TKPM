@@ -7,7 +7,6 @@ import StudentStatusTransition from '../../../src/models/studentStatusTransition
 import { Gender, IdentityDocumentType, IStudentStatus } from '../../../src/models/interfaces/student.interface';
 import { CreateStudentDto, UpdateStudentDto } from '../../../src/dto/student';
 
-jest.setTimeout(30000);
 let mongoServer: MongoMemoryServer;
 
 // Mock data

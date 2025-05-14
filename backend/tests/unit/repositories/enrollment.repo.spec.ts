@@ -6,8 +6,6 @@ import { EnrollmentStatus } from "../../../src/models/interfaces/enrollment.inte
 
 let mongoServer: MongoMemoryServer;
 
-jest.setTimeout(30000);
-
 beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
     const uri = mongoServer.getUri();
