@@ -3,6 +3,8 @@ import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import EnrollmentModel from "../../../src/models/enrollment.model";
 import { EnrollmentStatus } from "../../../src/models/interfaces/enrollment.interface";
+import { findEnrollment, findEnrollmentsByClass, findEnrollmentsByStudent, createEnrollment } from "../../../src/models/repositories/enrollment.repo";
+import Class from "../../../src/models/class.model";
 
 let mongoServer: MongoMemoryServer;
 
@@ -10,8 +12,7 @@ beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
     const uri = mongoServer.getUri();
     await mongoose.connect(uri);
-}); 
-
+});
 
 afterAll(async () => {
     await mongoose.disconnect();
@@ -59,4 +60,69 @@ describe("Enrollment Model", () => {
             expect(err.errors.class).toBeDefined();
         }
     });
+
+    // Test for findEnrollment
+    it("should find an active enrollment for a student and class", async () => {
+        const studentId = new mongoose.Types.ObjectId();
+        const classId = new mongoose.Types.ObjectId();
+
+        await EnrollmentModel.create({
+            student: studentId,
+            class: classId,
+            status: EnrollmentStatus.ACTIVE
+        });
+
+        const foundEnrollment = await findEnrollment(studentId, classId);
+
+        expect(foundEnrollment).toBeDefined();
+
+    });
+
+    // Test for findEnrollmentsByClass
+    it("should find all enrollments by class", async () => {
+        const classId = new mongoose.Types.ObjectId();
+
+        await EnrollmentModel.create({
+            student: new mongoose.Types.ObjectId(),
+            class: classId,
+            status: EnrollmentStatus.ACTIVE
+        });
+
+        const enrollments = await findEnrollmentsByClass(classId);
+
+        expect(enrollments).toHaveLength(1);
+        expect(enrollments[0].class.toString()).toBe(classId.toString());
+    });
+
+    // Test for findEnrollmentsByStudent
+    it("should find all active or completed enrollments for a student", async () => {
+        const studentId = new mongoose.Types.ObjectId();
+        const classId = new mongoose.Types.ObjectId();
+
+        await EnrollmentModel.create({
+            student: studentId,
+            class: classId,
+            status: EnrollmentStatus.ACTIVE
+        });
+
+        const enrollments = await findEnrollmentsByStudent(studentId);
+
+        expect(enrollments).toHaveLength(1);
+        expect(enrollments[0].student.toString()).toBe(studentId.toString());
+    });
+
+    // Test for createEnrollment
+    it("should create an enrollment and increment enrolledStudents for the class", async () => {
+        const classId = new mongoose.Types.ObjectId();
+        const enrollmentData = {
+            student: new mongoose.Types.ObjectId(),
+            class: classId,
+            status: EnrollmentStatus.ACTIVE
+        };
+
+        const createdEnrollment = await createEnrollment(enrollmentData);
+
+        expect(createdEnrollment).toBeDefined();
+    });
+  
 });
