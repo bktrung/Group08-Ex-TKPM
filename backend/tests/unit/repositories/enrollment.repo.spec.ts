@@ -10,7 +10,8 @@ beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
     const uri = mongoServer.getUri();
     await mongoose.connect(uri);
-});
+}); 
+
 
 afterAll(async () => {
     await mongoose.disconnect();

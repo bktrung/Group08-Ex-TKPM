@@ -9,7 +9,8 @@ module.exports = {
   collectCoverage: true,
   coverageThreshold: {
     global: {
-      lines: 80,
+      lines: 80, // Bao phủ tối thiểu 80% số dòng mã
     },
   },
 };
+
