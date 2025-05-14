@@ -12,7 +12,7 @@ beforeAll(async () => {
     mongoServer = await MongoMemoryServer.create();
     const uri = mongoServer.getUri();
     await mongoose.connect(uri);
-}, 60000); // tăng timeout lên 60s
+}); 
 
 
 afterAll(async () => {
