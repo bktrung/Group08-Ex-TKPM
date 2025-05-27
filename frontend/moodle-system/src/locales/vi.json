@@ -1,0 +1,40 @@
+{
+    "student": {
+        "student_list": "Học sinh",
+        "age": "Tuổi",
+        "grade": "Lớp học"
+    },
+    "sidebar": {
+        "title": "Quản lý Sinh Viên",
+        "student_list": "Danh sách sinh viên",
+        "courses": "Quản lý khóa học",
+        "classes": "Quản lý lớp học",
+        "departments": "Danh sách khoa",
+        "status_types": "Tình trạng sinh viên",
+        "status_transitions": "Quy tắc chuyển trạng thái",
+        "programs": "Chương trình đào tạo",
+        "academic_affairs_registration": "Quản lí đăng kí môn học",
+        "grade_table": "Bảng điểm"
+    },
+    "department": {
+        "management": "Quản lý khoa",
+        "name": "Tên khoa",
+        "add": "Thêm khoa",
+        "enter": "Nhập tên khoa",
+        "department_description": "Mô tả khoa",
+        "no_data": "Không có khoa nào. Vui lòng thêm khoa mới."
+    },
+    "common": {
+        "add": "Thêm",
+        "edit": "Sửa",
+        "delete": "Xoá",
+        "save": "Lưu",
+        "cancel": "Huỷ",
+        "search": "Tìm kiếm",
+        "loading": "Đang tải...",
+        "no_data": "Không có dữ liệu",
+        "action": "Hành động",
+        "number": "STT",
+        "error_action": "Lỗi khi {{ action }} {{ target }}: {{ message }}"
+    }
+}

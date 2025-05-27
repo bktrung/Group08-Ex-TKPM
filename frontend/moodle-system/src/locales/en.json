@@ -1,0 +1,43 @@
+{
+  "student": {
+    "student_list": "Student",
+    "age": "Age",
+    "grade": "Grade"
+  },
+
+  "sidebar": {
+    "title": "Student Management",
+    "student_list": "Student List",
+    "courses": "Course Management",
+    "classes": "Class Management",
+    "departments": "Departments",
+    "status_types": "Student Status",
+    "status_transitions": "Status Transition Rules",
+    "programs": "Training Programs",
+    "academic_affairs_registration": "Course Registration",
+    "grade_table": "Grade Table"
+  },
+
+  "department": {
+    "management": "Department Management",
+    "name": "Department Name",
+    "enter": "Enter department name",
+    "add": "Add department",
+    "description": "Department Description",
+    "no_data": "No departments available. Please add a new one."
+  },
+
+  "common": {
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+    "save": "Save",
+    "cancel": "Cancel",
+    "search": "Search",
+    "loading": "Loading...",
+    "no_data": "No data available",
+    "action": "Action",
+    "number": "No.",
+    "error_action": "Error when {{ action }} {{ target }}: {{ message }}"
+  }
+}
