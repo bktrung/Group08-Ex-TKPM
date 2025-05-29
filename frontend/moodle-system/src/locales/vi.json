@@ -61,8 +61,69 @@
         "required_schedule": "Lịch học là bắt buộc",
         "min_length_schedule": "Phải có ít nhất một lịch học",
         "end_period_validation": "Tiết kết thúc phải lớn hơn hoặc bằng tiết bắt đầu",
-         "schedule_conflict": "Lịch học bị trùng với lịch học #%{index} tại phòng %{room}",
-         "no_matching_classes": "Không có lớp học nào phù hợp."
+        "schedule_conflict": "Lịch học bị trùng với lịch học #%{index} tại phòng %{room}",
+        "no_matching_classes": "Không có lớp học nào phù hợp."
+    },
+    "course": {
+        "title": "Khóa học",
+        "course_code": "Mã khóa học",
+        "name": "Tên khóa học",
+        "description": "Mô tả khóa học",
+        "credits": "Số tín chỉ",
+        "department": "Khoa",
+        "management": "Quản lý khóa học",
+        "prerequisite": "Môn học tiên quyết",
+        "add": "Thêm khóa học",
+        "edit": "Sửa khóa học",
+        "enter_name": "Nhập tên khóa học",
+        "no_data": "Không có khóa học nào. Vui lòng thêm khóa học mới.",
+        "search_placeholder": "Tìm kiếm theo mã hoặc tên khóa học...",
+        "display_count": "Hiển thị %{current} / %{total} khóa học",
+        "required_course_code": "Mã khóa học là bắt buộc",
+        "alphanumeric_course_code": "Mã khóa học chỉ được chứa chữ cái và số",
+        "required_name": "Tên khóa học là bắt buộc",
+        "required_department": "Khoa là bắt buộc",
+        "save_error": {
+            "prefix": "Lỗi:",
+            "fallback": "Đã xảy ra lỗi khi lưu khóa học"
+        },
+        "delete_error": {
+            "prefix": "Lỗi:",
+            "fallback": "Đã xảy ra lỗi khi xóa/đóng khóa học"
+        },
+        "delete_success": "Xóa/đóng khóa học thành công!",
+        "update_success": "Cập nhật khóa học %{courseCode} thành công!",
+        "add_success": "Thêm khóa học %{courseCode} thành công!",
+        "reopen_not_supported": "Chức năng mở lại khóa học chưa được hỗ trợ",
+        "reopen_success": "Mở lại khóa học thành công!",
+        "close_success": "Đóng khóa học thành công!",
+        "toggle_error": "Đã xảy ra lỗi khi %{action} khóa học",
+        "validation": {
+            "required_course_code": "Mã khóa học không được để trống",
+            "invalid_course_code": "Mã khóa học phải có 3-10 ký tự và không chứa ký tự đặc biệt",
+            "required_name": "Tên khóa học không được để trống",
+            "short_name": "Tên khóa học phải có ít nhất 3 ký tự",
+            "required_credits": "Số tín chỉ không được để trống",
+            "min_credits": "Số tín chỉ phải lớn hơn hoặc bằng 2",
+            "integer_credits": "Số tín chỉ phải là số nguyên",
+            "required_department": "Vui lòng chọn khoa",
+            "required_description": "Mô tả khóa học không được để trống",
+            "short_description": "Mô tả khóa học phải có ít nhất 10 ký tự"
+        },
+        "multi_select_hint": "Giữ Ctrl để chọn nhiều môn học",
+        "status": {
+            "active": "Đang mở",
+            "inactive": "Đã đóng"
+        },
+        "close": "Đóng khóa học",
+        "reopen": "Mở lại khóa học",
+        "delete_confirm": "Bạn có chắc chắn muốn xóa khóa học <strong>%{code}} - %{name}}</strong>?",
+        "delete_note": "Lưu ý: Khóa học chỉ có thể xóa nếu chưa có lớp học nào được mở và được tạo trong vòng 30 phút.",
+        "no_search_result": "Không tìm thấy khóa học phù hợp với tìm kiếm của bạn.",
+        "confirm_close": "Bạn có chắc chắn muốn đóng khóa học %{courseCode} - %{name}?",
+        "confirm_reopen": "Bạn có chắc chắn muốn mở lại khóa học %{courseCode} - %{name}?",
+        "enter_description": "Mô tả chi tiết về khóa học",
+        "view_class": "Xem lớp"
     },
     "department": {
         "management": "Quản lý khoa",
@@ -78,6 +139,8 @@
         "delete": "Xoá",
         "save": "Lưu",
         "close": "Đóng",
+        "reopen": "Mở lại",
+        "register": "Đăng ký",
         "cancel": "Huỷ",
         "page": "Trang",
         "search": "Tìm kiếm",
@@ -93,7 +156,11 @@
         "choose": "Chọn",
         "please": "Vui lòng",
         "please_choose": "Vui lòng chọn",
-        "please_enter": "Vui lòng nhập"
+        "please_enter": "Vui lòng nhập",
+        "update": "Cập nhật",
+        "status": "Trạng thái",
+        "none": "Không có",
+        "confirm_delete": "Xác nhận xóa"
     },
     "days": {
         "day_of_week": "Thứ",

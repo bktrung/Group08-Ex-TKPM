@@ -208,7 +208,6 @@ export default {
   },
   setup() {
     const { t } = useI18n()
-    console.log(t('department.add_department'))
     const store = useStore()
     const showForm = ref(false)
     const isEditing = ref(false)

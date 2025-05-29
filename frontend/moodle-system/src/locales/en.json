@@ -62,7 +62,6 @@
         "end_period_validation": "End period must be greater than or equal to the start period",
         "schedule_conflict": "Schedule conflicts with schedule #%{index} in room %{room}",
         "no_matching_classes": "No matching classes found."
-        
     },
     "department": {
         "management": "Department Management",
@@ -72,12 +71,75 @@
         "description": "Department Description",
         "no_data": "No departments available. Please add a new one."
     },
+    "course": {
+        "title": "Course",
+        "course_code": "Course Code",
+        "name": "Course Name",
+        "description": "Course Description",
+        "credits": "Credits",
+        "department": "Department",
+        "management": "Course Management",
+        "prerequisite": "Prerequisite course",
+        "add": "Add Course",
+        "edit": "Edit Course",
+        "enter_name": "Enter course name",
+        "no_data": "No courses available. Please add a new course.",
+        "search_placeholder": "Search by course code or name...",
+        "display_count": "Displaying %{current} / %{total} courses",
+        "required_course_code": "Course code is required",
+        "alphanumeric_course_code": "Course code must contain only letters and numbers",
+        "required_name": "Course name is required",
+        "required_department": "Department is required",
+        "save_error": {
+            "prefix": "Error:",
+            "fallback": "An error occurred while saving the course"
+        },
+        "delete_error": {
+            "prefix": "Error:",
+            "fallback": "An error occurred while deleting/closing the course"
+        },
+        "delete_success": "Successfully deleted/closed the course!",
+        "update_success": "Successfully updated course %{name}!",
+        "add_success": "Successfully added course %{name}!",
+        "reopen_not_supported": "Reopening courses is not supported yet",
+        "reopen_success": "Course reopened successfully!",
+        "close_success": "Course closed successfully!",
+        "toggle_error": "An error occurred while %{action} the course",
+        "validation": {
+            "required_course_code": "Course code is required",
+            "invalid_course_code": "Course code must be 3-10 characters and contain no special characters",
+            "required_name": "Course name is required",
+            "short_name": "Course name must be at least 3 characters",
+            "required_credits": "Credits are required",
+            "min_credits": "Credits must be greater than or equal to 2",
+            "integer_credits": "Credits must be an integer",
+            "required_department": "Please select a department",
+            "required_description": "Course description is required",
+            "short_description": "Description must be at least 10 characters long"
+        },
+        "multi_select_hint": "Hold Ctrl to select multiple courses",
+        "status": {
+            "active": "Open",
+            "inactive": "Closed"
+        },
+        "close": "Close course",
+        "reopen": "Reopen course",
+        "delete_confirm": "Are you sure you want to delete the course <strong>{{code}} - {{name}}</strong>?",
+        "delete_note": "Note: The course can only be deleted if no classes have been opened and it was created within 30 minutes.",
+        "no_search_result": "No matching course found for your search.",
+        "confirm_close": "Are you sure you want to close the course %{courseCode} - %{name}?",
+        "confirm_reopen": "Are you sure you want to reopen the course %{courseCode} - %{name}?",
+        "enter_description": "Detailed description of the course",
+        "view_class": "View Classes"
+    },
     "common": {
         "add": "Add",
         "edit": "Edit",
         "delete": "Delete",
         "save": "Save",
         "close": "Close",
+        "reopen": "Reopen",
+        "register": "Register",
         "cancel": "Cancel",
         "search": "Search",
         "page": "Page",
@@ -93,7 +155,11 @@
         "choose": "Choose",
         "please": "Please",
         "please_choose": "Please choose",
-        "please_enter": "Please enter"
+        "please_enter": "Please enter",
+        "update": "Update",
+        "status": "Status",
+        "none": "None",
+        "confirm_delete": "Confirm delete"
     },
     "days": {
         "day_of_week": "Day of week",

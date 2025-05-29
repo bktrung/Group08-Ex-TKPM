@@ -190,7 +190,6 @@ export default {
   emits: ['submit', 'cancel'],
   setup(props, { emit }) {
     const { t } = useI18n()
-    console.log(t('department.add_department'))
     const store = useStore()
 
     // Default schedule item template
