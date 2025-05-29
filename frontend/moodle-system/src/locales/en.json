@@ -1,43 +1,116 @@
 {
-  "student": {
-    "student_list": "Student",
-    "age": "Age",
-    "grade": "Grade"
-  },
-
-  "sidebar": {
-    "title": "Student Management",
-    "student_list": "Student List",
-    "courses": "Course Management",
-    "classes": "Class Management",
-    "departments": "Departments",
-    "status_types": "Student Status",
-    "status_transitions": "Status Transition Rules",
-    "programs": "Training Programs",
-    "academic_affairs_registration": "Course Registration",
-    "grade_table": "Grade Table"
-  },
-
-  "department": {
-    "management": "Department Management",
-    "name": "Department Name",
-    "enter": "Enter department name",
-    "add": "Add department",
-    "description": "Department Description",
-    "no_data": "No departments available. Please add a new one."
-  },
-
-  "common": {
-    "add": "Add",
-    "edit": "Edit",
-    "delete": "Delete",
-    "save": "Save",
-    "cancel": "Cancel",
-    "search": "Search",
-    "loading": "Loading...",
-    "no_data": "No data available",
-    "action": "Action",
-    "number": "No.",
-    "error_action": "Error when {{ action }} {{ target }}: {{ message }}"
-  }
+    "student": {
+        "student_list": "Student",
+        "age": "Age",
+        "grade": "Grade"
+    },
+    "sidebar": {
+        "title": "Student Management",
+        "student_list": "Student List",
+        "courses": "Course Management",
+        "classes": "Class Management",
+        "departments": "Departments",
+        "status_types": "Student Status",
+        "status_transitions": "Status Transition Rules",
+        "programs": "Training Programs",
+        "academic_affairs_registration": "Course Registration",
+        "grade_table": "Grade Table"
+    },
+    "class": {
+        "class_code": "Class Code",
+        "course": "Course",
+        "academic_year": "Academic Year",
+        "semester": "Semester",
+        "lecturer": "Lecturer",
+        "student_count": "Student Count",
+        "student_max_count": "Max Student Count",
+        "schedule": "Schedule",
+        "management": "Class Management",
+        "infor": "Class Information",
+        "name": "Class Name",
+        "add": "Add Class",
+        "edit": "Edit Class",
+        "enter": "Enter class name",
+        "no_data": "No classes available. Please add a new one.",
+        "all_semesters": "All Semesters",
+        "semester_1": "Semester 1",
+        "semester_2": "Semester 2",
+        "semester_3": "Semester 3 (Summer)",
+        "all_year": "All Academic Years",
+        "search_placeholder": "Search by class code, course name, or lecturer...",
+        "display_count": "Displaying %{current} / %{total} classes",
+        "day_of_week": "Day",
+        "room": "Room",
+        "start_period": "Start Period",
+        "end_period": "End Period",
+        "period": "Period",
+        "view_schedule": "View Schedule",
+        "add_success": "Successfully added class %{classCode}!",
+        "update_success": "Successfully updated class %{classCode}!",
+        "save_error_prefix": "Error:",
+        "save_error_fallback": "An error occurred while saving the class",
+        "please_add_at_least_one_schedule": "Please add at least one schedule.",
+        "required_class_code": "Class code is required",
+        "alphanumeric_class_code": "Class code must contain only letters and numbers",
+        "required_course": "Course is required",
+        "required_academic_year": "Academic year is required",
+        "required_semester": "Semester is required",
+        "required_instructor": "Instructor is required",
+        "max_class_size_validation": "Maximum class size must be greater than or equal to 1",
+        "required_schedule": "Schedule is required",
+        "min_length_schedule": "At least one schedule entry is required",
+        "end_period_validation": "End period must be greater than or equal to the start period",
+        "schedule_conflict": "Schedule conflicts with schedule #%{index} in room %{room}",
+        "no_matching_classes": "No matching classes found."
+        
+    },
+    "department": {
+        "management": "Department Management",
+        "name": "Department Name",
+        "enter": "Enter department name",
+        "add": "Add department",
+        "description": "Department Description",
+        "no_data": "No departments available. Please add a new one."
+    },
+    "common": {
+        "add": "Add",
+        "edit": "Edit",
+        "delete": "Delete",
+        "save": "Save",
+        "close": "Close",
+        "cancel": "Cancel",
+        "search": "Search",
+        "page": "Page",
+        "reset": "Reset",
+        "loading": "Loading...",
+        "no_data": "No data available",
+        "action": "Action",
+        "number": "No.",
+        "previous": "Previous",
+        "next": "Next",
+        "error_action": "Error when {{ action }} {{ target }}: {{ message }}",
+        "no_result": "No results match your search.",
+        "choose": "Choose",
+        "please": "Please",
+        "please_choose": "Please choose",
+        "please_enter": "Please enter"
+    },
+    "days": {
+        "day_of_week": "Day of week",
+        "2": "Monday",
+        "3": "Tuesday",
+        "4": "Wednesday",
+        "5": "Thursday",
+        "6": "Friday",
+        "7": "Saturday",
+        "8": "Sunday"
+    },
+    "semester": {
+        "summer": "Summer Semester",
+        "regular": "Semester %{semester}"
+    },
+    "error": {
+        "prefix": "Error",
+        "load_failed": "An error occurred while loading data"
+    }
 }
