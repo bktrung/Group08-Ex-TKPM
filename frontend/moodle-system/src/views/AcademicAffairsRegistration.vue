@@ -1,18 +1,18 @@
 <template>
   <div class="container-fluid px-5 mt-5">
     <div class="screen">
-      <h2>Quản lý đăng kí khóa học</h2>
+      <h2>{{ $t('enrollment.management_title') }}</h2>
 
       <div class="card-buttons">
         <!-- Nút mở modal -->
         <div class="card" @click="goToRegisterPage" style="cursor: pointer;">
-          <h3>📚 Đăng ký khóa học</h3>
-          <p>Thêm sinh viên vào lớp học.</p>
+          <h3>📚 {{ $t('enrollment.register.title') }}</h3>
+          <p>{{ $t('enrollment.register.description') }}</p>
         </div>
 
         <div class="card danger" @click="goToDropPage">
-          <h3>🗑️ Hủy đăng kí khóa học</h3>
-          <p>Hủy đăng kí lớp học.</p>
+          <h3>🗑️ {{ $t('enrollment.drop.title') }}</h3>
+          <p>{{ $t('enrollment.drop.description') }}</p>
         </div>
       </div>
     </div>
@@ -25,12 +25,16 @@
 <script>
 
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
 export default {
   props: {
   },
   setup() {
+    const { t } = useI18n()
     const router = useRouter()
+
+    console.log(t)
 
     const goToRegisterPage = () => {
       router.push('/register-course')

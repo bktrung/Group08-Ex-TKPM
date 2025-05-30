@@ -5,7 +5,7 @@
             <div class="col-md-9">
                 <div class="input-group">
                     <input v-model="searchQuery" type="text" class="form-control"
-                        placeholder="Tìm kiếm theo mã hoặc tên khóa học..." @keyup.enter="filterCourses">
+                        :placeholder="$t('course.search_placeholder')" @keyup.enter="filterCourses">
                     <button @click="filterCourses" class="btn btn-primary">{{ $t('common.search') }}</button>
                     <button @click="resetFilter" class="btn btn-secondary">{{ $t('common.reset') }}</button>
                 </div>

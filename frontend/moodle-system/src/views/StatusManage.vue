@@ -1,10 +1,11 @@
 <template>
   <div class="container-fluid px-5 mt-5">
-    <h2 class="mb-4 text-center">Quản lý Tình trạng sinh viên</h2>
+    <h2 class="mb-4 text-center">{{ $t('sidebar.status_types') }}</h2>
 
     <div class="row mb-3">
       <div class="col-md-4">
-        <button class="btn btn-success" @click="openAddStatusModal">+ Thêm Tình trạng</button>
+        <button class="btn btn-success" @click="openAddStatusModal">+ {{ $t('common.add') }} {{
+          $t('student.status.title') }}</button>
       </div>
     </div>
 
@@ -12,41 +13,36 @@
       <table class="table table-bordered table-striped">
         <thead class="table-primary text-center">
           <tr>
-            <th>STT</th>
-            <th>Tình trạng sinh viên</th>
-            <th>Hành động</th>
+            <th>{{ $t('common.number') }}</th>
+            <th>{{ $t('student.status.title') }}</th>
+            <th>{{ $t('common.action') }}</th>
           </tr>
         </thead>
         <tbody>
           <tr v-if="loading" class="text-center">
             <td colspan="3">
               <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
+                <span class="visually-hidden">{{ $t('common.loading') }}...</span>
               </div>
             </td>
           </tr>
           <tr v-else-if="statusTypes.length === 0" class="text-center">
-            <td colspan="3">Không có tình trạng nào. Vui lòng thêm tình trạng mới.</td>
+            <td colspan="3">{{ $t('student.status.no_data') }}.</td>
           </tr>
           <tr v-for="(status, index) in statusTypes" :key="status._id" v-else>
             <td class="text-center">{{ index + 1 }}</td>
             <td>{{ status.type }}</td>
             <td class="text-center">
-              <button class="btn btn-warning btn-sm" @click="openEditStatusModal(status)">Sửa</button>
+              <button class="btn btn-warning btn-sm" @click="openEditStatusModal(status)">{{ $t('common.edit')
+                }}</button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
 
-    <BaseModal
-      :title="modalTitle"
-      :itemName="statusType"
-      placeholderTitle = "Nhập tình trạng"
-      :showModal="isModalOpen"
-      @save="saveStatus"
-      @close="isModalOpen = false"
-    />
+    <BaseModal :title="modalTitle" :itemName="statusType" :placeholderTitle="$t('student.status.enter')"
+      :showModal="isModalOpen" @save="saveStatus" @close="isModalOpen = false" />
   </div>
 </template>
 
@@ -54,10 +50,12 @@
 import { ref, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import BaseModal from '../components/layout/BaseModal.vue'
+import { useI18n } from 'vue-i18n'
 
 export default {
   components: { BaseModal },
   setup() {
+    const { t } = useI18n()
     const store = useStore()
     const statusType = ref('')
     const originalStatusType = ref('')
@@ -68,7 +66,7 @@ export default {
     const loading = computed(() => store.state.status.loading)
     const isEditing = computed(() => Boolean(editingStatusId.value))
 
-    const modalTitle = computed(() => (isEditing.value ? 'Chỉnh sửa Tình trạng' : 'Thêm Tình trạng'))
+    const modalTitle = computed(() => (isEditing.value ? t('common.edit') : t('common.add')))
 
     const openAddStatusModal = () => {
       editingStatusId.value = null
@@ -102,7 +100,8 @@ export default {
         isModalOpen.value = false
       } catch (error) {
         console.error('Error saving status type:', error)
-        alert(`Lỗi khi ${isEditing.value ? 'cập nhật' : 'thêm'} tình trạng: ${error.message}`)
+        const action = isEditing.value ? t('common.edit') : t('common.add')
+        alert(t('student.status.error_action', { action, message: error.message }))
       }
     }
 

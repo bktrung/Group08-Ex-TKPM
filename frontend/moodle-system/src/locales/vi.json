@@ -2,7 +2,25 @@
     "student": {
         "student_list": "Học sinh",
         "age": "Tuổi",
-        "grade": "Lớp học"
+        "grade": "Lớp học",
+        "student_id": "Mã số sinh viên",
+        "enter_student_id": "Nhập mã số sinh viên",
+        "status": {
+            "title": "Tình trạng",
+            "enter": "Nhập tình trạng",
+            "no_data": "Không có tình trạng nào. Vui lòng thêm tình trạng mới",
+            "error_action": "Lỗi khi %{action} tình trạng: %{message}"
+        },
+        "validation": {
+            "required_student_id": "Mã số sinh viên là bắt buộc",
+            "invalid_student_id": "Mã số sinh viên phải có 8 ký tự và không chứa ký tự đặc biệt",
+            "required_name": "Tên là bắt buộc",
+            "short_name": "Tên phải có ít nhất 3 ký tự",
+            "required_age": "Tuổi là bắt buộc",
+            "min_age": "Tuổi phải lớn hơn hoặc bằng 18",
+            "integer_age": "Tuổi phải là số nguyên",
+            "required_grade": "Lớp học là bắt buộc"
+        }
     },
     "sidebar": {
         "title": "Quản lý Sinh Viên",
@@ -160,7 +178,13 @@
         "update": "Cập nhật",
         "status": "Trạng thái",
         "none": "Không có",
-        "confirm_delete": "Xác nhận xóa"
+        "confirm_delete": "Xác nhận xóa",
+        "confirm_cancel": "Xác nhận hủy",
+        "reason": "Lý do",
+        "cancel_failed": "Hủy thất bại",
+        "cancel_success": "Hủy thành công",
+        "fill_all_required": "Vui lòng nhập đầy đủ thông tin.",
+        "undefined_error": "Lỗi không xác định"
     },
     "days": {
         "day_of_week": "Thứ",
@@ -179,5 +203,39 @@
     "error": {
         "prefix": "Lỗi",
         "load_failed": "Đã xảy ra lỗi khi tải dữ liệu"
+    },
+    "enrollment": {
+        "management_title": "Quản lý đăng kí môn học",
+        "enter_class_code": "Nhập mã lớp học",
+        "enter_student_id": "Nhập mã số sinh viên",
+        "registered_date": "Ngày đăng kí",
+        "dropped_date": "Ngày hủy",
+        "register": {
+            "title": "Đăng ký môn học",
+            "description": "Thêm sinh viên vào lớp học.",
+            "enter_student_id": "Nhập mã số sinh viên",
+            "enter_class_code": "Nhập mã lớp học",
+            "register_success": "Đăng ký thành công",
+            "register_failed": "Đăng ký thất bại",
+            "no_matching_classes": "Không có lớp học nào phù hợp với tìm kiếm của bạn.",
+            "success": "Đăng ký thành công",
+            "failed": "Đăng ký thất bại",
+            "confirm_success": "Đã đăng ký lớp %{ registeredClassCode } thành công cho sinh viên ${ studentQuery }"
+        },
+        "drop": {
+            "title": "Hủy đăng ký khóa học",
+            "description": "Hủy đăng kí lớp học cho sinh viên",
+            "reason": "Lý do hủy đăng kí",
+            "enter_reason": "Nhập lý do hủy đăng kí",
+            "success": "Hủy đăng kí thành công",
+            "failed": "Hủy đăng kí thất bại",
+            "confirmation": "Bạn có chắc chắn muốn xóa sinh viên %{ studentId } khỏi lớp %{ classCode } không?",
+            "confirm_success": "Đã xóa sinh viên %{ studentId } khỏi lớp %{ classCode } thành công.",
+            "history": {
+                "no_data": "Không có lịch sử hủy đăng kí nào.",
+                "search_by_id": "Tra cứu lịch sử hủy đăng kí theo mã số sinh viên",
+                "loading_error": "Không thể tải lịch sử hủy đăng kí"
+            }
+        }
     }
 }

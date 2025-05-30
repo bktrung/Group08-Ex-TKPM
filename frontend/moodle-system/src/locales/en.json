@@ -2,7 +2,25 @@
     "student": {
         "student_list": "Student",
         "age": "Age",
-        "grade": "Grade"
+        "grade": "Grade",
+        "student_id": "Student ID",
+        "enter_student_id": "Enter student ID",
+        "status": {
+            "title": "Status",
+            "enter": "Enter status",
+            "no_data": "No statuses available. Please add a new status",
+            "error_action": "Error while %{action} status: %{message}"
+        },
+        "validation": {
+            "required_student_id": "Student ID is required",
+            "invalid_student_id": "Student ID must be 8 digits",
+            "required_name": "Name is required",
+            "min_length_name": "Name must be at least 3 characters",
+            "max_length_name": "Name must not exceed 50 characters",
+            "required_age": "Age is required",
+            "min_age": "Age must be at least 18",
+            "max_age": "Age must not exceed 100"
+        }
     },
     "sidebar": {
         "title": "Student Management",
@@ -159,7 +177,13 @@
         "update": "Update",
         "status": "Status",
         "none": "None",
-        "confirm_delete": "Confirm delete"
+        "confirm_delete": "Confirm delete",
+        "confirm_cancel": "Confirm cancel",
+        "reason": "Reason",
+        "cancel_failed": "Failed to cancel",
+        "cancel_success": "Successfully canceled",
+        "fill_all_required": "Please fill in all required information.",
+        "undefined_error": "Undefined error"
     },
     "days": {
         "day_of_week": "Day of week",
@@ -178,5 +202,39 @@
     "error": {
         "prefix": "Error",
         "load_failed": "An error occurred while loading data"
+    },
+    "enrollment": {
+        "management_title": "Course Enrollment Management",
+        "enter_class_code": "Enter class code",
+        "enter_student_id": "Enter student ID",
+        "registered_date": "Registered Date",
+        "dropped_date": "Dropped Date",
+        "register": {
+            "title": "Course Registration",
+            "description": "Add students to a class.",
+            "enter_student_id": "Enter student ID",
+            "enter_class_code": "Enter class code",
+            "register_success": "Registration successful",
+            "register_failed": "Registration failed",
+            "no_matching_classes": "No matching classes found for your search.",
+            "success": "Registration successful",
+            "failed": "Registration failed",
+            "confirm_success": "Successfully registered class %{ registeredClassCode } for student %{ studentQuery }"
+        },
+        "drop": {
+            "title": "Course Drop",
+            "description": "Drop a class for a student",
+            "reason": "Drop reason",
+            "enter_reason": "Enter the reason for dropping the class",
+            "success": "Successfully dropped the class",
+            "failed": "Failed to drop the class",
+            "confirmation": "Are you sure you want to remove student %{ studentId } from class %{ classCode }?",
+            "confirm_success": "Student %{ studentId } has been successfully removed from class %{ classCode }.",
+            "history": {
+                "no_data": "No drop history available.",
+                "search_by_id": "Search drop history by student ID",
+                "loading_error": "Unable to load drop history"
+            }
+        }
     }
 }
