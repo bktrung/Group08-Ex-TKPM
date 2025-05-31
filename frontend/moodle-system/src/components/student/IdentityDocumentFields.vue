@@ -155,7 +155,6 @@ export default {
     
     const internalDocument = ref({...identityDocument.value})
     
-    // Track touched state for each field
     const touched = ref({
       type: false,
       number: false,
@@ -167,19 +166,6 @@ export default {
       notes: false
     })
     
-    // Function to mark a field as touched
-    const onFieldTouched = (field) => {
-      touched.value[field] = true
-    }
-    
-    // Mark all fields as touched (useful when submitting the form)
-    const markAllFieldsTouched = () => {
-      Object.keys(touched.value).forEach(field => {
-        touched.value[field] = true
-      })
-    }
-    
-    // Validation state
     const isValid = ref({
       type: false,
       number: false,
@@ -200,125 +186,100 @@ export default {
       issuedCountry: false
     })
     
-    const validateDocumentNumber = () => {
-      const number = internalDocument.value.number
-      if (!number) {
-        isValid.value.number = false
-        isInvalid.value.number = number !== ''
-        return false
+    const validationRules = {
+      CMND: /^[0-9]{9}$/,
+      CCCD: /^[0-9]{12}$/,
+      PASSPORT: /^[A-Z][0-9]{8}$/
+    }
+    
+    const onFieldTouched = (field) => {
+      touched.value[field] = true
+    }
+    
+    const markAllFieldsTouched = () => {
+      Object.keys(touched.value).forEach(field => {
+        touched.value[field] = true
+      })
+    }
+    
+    const validateField = (field, value) => {
+      let isFieldValid = false
+      let isFieldInvalid = false
+      
+      switch (field) {
+        case 'type':
+          isFieldValid = ['CMND', 'CCCD', 'PASSPORT'].includes(value)
+          isFieldInvalid = !isFieldValid
+          break
+          
+        case 'number':
+          if (!value) {
+            isFieldValid = false
+            isFieldInvalid = value !== ''
+          } else {
+            const rule = validationRules[internalDocument.value.type]
+            isFieldValid = rule ? rule.test(value) : false
+            isFieldInvalid = !isFieldValid && value.length > 0
+          }
+          break
+          
+        case 'issueDate':
+          if (!value) {
+            isFieldValid = false
+            isFieldInvalid = false
+          } else {
+            isFieldValid = new Date(value) <= new Date()
+            isFieldInvalid = !isFieldValid
+          }
+          break
+          
+        case 'expiryDate':
+          if (!value) {
+            isFieldValid = false
+            isFieldInvalid = false
+          } else {
+            isFieldValid = new Date(value) > new Date()
+            isFieldInvalid = !isFieldValid
+          }
+          break
+          
+        case 'issuedBy':
+          isFieldValid = value && value.trim().length > 0
+          isFieldInvalid = !isFieldValid && value !== undefined && value !== null
+          break
+          
+        case 'hasChip':
+          if (internalDocument.value.type !== 'CCCD') {
+            isFieldValid = true
+            isFieldInvalid = false
+          } else {
+            isFieldValid = value !== undefined && value !== null
+            isFieldInvalid = !isFieldValid
+          }
+          break
+          
+        case 'issuedCountry':
+          if (internalDocument.value.type !== 'PASSPORT') {
+            isFieldValid = true
+            isFieldInvalid = false
+          } else {
+            isFieldValid = value && value.trim().length > 0
+            isFieldInvalid = !isFieldValid && value !== undefined
+          }
+          break
       }
       
-      let isValidNumber = false
+      isValid.value[field] = isFieldValid
+      isInvalid.value[field] = isFieldInvalid
       
-      if (internalDocument.value.type === 'CMND') {
-        // CMND must be 9 digits
-        isValidNumber = /^[0-9]{9}$/.test(number)
-      } else if (internalDocument.value.type === 'CCCD') {
-        // CCCD must be 12 digits
-        isValidNumber = /^[0-9]{12}$/.test(number)
-      } else if (internalDocument.value.type === 'PASSPORT') {
-        // Passport must be 1 uppercase letter followed by 8 digits
-        isValidNumber = /^[A-Z][0-9]{8}$/.test(number)
-      }
-      
-      isValid.value.number = isValidNumber
-      isInvalid.value.number = !isValidNumber && number.length > 0
-      
-      return isValidNumber
+      return isFieldValid
     }
     
-    const validateIssueDate = () => {
-      const issueDate = internalDocument.value.issueDate
-      if (!issueDate) {
-        isValid.value.issueDate = false
-        isInvalid.value.issueDate = false
-        return false
-      }
-      
-      const isValidDate = new Date(issueDate) <= new Date()
-      
-      isValid.value.issueDate = isValidDate
-      isInvalid.value.issueDate = !isValidDate
-      
-      return isValidDate
-    }
-    
-    const validateExpiryDate = () => {
-      const expiryDate = internalDocument.value.expiryDate
-      if (!expiryDate) {
-        isValid.value.expiryDate = false
-        isInvalid.value.expiryDate = false
-        return false
-      }
-      
-      const isValidDate = new Date(expiryDate) > new Date()
-      
-      isValid.value.expiryDate = isValidDate
-      isInvalid.value.expiryDate = !isValidDate
-      
-      return isValidDate
-    }
-    
-    const validateIssuedBy = () => {
-      const issuedBy = internalDocument.value.issuedBy
-      const isValidIssuedBy = issuedBy && issuedBy.trim().length > 0
-      
-      isValid.value.issuedBy = isValidIssuedBy
-      isInvalid.value.issuedBy = !isValidIssuedBy && issuedBy !== undefined && issuedBy !== null
-      
-      return isValidIssuedBy
-    }
-    
-    const validateType = () => {
-      const type = internalDocument.value.type
-      const isValidType = ['CMND', 'CCCD', 'PASSPORT'].includes(type)
-      
-      isValid.value.type = isValidType
-      isInvalid.value.type = !isValidType
-      
-      return isValidType
-    }
-    
-    const validateHasChip = () => {
-      if (internalDocument.value.type !== 'CCCD') {
-        isValid.value.hasChip = true
-        isInvalid.value.hasChip = false
-        return true
-      }
-      
-      const hasChip = internalDocument.value.hasChip
-      const isValidHasChip = hasChip !== undefined && hasChip !== null
-      
-      isValid.value.hasChip = isValidHasChip
-      isInvalid.value.hasChip = !isValidHasChip
-      
-      return isValidHasChip
-    }
-    
-    const validateIssuedCountry = () => {
-      if (internalDocument.value.type !== 'PASSPORT') {
-        isValid.value.issuedCountry = true
-        isInvalid.value.issuedCountry = false
-        return true
-      }
-      
-      const issuedCountry = internalDocument.value.issuedCountry
-      const isValidIssuedCountry = issuedCountry && issuedCountry.trim().length > 0
-      
-      isValid.value.issuedCountry = isValidIssuedCountry
-      isInvalid.value.issuedCountry = !isValidIssuedCountry && issuedCountry !== undefined
-      
-      return isValidIssuedCountry
-    }
-    
-    const validateAll = () => {
-      validateType()
-      validateDocumentNumber()
-      validateIssueDate()
-      validateExpiryDate()
-      validateIssuedBy()
-      validateHasChip()
-      validateIssuedCountry()
+    const validateAllFields = () => {
+      const fields = ['type', 'number', 'issueDate', 'expiryDate', 'issuedBy', 'hasChip', 'issuedCountry']
+      fields.forEach(field => {
+        validateField(field, internalDocument.value[field])
+      })
     }
     
     const handleTypeChange = () => {
@@ -337,7 +298,6 @@ export default {
         const newDocument = {...internalDocument.value}
         delete newDocument.hasChip
         
-        // Set defaults
         newDocument.issuedCountry = newDocument.issuedCountry || 'Vietnam'
         internalDocument.value = newDocument
       } 
@@ -350,53 +310,35 @@ export default {
       }
       
       touched.value.type = true
-      
-      validateAll()
-      
+      validateAllFields()
       emit('update:identityDocument', {...internalDocument.value})
     }
     
-    watch(() => internalDocument.value.number, () => {
-      validateDocumentNumber()
-      emit('update:identityDocument', {...internalDocument.value})
-    })
+    const setupFieldWatchers = () => {
+      const fieldWatchers = [
+        'number', 'issueDate', 'expiryDate', 'issuedBy', 'hasChip', 'issuedCountry'
+      ]
+      
+      fieldWatchers.forEach(field => {
+        watch(() => internalDocument.value[field], (newValue) => {
+          validateField(field, newValue)
+          emit('update:identityDocument', {...internalDocument.value})
+        })
+      })
+    }
     
-    watch(() => internalDocument.value.issueDate, () => {
-      validateIssueDate()
-      emit('update:identityDocument', {...internalDocument.value})
-    })
+    const setupPropsWatcher = () => {
+      watch(identityDocument, (newValue) => {
+        if (JSON.stringify(internalDocument.value) !== JSON.stringify(newValue)) {
+          internalDocument.value = {...newValue}
+          validateAllFields()
+        }
+      }, { deep: true })
+    }
     
-    watch(() => internalDocument.value.expiryDate, () => {
-      validateExpiryDate()
-      emit('update:identityDocument', {...internalDocument.value})
-    })
-    
-    watch(() => internalDocument.value.issuedBy, () => {
-      validateIssuedBy()
-      emit('update:identityDocument', {...internalDocument.value})
-    })
-    
-    watch(() => internalDocument.value.hasChip, () => {
-      validateHasChip()
-      emit('update:identityDocument', {...internalDocument.value})
-    })
-    
-    watch(() => internalDocument.value.issuedCountry, () => {
-      validateIssuedCountry()
-      emit('update:identityDocument', {...internalDocument.value})
-    })
-    
-    // Watch for prop changes
-    watch(identityDocument, (newValue) => {
-      if (JSON.stringify(internalDocument.value) !== JSON.stringify(newValue)) {
-        internalDocument.value = {...newValue}
-        // Validate after updating from props, but don't mark as touched
-        validateAll()
-      }
-    }, { deep: true })
-    
-    // Initial validation on setup
-    validateAll()
+    setupFieldWatchers()
+    setupPropsWatcher()
+    validateAllFields()
     
     return {
       internalDocument,

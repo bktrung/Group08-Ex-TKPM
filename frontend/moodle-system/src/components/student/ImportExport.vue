@@ -136,182 +136,186 @@
     </div>
   </template>
   
-  <script>
-  import { ref, onMounted } from 'vue'
-  import { useStore } from 'vuex'
-  import { Modal } from 'bootstrap'
-  
-  export default {
-    name: 'ImportExport',
-    setup() {
-      const store = useStore()
-      const fileInput = ref(null)
-      const selectedFile = ref(null)
-      const loading = ref(false)
-      const importResultModalRef = ref(null)
-      const helpModalRef = ref(null)
-      let importResultModal = null
-      let helpModal = null
-      
-      const importResult = ref({
-        success: false,
-        message: '',
-        errors: []
-      })
-      
-      const handleFileChange = (event) => {
-        selectedFile.value = event.target.files[0] || null
+<script>
+import { ref, onMounted } from 'vue'
+import { useStore } from 'vuex'
+import { Modal } from 'bootstrap'
+
+export default {
+  name: 'ImportExport',
+  setup() {
+    const store = useStore()
+    const fileInput = ref(null)
+    const selectedFile = ref(null)
+    const loading = ref(false)
+    const importResultModalRef = ref(null)
+    const helpModalRef = ref(null)
+    let importResultModal = null
+    let helpModal = null
+    
+    const importResult = ref({
+      success: false,
+      message: '',
+      errors: []
+    })
+    
+    const handleFileChange = (event) => {
+      selectedFile.value = event.target.files[0] || null
+    }
+    
+    const exportData = (format) => {
+      store.dispatch('student/exportStudents', format)
+    }
+    
+    const importData = async () => {
+      if (!selectedFile.value) {
+        alert('Vui lòng chọn tệp để import')
+        return
       }
       
-      const exportData = (format) => {
-        store.dispatch('student/exportStudents', format)
-      }
+      loading.value = true
       
-      const importData = async () => {
-        if (!selectedFile.value) {
-          alert('Vui lòng chọn tệp để import')
-          return
+      try {
+        const formData = new FormData()
+        formData.append('file', selectedFile.value)
+        
+        const result = await store.dispatch('student/importStudents', formData)
+        
+        importResult.value = {
+          success: result.status === 200 || result.status === 201,
+          message: result.message || 'Import dữ liệu thành công',
+          errors: result.metadata?.errors || []
         }
         
-        loading.value = true
-        
-        try {
-          const formData = new FormData()
-          formData.append('file', selectedFile.value)
-          
-          const result = await store.dispatch('student/importStudents', formData)
-          
-          importResult.value = {
-            success: result.status === 200 || result.status === 201,
-            message: result.message || 'Import dữ liệu thành công',
-            errors: result.metadata?.errors || []
-          }
-          
-          if (importResultModal) {
-            importResultModal.show()
-          }
-          
-          // Refresh student list if import was successful
-          if (importResult.value.success) {
-            await store.dispatch('student/fetchStudents', { page: 1 })
-          }
-        } catch (error) {
-          importResult.value = {
-            success: false,
-            message: `Lỗi: ${error.message}`,
-            errors: []
-          }
-          
-          if (importResultModal) {
-            importResultModal.show()
-          }
-        } finally {
-          loading.value = false
-          if (fileInput.value) {
-            fileInput.value.value = ''
-          }
-          selectedFile.value = null
-        }
-      }
-      
-      const showHelpModal = () => {
-        if (helpModal) {
-          helpModal.show()
-        }
-      }
-      
-      const downloadTemplate = () => {
-        const fileType = selectedFile.value ? 
-          selectedFile.value.name.split('.').pop().toLowerCase() : 'csv'
-        
-        if (fileType === 'json') {
-          downloadJSONTemplate()
-        } else {
-          downloadCSVTemplate()
-        }
-      }
-      
-      const downloadCSVTemplate = () => {
-        const csvHeader = "studentId,fullName,dateOfBirth,gender,department,schoolYear,program,email,phoneNumber,status,identityDocument.type,identityDocument.number,identityDocument.issueDate,identityDocument.issuedBy,identityDocument.expiryDate,nationality,mailingAddress.houseNumberStreet,mailingAddress.wardCommune,mailingAddress.districtCounty,mailingAddress.provinceCity,mailingAddress.country"
-        const csvExample = "22000001,Nguyễn Văn A,1999-01-15,Nam,Công Nghệ Thông Tin,2022,Kỹ Sư,nguyenvana@example.com,0901234567,Đang học,CMND,123456789,2015-01-01,CA TP.HCM,2025-01-01,Vietnamese,123 Đường A,Phường B,Quận C,TP.HCM,Việt Nam"
-        
-        const csvContent = csvHeader + "\n" + csvExample
-        downloadFile(csvContent, 'student_import_template.csv', 'text/csv;charset=utf-8;')
-      }
-      
-      const downloadJSONTemplate = () => {
-        const jsonTemplate = [
-          {
-            "studentId": "22000001",
-            "fullName": "Nguyễn Văn A",
-            "dateOfBirth": "1999-01-15",
-            "gender": "Nam",
-            "department": "Công Nghệ Thông Tin",
-            "schoolYear": 2022,
-            "program": "Kỹ Sư",
-            "email": "nguyenvana@example.com",
-            "phoneNumber": "0901234567",
-            "status": "Đang học",
-            "identityDocument": {
-              "type": "CMND",
-              "number": "123456789",
-              "issueDate": "2015-01-01",
-              "issuedBy": "CA TP.HCM",
-              "expiryDate": "2025-01-01"
-            },
-            "nationality": "Vietnamese",
-            "mailingAddress": {
-              "houseNumberStreet": "123 Đường A",
-              "wardCommune": "Phường B",
-              "districtCounty": "Quận C",
-              "provinceCity": "TP.HCM",
-              "country": "Việt Nam"
-            }
-          }
-        ]
-        
-        const jsonString = JSON.stringify(jsonTemplate, null, 2)
-        downloadFile(jsonString, 'student_import_template.json', 'application/json')
-      }
-      
-      const downloadFile = (content, filename, contentType) => {
-        const blob = new Blob([content], { type: contentType })
-        const url = URL.createObjectURL(blob)
-        
-        const link = document.createElement('a')
-        link.href = url
-        link.setAttribute('download', filename)
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
-      }
-      
-      onMounted(() => {
-        // Initialize Bootstrap modals
-        const importResultModalElement = document.getElementById('importResultModal')
-        if (importResultModalElement) {
-          importResultModal = new Modal(importResultModalElement)
+        if (importResultModal) {
+          importResultModal.show()
         }
         
-        const helpModalElement = document.getElementById('importHelpModal')
-        if (helpModalElement) {
-          helpModal = new Modal(helpModalElement)
+        if (importResult.value.success) {
+          await store.dispatch('student/fetchStudents', { page: 1 })
         }
-      })
-      
-      return {
-        fileInput,
-        selectedFile,
-        loading,
-        importResult,
-        importResultModalRef,
-        helpModalRef,
-        handleFileChange,
-        exportData,
-        importData,
-        showHelpModal,
-        downloadTemplate
+      } catch (error) {
+        importResult.value = {
+          success: false,
+          message: `Lỗi: ${error.message}`,
+          errors: []
+        }
+        
+        if (importResultModal) {
+          importResultModal.show()
+        }
+      } finally {
+        loading.value = false
+        resetFileInput()
       }
     }
+    
+    const resetFileInput = () => {
+      if (fileInput.value) {
+        fileInput.value.value = ''
+      }
+      selectedFile.value = null
+    }
+    
+    const showHelpModal = () => {
+      if (helpModal) {
+        helpModal.show()
+      }
+    }
+    
+    const downloadTemplate = () => {
+      const fileType = selectedFile.value ? 
+        selectedFile.value.name.split('.').pop().toLowerCase() : 'csv'
+      
+      if (fileType === 'json') {
+        downloadJSONTemplate()
+      } else {
+        downloadCSVTemplate()
+      }
+    }
+    
+    const downloadCSVTemplate = () => {
+      const csvHeader = "studentId,fullName,dateOfBirth,gender,department,schoolYear,program,email,phoneNumber,status,identityDocument.type,identityDocument.number,identityDocument.issueDate,identityDocument.issuedBy,identityDocument.expiryDate,nationality,mailingAddress.houseNumberStreet,mailingAddress.wardCommune,mailingAddress.districtCounty,mailingAddress.provinceCity,mailingAddress.country"
+      const csvExample = "22000001,Nguyễn Văn A,1999-01-15,Nam,Công Nghệ Thông Tin,2022,Kỹ Sư,nguyenvana@example.com,0901234567,Đang học,CMND,123456789,2015-01-01,CA TP.HCM,2025-01-01,Vietnamese,123 Đường A,Phường B,Quận C,TP.HCM,Việt Nam"
+      
+      const csvContent = csvHeader + "\n" + csvExample
+      downloadFile(csvContent, 'student_import_template.csv', 'text/csv;charset=utf-8;')
+    }
+    
+    const downloadJSONTemplate = () => {
+      const jsonTemplate = [
+        {
+          "studentId": "22000001",
+          "fullName": "Nguyễn Văn A",
+          "dateOfBirth": "1999-01-15",
+          "gender": "Nam",
+          "department": "Công Nghệ Thông Tin",
+          "schoolYear": 2022,
+          "program": "Kỹ Sư",
+          "email": "nguyenvana@example.com",
+          "phoneNumber": "0901234567",
+          "status": "Đang học",
+          "identityDocument": {
+            "type": "CMND",
+            "number": "123456789",
+            "issueDate": "2015-01-01",
+            "issuedBy": "CA TP.HCM",
+            "expiryDate": "2025-01-01"
+          },
+          "nationality": "Vietnamese",
+          "mailingAddress": {
+            "houseNumberStreet": "123 Đường A",
+            "wardCommune": "Phường B",
+            "districtCounty": "Quận C",
+            "provinceCity": "TP.HCM",
+            "country": "Việt Nam"
+          }
+        }
+      ]
+      
+      const jsonString = JSON.stringify(jsonTemplate, null, 2)
+      downloadFile(jsonString, 'student_import_template.json', 'application/json')
+    }
+    
+    const downloadFile = (content, filename, contentType) => {
+      const blob = new Blob([content], { type: contentType })
+      const url = URL.createObjectURL(blob)
+      
+      const link = document.createElement('a')
+      link.href = url
+      link.setAttribute('download', filename)
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+    }
+    
+    const initializeModals = () => {
+      const importResultModalElement = document.getElementById('importResultModal')
+      if (importResultModalElement) {
+        importResultModal = new Modal(importResultModalElement)
+      }
+      
+      const helpModalElement = document.getElementById('importHelpModal')
+      if (helpModalElement) {
+        helpModal = new Modal(helpModalElement)
+      }
+    }
+    
+    onMounted(initializeModals)
+    
+    return {
+      fileInput,
+      selectedFile,
+      loading,
+      importResult,
+      importResultModalRef,
+      helpModalRef,
+      handleFileChange,
+      exportData,
+      importData,
+      showHelpModal,
+      downloadTemplate
+    }
   }
-  </script>
+}
+</script>

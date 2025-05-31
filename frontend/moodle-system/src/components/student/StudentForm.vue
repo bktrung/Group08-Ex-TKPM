@@ -288,25 +288,6 @@ export default {
       }
     })
     
-    // Handler for address updates from child component
-    const onAddressUpdate = (type, newValue) => {
-      if (!newValue) return;
-      
-      switch(type) {
-        case 'mailing':
-          form.value.mailingAddress = {...newValue};
-          break;
-        case 'permanent':
-          form.value.permanentAddress = {...newValue};
-          break;
-        case 'temporary':
-          form.value.temporaryAddress = {...newValue};
-          break;
-      }
-      console.log(`Address updated (${type}):`, form.value[`${type}Address`]);
-    }
-    
-    // Validation rules
     const rules = computed(() => {
       return {
         studentId: { 
@@ -370,23 +351,26 @@ export default {
       }
       
       const validTransitions = store.getters['status/getValidTransitionsForStatus'](currentStatusId.value)
-      
       const currentStatus = statusTypes.value.find(status => status._id === currentStatusId.value)
       return [currentStatus, ...validTransitions].filter(Boolean)
     })
     
-    const loadData = async () => {
-      await Promise.all([
-        store.dispatch('department/fetchDepartments'),
-        store.dispatch('program/fetchPrograms'),
-        store.dispatch('status/fetchStatusTypes'),
-        store.dispatch('status/fetchStatusTransitions'),
-        store.dispatch('status/fetchCountries'),
-        store.dispatch('status/fetchNationalities')
-      ])
+    const onAddressUpdate = (type, newValue) => {
+      if (!newValue) return
+      
+      switch(type) {
+        case 'mailing':
+          form.value.mailingAddress = {...newValue}
+          break
+        case 'permanent':
+          form.value.permanentAddress = {...newValue}
+          break
+        case 'temporary':
+          form.value.temporaryAddress = {...newValue}
+          break
+      }
     }
     
-    // This is the function that will be passed to AddressFields component
     const fetchLocationData = async (geonameId) => {
       try {
         const response = await store.dispatch('status/fetchLocationChildren', geonameId)
@@ -402,7 +386,6 @@ export default {
     }
     
     const handleSubmit = async () => {
-      // Mark all identity document fields as touched for validation
       if (identityDocFields.value && typeof identityDocFields.value.markAllFieldsTouched === 'function') {
         identityDocFields.value.markAllFieldsTouched()
       }
@@ -410,10 +393,8 @@ export default {
       const isValid = await v$.value.$validate()
       if (!isValid) return
       
-      // Create a deep copy of the form data to avoid reference issues
       const studentData = JSON.parse(JSON.stringify(form.value))
       
-      // Process addresses to ensure they're properly included
       if (!studentData.permanentAddress || !studentData.permanentAddress.houseNumberStreet) {
         delete studentData.permanentAddress
       }
@@ -422,40 +403,34 @@ export default {
         delete studentData.temporaryAddress
       }
       
-      console.log('Form data before submit:', studentData)
       emit('submit', studentData)
     }
     
-    watch(() => props.studentData, (newValue) => {
+    const initializeFormData = (newValue) => {
       if (newValue && Object.keys(newValue).length > 0) {
         const studentDataCopy = JSON.parse(JSON.stringify(newValue))
-        const currentFormState = JSON.stringify(form.value)
-        const newDataState = JSON.stringify({...form.value, ...studentDataCopy})
         
-        if (currentFormState !== newDataState) {
-          Object.keys(form.value).forEach(key => {
-            if (key in studentDataCopy) {
-              if (key === 'mailingAddress' || key === 'permanentAddress' || key === 'temporaryAddress') {
-                form.value[key] = {
-                  houseNumberStreet: studentDataCopy[key]?.houseNumberStreet || '',
-                  wardCommune: studentDataCopy[key]?.wardCommune || '',
-                  districtCounty: studentDataCopy[key]?.districtCounty || '',
-                  provinceCity: studentDataCopy[key]?.provinceCity || '',
-                  country: studentDataCopy[key]?.country || ''
-                }
-              } else if (key === 'identityDocument') {
-                form.value[key] = {
-                  ...form.value[key],
-                  ...studentDataCopy[key]
-                }
-              } else {
-                form.value[key] = studentDataCopy[key]
+        Object.keys(form.value).forEach(key => {
+          if (key in studentDataCopy) {
+            if (key === 'mailingAddress' || key === 'permanentAddress' || key === 'temporaryAddress') {
+              form.value[key] = {
+                houseNumberStreet: studentDataCopy[key]?.houseNumberStreet || '',
+                wardCommune: studentDataCopy[key]?.wardCommune || '',
+                districtCounty: studentDataCopy[key]?.districtCounty || '',
+                provinceCity: studentDataCopy[key]?.provinceCity || '',
+                country: studentDataCopy[key]?.country || ''
               }
+            } else if (key === 'identityDocument') {
+              form.value[key] = {
+                ...form.value[key],
+                ...studentDataCopy[key]
+              }
+            } else {
+              form.value[key] = studentDataCopy[key]
             }
-          })
-        }
+          }
+        })
         
-        // Format date of birth
         if (studentDataCopy.dateOfBirth) {
           form.value.dateOfBirth = new Date(studentDataCopy.dateOfBirth).toISOString().split('T')[0]
         }
@@ -491,11 +466,22 @@ export default {
           form.value.status = currentStatusId.value
         }
       }
-    }, { immediate: true, deep: true })
+    }
     
-    onMounted(async () => {
-      await loadData()
-    })
+    const loadData = async () => {
+      await Promise.all([
+        store.dispatch('department/fetchDepartments'),
+        store.dispatch('program/fetchPrograms'),
+        store.dispatch('status/fetchStatusTypes'),
+        store.dispatch('status/fetchStatusTransitions'),
+        store.dispatch('status/fetchCountries'),
+        store.dispatch('status/fetchNationalities')
+      ])
+    }
+    
+    watch(() => props.studentData, initializeFormData, { immediate: true, deep: true })
+    
+    onMounted(loadData)
     
     return {
       form,
