@@ -182,7 +182,7 @@ export default {
         }
 
         const viewClass = (course) => {
-            emit('select-course', course)  // Phát sự kiện với khóa học đã chọn
+            emit('select-course', course)
         }
 
         return {

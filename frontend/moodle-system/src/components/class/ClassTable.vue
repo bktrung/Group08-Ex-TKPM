@@ -146,10 +146,8 @@ export default {
     emits: ['register'],
     setup(props, { emit }) {
         const { t } = useI18n()
-        console.log(t('department.add_department'))
         const store = useStore()
 
-        // State
         const selectedClass = ref(null)
         const error = ref('')
         const currentPage = ref(1)
@@ -157,7 +155,6 @@ export default {
         const scheduleModalRef = ref(null)
         let scheduleModal = null
 
-        // Computed properties
         const classes = computed(() => store.state.class.classes)
 
         const filteredClasses = computed(() => {
@@ -178,7 +175,6 @@ export default {
 
         const loading = computed(() => store.state.classes?.loading || false)
 
-        // Methods
         const changePage = (page) => {
             if (page >= 1 && page <= totalPages.value) {
                 currentPage.value = page
@@ -212,19 +208,25 @@ export default {
             return 'bg-success'
         }
 
-        // Lifecycle
-        onMounted(async () => {
-            try {
-                if (scheduleModalRef.value) {
-                    scheduleModal = new Modal(scheduleModalRef.value)
-                }
+        const initializeModal = () => {
+            if (scheduleModalRef.value) {
+                scheduleModal = new Modal(scheduleModalRef.value)
+            }
+        }
 
+        const loadClassData = async () => {
+            try {
                 await store.dispatch('class/fetchClasses')
             } catch (err) {
-                console.error('Error loading data:', err);
+                console.error('Error loading data:', err)
                 const msg = err.message || t('error.load_failed')
                 error.value = `${t('error.prefix')}: ${msg}`
             }
+        }
+
+        onMounted(async () => {
+            initializeModal()
+            await loadClassData()
         })
 
         return {

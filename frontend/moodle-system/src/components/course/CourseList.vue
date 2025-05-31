@@ -186,24 +186,19 @@ export default {
     const courseToDelete = ref(null)
     const courseToToggle = ref(null)
     
-    // Modal refs
     const deleteModalRef = ref(null)
     const toggleStatusModalRef = ref(null)
     
-    // Bootstrap modal instances
     let deleteModal = null
     let toggleStatusModal = null
     
-    // Computed properties
     const courses = computed(() => {
-      // Safely handle if courses is not an array
       const coursesData = store.state.course.courses
       return Array.isArray(coursesData) ? coursesData : []
     })
     
     const loading = computed(() => store.state.course.loading)
     
-    // Filtered courses
     const filteredCourses = computed(() => {
       if (!searchQuery.value) {
         return courses.value
@@ -216,7 +211,6 @@ export default {
       )
     })
     
-    // Pagination
     const totalPages = computed(() => {
       return Math.ceil(filteredCourses.value.length / pageSize.value) || 1
     })
@@ -227,7 +221,6 @@ export default {
       return filteredCourses.value.slice(start, end)
     })
     
-    // Methods
     const filterCourses = () => {
       currentPage.value = 1
     }
@@ -243,7 +236,6 @@ export default {
       }
     }
     
-    // Event emitter methods
     const addCourse = () => {
       emit('add-course')
     }
@@ -252,7 +244,6 @@ export default {
       emit('edit-course', course)
     }
     
-    // Delete course methods
     const confirmDelete = (course) => {
       courseToDelete.value = course
       if (deleteModal) {
@@ -269,7 +260,6 @@ export default {
       }
     }
     
-    // Toggle status methods
     const toggleActiveStatus = (course) => {
       courseToToggle.value = course
       if (toggleStatusModal) {
@@ -286,16 +276,13 @@ export default {
       }
     }
     
-    // Helper methods
     const getDepartmentName = (departmentId) => {
       if (!departmentId) return 'N/A'
       
-      // If department is already an object with name
       if (typeof departmentId === 'object' && departmentId.name) {
         return departmentId.name
       }
       
-      // Get department from store
       const department = store.getters['department/getDepartmentById'](
         typeof departmentId === 'object' ? departmentId._id : departmentId
       )
@@ -308,12 +295,10 @@ export default {
       }
       
       return prerequisites.map(prereq => {
-        // If prereq is already an object with courseCode and name
         if (typeof prereq === 'object' && prereq.courseCode && prereq.name) {
           return `${prereq.courseCode} - ${prereq.name}`
         }
         
-        // Find the course by ID
         const course = courses.value.find(c => 
           c._id === (typeof prereq === 'object' ? prereq._id : prereq)
         )
@@ -324,7 +309,6 @@ export default {
     const canDelete = (course) => {
       if (!course.createdAt) return false
       
-      // Check if course was created less than 30 minutes ago
       const createdAt = new Date(course.createdAt)
       const now = new Date()
       const diffInMinutes = Math.floor((now - createdAt) / (1000 * 60))
@@ -332,20 +316,19 @@ export default {
       return diffInMinutes <= 30 && !course.hasClasses
     }
     
-    // Initialize modals on component mount
-    onMounted(() => {
-      // Initialize delete modal
+    const initializeModals = () => {
       const deleteModalElement = document.getElementById('deleteModal')
       if (deleteModalElement) {
         deleteModal = new Modal(deleteModalElement)
       }
       
-      // Initialize toggle status modal
       const toggleStatusModalElement = document.getElementById('toggleStatusModal')
       if (toggleStatusModalElement) {
         toggleStatusModal = new Modal(toggleStatusModalElement)
       }
-    })
+    }
+    
+    onMounted(initializeModals)
     
     return {
       searchQuery,

@@ -142,7 +142,6 @@ export default {
   setup(props, { emit }) {
     const store = useStore()
     
-    // Create a reactive form state that's separate from the props
     const formState = reactive({
       courseCode: '',
       name: '',
@@ -155,14 +154,11 @@ export default {
     const loading = ref(false)
     const validationErrors = reactive({})
     
-    // Get departments and courses from store
     const departments = computed(() => store.state.department.departments)
     const courses = computed(() => store.state.course.courses || [])
     
-    // Filter available courses for prerequisites (exclude current course if editing)
     const availableCourses = computed(() => {
       return courses.value.filter(course => {
-        // If editing, exclude the current course
         if (props.isEditing && course.courseCode === formState.courseCode) {
           return false
         }
@@ -170,51 +166,21 @@ export default {
       })
     })
     
-    watch(() => props.courseData, (newData) => {
-      if (newData && Object.keys(newData).length > 0) {
-        formState.courseCode = newData.courseCode || ''
-        formState.name = newData.name || ''
-        formState.credits = newData.credits || 3
-        
-        if (newData.department) {
-          formState.department = typeof newData.department === 'object' 
-            ? newData.department._id 
-            : newData.department
-        } else {
-          formState.department = ''
-        }
-        
-        formState.description = newData.description || ''
-        
-        if (newData.prerequisites && Array.isArray(newData.prerequisites)) {
-          formState.prerequisites = newData.prerequisites.map(prereq => 
-            typeof prereq === 'object' ? prereq._id : prereq
-          )
-        } else {
-          formState.prerequisites = []
-        }
-      }
-    }, { immediate: true, deep: true })
-    
-    // Validate form data
     const validateForm = () => {
       const errors = {}
       
-      // Validate course code (only if not editing)
       if (!props.isEditing && !formState.courseCode.trim()) {
         errors.courseCode = 'Mã khóa học không được để trống'
       } else if (!props.isEditing && !/^[A-Za-z0-9]{3,10}$/.test(formState.courseCode)) {
         errors.courseCode = 'Mã khóa học phải có 3-10 ký tự và không chứa ký tự đặc biệt'
       }
       
-      // Validate name
       if (!formState.name.trim()) {
         errors.name = 'Tên khóa học không được để trống'
       } else if (formState.name.length < 3) {
         errors.name = 'Tên khóa học phải có ít nhất 3 ký tự'
       }
       
-      // Validate credits
       if (!formState.credits) {
         errors.credits = 'Số tín chỉ không được để trống'
       } else if (formState.credits < 2) {
@@ -223,12 +189,10 @@ export default {
         errors.credits = 'Số tín chỉ phải là số nguyên'
       }
       
-      // Validate department
       if (!formState.department) {
         errors.department = 'Vui lòng chọn khoa'
       }
       
-      // Validate description
       if (!formState.description.trim()) {
         errors.description = 'Mô tả khóa học không được để trống'
       } else if (formState.description.length < 10) {
@@ -239,7 +203,6 @@ export default {
       return Object.keys(errors).length === 0
     }
     
-    // Submit form
     const submitForm = async () => {
       if (!validateForm()) {
         return
@@ -265,21 +228,53 @@ export default {
       }
     }
     
-    // Cancel form
     const cancelForm = () => {
       emit('cancel')
     }
     
-    // Load initial data
-    onMounted(async () => {
+    const initializeForm = (newData) => {
+      if (newData && Object.keys(newData).length > 0) {
+        formState.courseCode = newData.courseCode || ''
+        formState.name = newData.name || ''
+        formState.credits = newData.credits || 3
+        
+        if (newData.department) {
+          formState.department = typeof newData.department === 'object' 
+            ? newData.department._id 
+            : newData.department
+        } else {
+          formState.department = ''
+        }
+        
+        formState.description = newData.description || ''
+        
+        if (newData.prerequisites && Array.isArray(newData.prerequisites)) {
+          formState.prerequisites = newData.prerequisites.map(prereq => 
+            typeof prereq === 'object' ? prereq._id : prereq
+          )
+        } else {
+          formState.prerequisites = []
+        }
+      }
+    }
+    
+    const loadInitialData = async () => {
+      const promises = []
+      
       if (departments.value.length === 0) {
-        await store.dispatch('department/fetchDepartments')
+        promises.push(store.dispatch('department/fetchDepartments'))
       }
       
       if (courses.value.length === 0) {
-        await store.dispatch('course/fetchCourses')
+        promises.push(store.dispatch('course/fetchCourses'))
       }
-    })
+      
+      await Promise.all(promises)
+    }
+    
+    watch(() => props.courseData, initializeForm, { immediate: true, deep: true })
+    
+    onMounted(loadInitialData)
     
     return {
       formState,
