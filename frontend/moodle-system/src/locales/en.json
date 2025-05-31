@@ -5,6 +5,7 @@
         "add_student": "Add Student",
         "edit_student": "Edit Student",
         "add_success": "Successfully added student",
+        "update_success": "Successfully updated student",
         "management": "Student Management",
         "grade": "Grade",
         "student_id": "Student ID",
@@ -67,6 +68,7 @@
             }
         },
         "no_data": "No students found in the database. Please add a new student",
+        "no_exist": "No student found with this ID",
         "import_export_title": "Import / Export Student Data",
         "import": {
             "title": "Import Data",
@@ -356,5 +358,12 @@
                 "loading_error": "Unable to load drop history"
             }
         }
+    },
+    "program": {
+        "management": "Program Management",
+        "title": "Program",
+        "name": "Program Name",
+        "no_data": "No programs available. Please add a new program",
+        "enter": "Enter program"
     }
 }

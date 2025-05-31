@@ -5,6 +5,7 @@
         "add_student": "Thêm sinh viên",
         "edit_student": "Sửa thông tin sinh viên",
         "add_success": "Thêm sinh viên thành công",
+        "update_success": "Cập nhật thông tin sinh viên thành công",
         "management": "Quản lí sinh viên",
         "grade": "Lớp học",
         "student_id": "Mã số sinh viên",
@@ -61,6 +62,7 @@
             "confirm": "Bạn có chắc chắn muốn xóa sinh viên"
         },
         "no_data": "Chưa có sinh viên nào trong cơ sở dữ liệu. Vui lòng thêm sinh viên mới",
+        "no_exist": "Không tìm thấy sinh viên nào với mã số này",
         "import_export_title": "Import / Export Dữ Liệu Sinh Viên",
         "import": {
             "title": "Import Dữ Liệu",
@@ -351,5 +353,12 @@
                 "loading_error": "Không thể tải lịch sử hủy đăng kí"
             }
         }
+    },
+    "program": {
+        "managemnt": "Quản lý Chương trình",
+        "title": "Chương trình",
+        "name": "Tên Chương trình",
+        "no_data": "Không có chương trình nào. Vui lòng thêm chương trình mới",
+        "enter": "Nhập chương trình"
     }
 }
