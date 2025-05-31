@@ -1,9 +1,19 @@
 {
     "student": {
-        "student_list": "Học sinh",
-        "age": "Tuổi",
+        "student": "Sinh viên",
+        "management": "Quản lí sinh viên",
         "grade": "Lớp học",
         "student_id": "Mã số sinh viên",
+        "name": "Tên sinh viên",
+        "dob": "Ngày sinh",
+        "gender": "Giới tính",
+        "department": "Khoa",
+        "course": "Khóa",
+        "program": "Chương trình",
+        "address": "Địa chỉ",
+        "email": "Email",
+        "phone": "Số điện thoại",
+        "all_deparments": "Tất cả khoa",
         "enter_student_id": "Nhập mã số sinh viên",
         "status": {
             "title": "Tình trạng",
@@ -20,6 +30,39 @@
             "min_age": "Tuổi phải lớn hơn hoặc bằng 18",
             "integer_age": "Tuổi phải là số nguyên",
             "required_grade": "Lớp học là bắt buộc"
+        },
+        "delete": {
+            "confirm": "Bạn có chắc chắn muốn xóa sinh viên"
+        },
+        "no_data": "Chưa có sinh viên nào trong cơ sở dữ liệu. Vui lòng thêm sinh viên mới",
+        "import_export_title": "Import / Export Dữ Liệu Sinh Viên",
+        "import": {
+            "title": "Import Dữ Liệu",
+            "label": "Chọn tệp dữ liệu (CSV, JSON, XML, Excel)",
+            "supported": "Hỗ trợ định dạng CSV, JSON, XML và Excel.",
+            "button": "Import Dữ Liệu",
+            "loading": "Đang nhập...",
+            "view_help": "Xem hướng dẫn",
+            "result": {
+                "title": "Kết Quả Import",
+                "success": "Import thành công.",
+                "error": "Import thất bại.",
+                "details": "Chi tiết lỗi:"
+            },
+            "help": {
+                "title": "Hướng dẫn Import Dữ Liệu",
+                "csv_structure": "Cấu trúc tệp CSV",
+                "csv_columns": "Tệp CSV cần có các cột sau",
+                "json_structure": "Cấu trúc tệp JSON",
+                "json_required": "Tệp JSON cần có cấu trúc sau",
+                "download_template": "Tải mẫu"
+            },
+            "validation": {
+                "file_required": "Vui lòng chọn tệp"
+            }
+        },
+        "export": {
+            "title": "Export Dữ Liệu"
         }
     },
     "sidebar": {
@@ -169,6 +212,8 @@
         "number": "STT",
         "previous": "Trước",
         "next": "Sau",
+        "download": "Tải xuống",
+        "download_template": "Tải mẫu",
         "error_action": "Lỗi khi {{ action }} {{ target }}: {{ message }}",
         "no_result": "Không có kết quả nào phù hợp với tìm kiếm của bạn.",
         "choose": "Chọn",
@@ -184,7 +229,8 @@
         "cancel_failed": "Hủy thất bại",
         "cancel_success": "Hủy thành công",
         "fill_all_required": "Vui lòng nhập đầy đủ thông tin.",
-        "undefined_error": "Lỗi không xác định"
+        "undefined_error": "Lỗi không xác định",
+        "error_detail": "Chi tiết lỗi"
     },
     "days": {
         "day_of_week": "Thứ",

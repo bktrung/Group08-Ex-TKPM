@@ -1,9 +1,19 @@
 {
     "student": {
-        "student_list": "Student",
-        "age": "Age",
+        "title": "Student",
+        "management": "Student Management",
         "grade": "Grade",
         "student_id": "Student ID",
+        "name": "Name",
+        "dob": "Date of Birth",
+        "gender": "Gender",
+        "department": "Department",
+        "course": "Course",
+        "program": "Program",
+        "address": "Address",
+        "email": "Email",
+        "phone": "Phone Number",
+        "all_deparments": "All Departments",
         "enter_student_id": "Enter student ID",
         "status": {
             "title": "Status",
@@ -20,6 +30,45 @@
             "required_age": "Age is required",
             "min_age": "Age must be at least 18",
             "max_age": "Age must not exceed 100"
+        },
+        "delete": {
+            "confirm": "Are you sure you want to delete student",
+            "note": "Note: The student can only be deleted if they have no registered classes and was created within 30 minutes.",
+            "success": "Successfully deleted student %{name}!",
+            "error": {
+                "prefix": "Error:",
+                "fallback": "An error occurred while deleting the student"
+            }
+        },
+        "no_data": "No students found in the database. Please add a new student",
+        "import_export_title": "Import / Export Student Data",
+        "import": {
+            "title": "Import Data",
+            "label": "Select a data file (CSV, JSON, XML, Excel)",
+            "supported": "Supported formats: CSV, JSON, XML, and Excel.",
+            "button": "Import Data",
+            "loading": "Importing...",
+            "view_help": "View Help",
+            "result": {
+                "title": "Import Result",
+                "success": "Import successful.",
+                "error": "Import failed.",
+                "details": "Error details:"
+            },
+            "help": {
+                "title": "Import Data Guide",
+                "csv_structure": "CSV File Structure",
+                "csv_columns": "The CSV file should include the following columns",
+                "json_structure": "JSON File Structure",
+                "json_required": "The JSON file should have the following structure",
+                "download_template": "Download Template"
+            },
+            "validation": {
+                "file_required": "Please select a file"
+            }
+        },
+        "export": {
+            "title": "Export Data"
         }
     },
     "sidebar": {
@@ -168,6 +217,8 @@
         "number": "No.",
         "previous": "Previous",
         "next": "Next",
+        "download": "Download",
+        "download_template": "Download Template",
         "error_action": "Error when {{ action }} {{ target }}: {{ message }}",
         "no_result": "No results match your search.",
         "choose": "Choose",
@@ -183,7 +234,8 @@
         "cancel_failed": "Failed to cancel",
         "cancel_success": "Successfully canceled",
         "fill_all_required": "Please fill in all required information.",
-        "undefined_error": "Undefined error"
+        "undefined_error": "Undefined error",
+        "error_detail": "Error details"
     },
     "days": {
         "day_of_week": "Day of week",
