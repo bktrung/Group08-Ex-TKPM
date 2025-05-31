@@ -1,10 +1,10 @@
 <template>
   <div class="container mt-5 mb-5">
-    <h2 class="mb-4 text-center">Sửa Thông Tin Sinh Viên</h2>
+    <h2 class="mb-4 text-center">{{ $t('student.edit_student') }}</h2>
 
     <div v-if="loading" class="text-center py-5">
       <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
+        <span class="visually-hidden">{{ $t('common.loading') }}...</span>
       </div>
     </div>
 
@@ -27,11 +27,11 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header bg-success text-white">
-            <h5 class="modal-title">Thành công!</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <h5 class="modal-title">{{ $t('common.success') }}!</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('common.close')"></button>
           </div>
           <div class="modal-body">
-            Cập nhật sinh viên thành công!
+            {{ $t('student.update_success') }}!
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-primary" @click="redirectToList">OK</button>
@@ -45,14 +45,14 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header bg-danger text-white">
-            <h5 class="modal-title">Lỗi!</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <h5 class="modal-title">{{ $t('common.error') }}!</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('common.close')"></button>
           </div>
           <div class="modal-body">
             {{ errorMessage }}
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ $t('common.close') }}</button>
           </div>
         </div>
       </div>
@@ -66,6 +66,7 @@ import { useStore } from 'vuex'
 import { useRouter, useRoute } from 'vue-router'
 import { Modal } from 'bootstrap'
 import StudentForm from '@/components/student/StudentForm.vue'
+import { useI18n } from 'vue-i18n'
 
 export default {
   name: 'EditStudent',
@@ -73,6 +74,8 @@ export default {
     StudentForm
   },
   setup() {
+    const { t } = useI18n()
+    console.log(t)
     const store = useStore()
     const router = useRouter()
     const route = useRoute()
@@ -194,11 +197,11 @@ export default {
           // Pre-fetch geographic data for the student's addresses to enable dropdowns
           await preloadAddressData(student)
         } else {
-          error.value = 'Không tìm thấy sinh viên với mã số này'
+          error.value = t('student.no_exist')
         }
       } catch (err) {
         console.error('Error fetching student:', err)
-        error.value = err.message || 'Không thể tải thông tin sinh viên'
+        error.value = err.message || t('common.loading_error')
       } finally {
         loading.value = false
       }
@@ -307,7 +310,7 @@ export default {
         }
       } catch (err) {
         console.error('Error updating student:', err);
-        errorMessage.value = err.message || 'Có lỗi xảy ra khi cập nhật sinh viên';
+        errorMessage.value = err.message || t('common.error');
         
         if (errorModal) {
           errorModal.show();

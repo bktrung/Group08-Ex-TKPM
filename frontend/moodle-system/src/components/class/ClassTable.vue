@@ -24,7 +24,7 @@
                     </tr>
                     <tr v-else-if="paginatedClasses.length === 0" class="text-center">
                         <td colspan="7">
-                            {{ t('class.no_matching_classes') }}
+                            {{ $t('class.no_matching_classes') }}
                         </td>
                     </tr>
                     <tr v-for="classItem in paginatedClasses" :key="classItem._id">
@@ -42,7 +42,7 @@
                         </td>
                         <td>
                             <button class="btn btn-sm btn-outline-primary" @click="showScheduleModal(classItem)">
-                                Xem lịch học
+                                 {{ $t('class.view_schedule') }}
                             </button>
                         </td>
                         <td class="text-center">
@@ -146,7 +146,6 @@ export default {
     emits: ['register'],
     setup(props, { emit }) {
         const { t } = useI18n()
-        console.log(t('department.add_department'))
         const store = useStore()
 
         // State

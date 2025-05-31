@@ -1,16 +1,16 @@
 <template>
   <div>
-    <div class="section-title">Thông tin địa chỉ</div>
+    <div class="section-title">{{ $t('address.title') }}</div>
 
     <div class="mb-3">
-      <label class="form-label fw-bold">Địa chỉ thường trú</label>
+      <label class="form-label fw-bold">{{ $t('address.permanent') }}</label>
       <div class="row g-2">
         <div class="col-md-12">
           <input 
             type="text" 
             v-model="internalPermanentAddress.houseNumberStreet" 
             class="form-control"
-            placeholder="Số nhà, Tên đường"
+            :placeholder="$t('address.house_number_street')"
           >
         </div>
       </div>
@@ -22,7 +22,7 @@
             @change="handleCountryChange('permanent')"
             id="permanent-country"
           >
-            <option value="">-- Chọn quốc gia --</option>
+            <option value="">-- {{ $t('address.country_select') }} --</option>
             <option 
               v-for="country in countries" 
               :key="country.geonameId" 
@@ -41,7 +41,7 @@
             @change="handleProvinceChange('permanent')"
             id="permanent-province"
           >
-            <option value="">-- Chọn tỉnh/thành phố --</option>
+            <option value="">-- {{ $t('address.province_city_select') }} --</option>
             <option 
               v-for="province in permanentProvinces" 
               :key="province.geonameId || province.toponymName" 
@@ -60,7 +60,7 @@
             @change="handleDistrictChange('permanent')"
             id="permanent-district"
           >
-            <option value="">-- Chọn quận/huyện --</option>
+            <option value="">-- {{ $t('address.district_county_select') }} --</option>
             <option 
               v-for="district in permanentDistricts" 
               :key="district.geonameId || district.toponymName" 
@@ -80,7 +80,7 @@
             :disabled="permanentWardsDisabled"
             id="permanent-wardcommune"
           >
-            <option value="">-- Chọn phường/xã --</option>
+            <option value="">-- {{ $t('address.ward_commune_select') }} --</option>
             <option 
               v-for="ward in permanentWards" 
               :key="ward.geonameId || ward.toponymName" 
@@ -94,14 +94,14 @@
     </div>
 
     <div class="mb-3">
-      <label class="form-label fw-bold">Địa chỉ tạm trú</label>
+      <label class="form-label fw-bold">{{ $t('address.temporary') }}</label>
       <div class="row g-2">
         <div class="col-md-12">
           <input 
             type="text" 
             v-model="internalTemporaryAddress.houseNumberStreet" 
             class="form-control"
-            placeholder="Số nhà, Tên đường"
+            :placeholder="$t('address.house_number_street')"
           >
         </div>
       </div>
@@ -113,7 +113,7 @@
             @change="handleCountryChange('temporary')"
             id="temporary-country"
           >
-            <option value="">-- Chọn quốc gia --</option>
+            <option value="">-- {{ $t('address.country_select') }} --</option>
             <option 
               v-for="country in countries" 
               :key="country.geonameId" 
@@ -132,7 +132,7 @@
             @change="handleProvinceChange('temporary')"
             id="temporary-province"
           >
-            <option value="">-- Chọn tỉnh/thành phố --</option>
+            <option value="">-- {{ $t('address.province_city_select') }} --</option>
             <option 
               v-for="province in temporaryProvinces" 
               :key="province.geonameId || province.toponymName" 
@@ -151,7 +151,7 @@
             @change="handleDistrictChange('temporary')"
             id="temporary-district"
           >
-            <option value="">-- Chọn quận/huyện --</option>
+            <option value="">-- {{ $t('address.district_county_select') }} --</option>
             <option 
               v-for="district in temporaryDistricts" 
               :key="district.geonameId || district.toponymName" 
@@ -171,7 +171,7 @@
             :disabled="temporaryWardsDisabled"
             id="temporary-wardcommune"
           >
-            <option value="">-- Chọn phường/xã --</option>
+            <option value="">-- {{ $t('address.ward_commune_select') }} --</option>
             <option 
               v-for="ward in temporaryWards" 
               :key="ward.geonameId || ward.toponymName" 
@@ -185,14 +185,14 @@
     </div>
 
     <div class="mb-3">
-      <label class="form-label fw-bold">Địa chỉ nhận thư <span class="text-danger">*</span></label>
+      <label class="form-label fw-bold">{{ $t('address.mailing') }} <span class="text-danger">*</span></label>
       <div class="row g-2">
         <div class="col-md-12">
           <input 
             type="text" 
             v-model="internalMailingAddress.houseNumberStreet" 
             class="form-control"
-            placeholder="Số nhà, Tên đường"
+            :placeholder="$t('address.house_number_street')"
             required
           >
         </div>
@@ -206,7 +206,7 @@
             required
             id="mailing-country"
           >
-            <option value="">-- Chọn quốc gia --</option>
+            <option value="">-- {{ $t('address.district_county_select') }} --</option>
             <option 
               v-for="country in countries" 
               :key="country.geonameId" 
@@ -226,7 +226,7 @@
             required
             id="mailing-province"
           >
-            <option value="">-- Chọn tỉnh/thành phố --</option>
+            <option value="">-- {{ $t('address.province_city_select') }} --</option>
             <option 
               v-for="province in mailingProvinces" 
               :key="province.geonameId || province.toponymName" 
@@ -246,7 +246,7 @@
             required
             id="mailing-district"
           >
-            <option value="">-- Chọn quận/huyện --</option>
+            <option value="">-- {{ $t('address.district_county_select') }} --</option>
             <option 
               v-for="district in mailingDistricts" 
               :key="district.geonameId || district.toponymName" 
@@ -266,7 +266,7 @@
             :disabled="mailingWardsDisabled"
             id="mailing-wardcommune"
           >
-            <option value="">-- Chọn phường/xã --</option>
+            <option value="">-- {{ $t('address.ward_commune_select') }} --</option>
             <option 
               v-for="ward in mailingWards" 
               :key="ward.geonameId || ward.toponymName" 
@@ -283,6 +283,7 @@
   
 <script>
 import { ref, toRefs, watch, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
 
 export default {
   name: 'AddressFields',
@@ -319,6 +320,8 @@ export default {
   ],
   setup(props, { emit }) {
     const { mailingAddress, permanentAddress, temporaryAddress } = toRefs(props)
+    const { t } = useI18n()
+    console.log(t)
     
     // Create internal copies of the addresses to avoid direct prop mutation
     const internalMailingAddress = ref({...mailingAddress.value})

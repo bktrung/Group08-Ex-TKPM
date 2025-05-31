@@ -1,8 +1,141 @@
 {
     "student": {
-        "student_list": "Student",
-        "age": "Age",
-        "grade": "Grade"
+        "basic_info": "Basic Information",
+        "title": "Student",
+        "add_student": "Add Student",
+        "edit_student": "Edit Student",
+        "add_success": "Successfully added student",
+        "update_success": "Successfully updated student",
+        "management": "Student Management",
+        "grade": "Grade",
+        "student_id": "Student ID",
+        "name": "Name",
+        "dob": "Date of Birth",
+        "nationality": "Nationality",
+        "gender": "Gender",
+        "gender_types": {
+            "male": "Male",
+            "female": "Female"
+        },
+        "department": "Department",
+        "course": "Course",
+        "program": "Program",
+        "address": "Address",
+        "email": "Email",
+        "phone": "Phone Number",
+        "all_deparments": "All Departments",
+        "enter_student_id": "Enter student ID",
+        "status": {
+            "title": "Status",
+            "enter": "Enter status",
+            "no_data": "No statuses available. Please add a new status",
+            "error_action": "Error while %{action} status: %{message}"
+        },
+        "validation": {
+            "required_student_id": "Student ID is required",
+            "invalid_student_id": "Student ID must be 8 digits",
+            "required_name": "Name is required",
+            "min_length_name": "Name must be at least 3 characters",
+            "max_length_name": "Name must not exceed 50 characters",
+            "required_age": "Age is required",
+            "min_age": "Age must be at least 18",
+            "max_age": "Age must not exceed 100",
+            "required_date_of_birth": "Date of birth is required",
+            "dateOfBirth_future": "Date of birth cannot be in the future",
+            "nationality_required": "Please select a nationality",
+            "required_nationality": "Nationality is required",
+            "department_required": "Please select a department",
+            "required_course": "Course is required",
+            "required_program": "Program is required",
+            "required_department": "Department is required",
+            "schoolYear_max": "School year cannot exceed the current year",
+            "program_required": "Please select a program",
+            "required_email": "Email is required",
+            "email_invalid": "Email must be in a valid format",
+            "required_phone": "Phone number is required",
+            "phone_invalid": "Phone number is invalid",
+            "required_status": "Status is required",
+            "status_required": "Please select a status",
+            "status_disabled": "Some statuses are disabled because the current status cannot be changed to them"
+        },
+        "delete": {
+            "confirm": "Are you sure you want to delete student",
+            "note": "Note: The student can only be deleted if they have no registered classes and was created within 30 minutes.",
+            "success": "Successfully deleted student %{name}!",
+            "error": {
+                "prefix": "Error:",
+                "fallback": "An error occurred while deleting the student"
+            }
+        },
+        "no_data": "No students found in the database. Please add a new student",
+        "no_exist": "No student found with this ID",
+        "import_export_title": "Import / Export Student Data",
+        "import": {
+            "title": "Import Data",
+            "label": "Select a data file (CSV, JSON, XML, Excel)",
+            "supported": "Supported formats: CSV, JSON, XML, and Excel.",
+            "button": "Import Data",
+            "loading": "Importing...",
+            "view_help": "View Help",
+            "result": {
+                "title": "Import Result",
+                "success": "Import successful.",
+                "error": "Import failed.",
+                "details": "Error details:"
+            },
+            "help": {
+                "title": "Import Data Guide",
+                "csv_structure": "CSV File Structure",
+                "csv_columns": "The CSV file should include the following columns",
+                "json_structure": "JSON File Structure",
+                "json_required": "The JSON file should have the following structure",
+                "download_template": "Download Template"
+            },
+            "validation": {
+                "file_required": "Please select a file"
+            }
+        },
+        "export": {
+            "title": "Export Data"
+        }
+    },
+    "identity": {
+        "sectionTitle": "Identification Document",
+        "type": "Document Type",
+        "type_options": {
+            "CMND": "Identity Card (CMND)",
+            "CCCD": "Citizen ID Card (CCCD)",
+            "PASSPORT": "Passport"
+        },
+        "number": "Document Number",
+        "number_error": {
+            "CMND": "CMND number must be exactly 9 digits",
+            "CCCD": "CCCD number must be exactly 12 digits",
+            "PASSPORT": "Passport number must have 1 uppercase letter and 8 digits"
+        },
+        "hasChip": "Has Chip",
+        "hasChip_required": "Chip information is required",
+        "issueDate": "Issue Date",
+        "issueDate_error": "Issue date cannot be in the future",
+        "expiryDate": "Expiry Date",
+        "expiryDate_error": "Expiry date must be after today",
+        "issuedBy": "Issued By",
+        "issuedBy.required": "Issuing place is required",
+        "issuedCountry": "Issuing Country",
+        "issuedCountry_placeholder": "-- Select a country --",
+        "issuedCountry_required": "Issuing country is required",
+        "notes": "Notes (optional)"
+    },
+    "address": {
+        "title": "Address Information",
+        "permanent": "Permanent Address",
+        "temporary": "Temporary Address",
+        "mailing": "Mailing Address",
+        "house_number_street": "House number, Street name",
+        "country_select": "Select country",
+        "province_city_select": "Select province/city",
+        "district_county_select": "Select district/county",
+        "ward_commune_select": "Select ward/commune"
     },
     "sidebar": {
         "title": "Student Management",
@@ -62,7 +195,6 @@
         "end_period_validation": "End period must be greater than or equal to the start period",
         "schedule_conflict": "Schedule conflicts with schedule #%{index} in room %{room}",
         "no_matching_classes": "No matching classes found."
-        
     },
     "department": {
         "management": "Department Management",
@@ -72,12 +204,75 @@
         "description": "Department Description",
         "no_data": "No departments available. Please add a new one."
     },
+    "course": {
+        "title": "Course",
+        "course_code": "Course Code",
+        "name": "Course Name",
+        "description": "Course Description",
+        "credits": "Credits",
+        "department": "Department",
+        "management": "Course Management",
+        "prerequisite": "Prerequisite course",
+        "add": "Add Course",
+        "edit": "Edit Course",
+        "enter_name": "Enter course name",
+        "no_data": "No courses available. Please add a new course.",
+        "search_placeholder": "Search by course code or name...",
+        "display_count": "Displaying %{current} / %{total} courses",
+        "required_course_code": "Course code is required",
+        "alphanumeric_course_code": "Course code must contain only letters and numbers",
+        "required_name": "Course name is required",
+        "required_department": "Department is required",
+        "save_error": {
+            "prefix": "Error:",
+            "fallback": "An error occurred while saving the course"
+        },
+        "delete_error": {
+            "prefix": "Error:",
+            "fallback": "An error occurred while deleting/closing the course"
+        },
+        "delete_success": "Successfully deleted/closed the course!",
+        "update_success": "Successfully updated course %{name}!",
+        "add_success": "Successfully added course %{name}!",
+        "reopen_not_supported": "Reopening courses is not supported yet",
+        "reopen_success": "Course reopened successfully!",
+        "close_success": "Course closed successfully!",
+        "toggle_error": "An error occurred while %{action} the course",
+        "validation": {
+            "required_course_code": "Course code is required",
+            "invalid_course_code": "Course code must be 3-10 characters and contain no special characters",
+            "required_name": "Course name is required",
+            "short_name": "Course name must be at least 3 characters",
+            "required_credits": "Credits are required",
+            "min_credits": "Credits must be greater than or equal to 2",
+            "integer_credits": "Credits must be an integer",
+            "required_department": "Please select a department",
+            "required_description": "Course description is required",
+            "short_description": "Description must be at least 10 characters long"
+        },
+        "multi_select_hint": "Hold Ctrl to select multiple courses",
+        "status": {
+            "active": "Open",
+            "inactive": "Closed"
+        },
+        "close": "Close course",
+        "reopen": "Reopen course",
+        "delete_confirm": "Are you sure you want to delete the course <strong>{{code}} - {{name}}</strong>?",
+        "delete_note": "Note: The course can only be deleted if no classes have been opened and it was created within 30 minutes.",
+        "no_search_result": "No matching course found for your search.",
+        "confirm_close": "Are you sure you want to close the course %{courseCode} - %{name}?",
+        "confirm_reopen": "Are you sure you want to reopen the course %{courseCode} - %{name}?",
+        "enter_description": "Detailed description of the course",
+        "view_class": "View Classes"
+    },
     "common": {
         "add": "Add",
         "edit": "Edit",
         "delete": "Delete",
         "save": "Save",
         "close": "Close",
+        "reopen": "Reopen",
+        "register": "Register",
         "cancel": "Cancel",
         "search": "Search",
         "page": "Page",
@@ -88,12 +283,29 @@
         "number": "No.",
         "previous": "Previous",
         "next": "Next",
+        "download": "Download",
+        "download_template": "Download Template",
         "error_action": "Error when {{ action }} {{ target }}: {{ message }}",
         "no_result": "No results match your search.",
         "choose": "Choose",
         "please": "Please",
         "please_choose": "Please choose",
-        "please_enter": "Please enter"
+        "please_enter": "Please enter",
+        "update": "Update",
+        "status": "Status",
+        "none": "None",
+        "confirm_delete": "Confirm delete",
+        "confirm_cancel": "Confirm cancel",
+        "reason": "Reason",
+        "cancel_failed": "Failed to cancel",
+        "cancel_success": "Successfully canceled",
+        "fill_all_required": "Please fill in all required information.",
+        "undefined_error": "Undefined error",
+        "error_detail": "Error details",
+        "yes": "Yes",
+        "no": "No",
+        "error": "Error",
+        "loading_error": "An error occurred while loading data"
     },
     "days": {
         "day_of_week": "Day of week",
@@ -112,5 +324,46 @@
     "error": {
         "prefix": "Error",
         "load_failed": "An error occurred while loading data"
+    },
+    "enrollment": {
+        "management_title": "Course Enrollment Management",
+        "enter_class_code": "Enter class code",
+        "enter_student_id": "Enter student ID",
+        "registered_date": "Registered Date",
+        "dropped_date": "Dropped Date",
+        "register": {
+            "title": "Course Registration",
+            "description": "Add students to a class.",
+            "enter_student_id": "Enter student ID",
+            "enter_class_code": "Enter class code",
+            "register_success": "Registration successful",
+            "register_failed": "Registration failed",
+            "no_matching_classes": "No matching classes found for your search.",
+            "success": "Registration successful",
+            "failed": "Registration failed",
+            "confirm_success": "Successfully registered class %{ registeredClassCode } for student %{ studentQuery }"
+        },
+        "drop": {
+            "title": "Course Drop",
+            "description": "Drop a class for a student",
+            "reason": "Drop reason",
+            "enter_reason": "Enter the reason for dropping the class",
+            "success": "Successfully dropped the class",
+            "failed": "Failed to drop the class",
+            "confirmation": "Are you sure you want to remove student %{ studentId } from class %{ classCode }?",
+            "confirm_success": "Student %{ studentId } has been successfully removed from class %{ classCode }.",
+            "history": {
+                "no_data": "No drop history available.",
+                "search_by_id": "Search drop history by student ID",
+                "loading_error": "Unable to load drop history"
+            }
+        }
+    },
+    "program": {
+        "management": "Program Management",
+        "title": "Program",
+        "name": "Program Name",
+        "no_data": "No programs available. Please add a new program",
+        "enter": "Enter program"
     }
 }
