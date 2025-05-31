@@ -1,9 +1,9 @@
 <template>
   <form @submit.prevent="handleSubmit" id="student-form">
-    <div class="section-title">Thông tin cơ bản</div>
+    <div class="section-title">{{ $t('student.basic_info') }}</div>
     <div class="row mb-2">
       <div class="col-md-6">
-        <label class="form-label">Mã số sinh viên</label>
+        <label class="form-label">{{ $t('student.student_id') }}</label>
         <input 
           type="text" 
           id="student-id" 
@@ -18,7 +18,7 @@
         </div>
       </div>
       <div class="col-md-6">
-        <label class="form-label">Họ tên</label>
+        <label class="form-label">{{ $t('student.name') }}</label>
         <input 
           type="text" 
           id="student-name" 
@@ -35,7 +35,7 @@
 
     <div class="row mb-2">
       <div class="col-md-4">
-        <label class="form-label">Ngày sinh</label>
+        <label class="form-label">{{ $t('student.dob') }}</label>
         <input 
           type="date" 
           id="student-dob" 
@@ -45,18 +45,18 @@
           required
         >
         <div class="invalid-feedback" v-if="v$.dateOfBirth.$error">
-          Ngày sinh không được là ngày trong tương lai
+          {{ $t('student.validation.dateOfBirth_future') }}
         </div>
       </div>
       <div class="col-md-4">
-        <label class="form-label">Giới tính</label>
+        <label class="form-label">{{ $t('student.gender') }}</label>
         <select id="student-gender" v-model="form.gender" class="form-select" required>
-          <option value="Nam">Nam</option>
-          <option value="Nữ">Nữ</option>
+          <option :value="$t('student.gender_types.male')">{{ $t('student.gender_types.male') }}</option>
+          <option :value="$t('student.gender_types.female')">{{ $t('student.gender_types.female') }}</option>
         </select>
       </div>
       <div class="col-md-4">
-        <label class="form-label">Quốc tịch</label>
+        <label class="form-label">{{ $t('student.nationality') }}</label>
         <select 
           id="student-nationality" 
           v-model="form.nationality" 
@@ -64,20 +64,20 @@
           :class="{ 'is-invalid': v$.nationality.$error, 'is-valid': !v$.nationality.$invalid && v$.nationality.$dirty }"
           required
         >
-          <option value="">-- Chọn quốc tịch --</option>
+          <option value="">-- {{ $t('common.choose') }} {{ $t('student.nationality') }} --</option>
           <option v-for="nationality in nationalities" :key="nationality" :value="nationality">
             {{ nationality }}
           </option>
         </select>
         <div class="invalid-feedback" v-if="v$.nationality.$error">
-          Vui lòng chọn quốc tịch
+          {{ $t('student.validation.nationality_required') }}
         </div>
       </div>
     </div>
 
     <div class="row mb-2">
       <div class="col-md-4">
-        <label class="form-label">Khoa</label>
+        <label class="form-label">{{ $t('student.department') }}</label>
         <select 
           id="student-faculty" 
           v-model="form.department" 
@@ -85,17 +85,17 @@
           :class="{ 'is-invalid': v$.department.$error, 'is-valid': !v$.department.$invalid && v$.department.$dirty }"
           required
         >
-          <option value="">-- Chọn khoa --</option>
+          <option value="">-- {{ $t('common.choose') }} {{ $t('student.department') }} --</option>
           <option v-for="dept in departments" :key="dept._id" :value="dept._id">
             {{ dept.name }}
           </option>
         </select>
         <div class="invalid-feedback" v-if="v$.department.$error">
-          Vui lòng chọn khoa
+           {{ $t('student.validation.department_required') }}
         </div>
       </div>
       <div class="col-md-4">
-        <label class="form-label">Khóa</label>
+        <label class="form-label">{{ $t('student.course') }}</label>
         <input 
           type="number" 
           id="student-course" 
@@ -105,11 +105,11 @@
           required
         >
         <div class="invalid-feedback" v-if="v$.schoolYear.$error">
-          Khóa học không thể vượt quá năm hiện tại ({{ currentYear }})
+          {{ $t('student.validation.schoolYear_max') }} ({{ currentYear }})
         </div>
       </div>
       <div class="col-md-4">
-        <label class="form-label">Chương trình đào tạo</label>
+        <label class="form-label">{{ $t('student.program') }}</label>
         <select 
           id="student-program" 
           v-model="form.program" 
@@ -117,20 +117,20 @@
           :class="{ 'is-invalid': v$.program.$error, 'is-valid': !v$.program.$invalid && v$.program.$dirty }"
           required
         >
-          <option value="">-- Chọn chương trình --</option>
+          <option value="">-- {{ $t('common.choose') }} {{ $t('student.program') }} --</option>
           <option v-for="prog in programs" :key="prog._id" :value="prog._id">
             {{ prog.name }}
           </option>
         </select>
         <div class="invalid-feedback" v-if="v$.program.$error">
-          Vui lòng chọn chương trình đào tạo
+          {{ $t('student.validation.program_required') }}
         </div>
       </div>
     </div>
 
     <div class="row mb-2">
       <div class="col-md-6">
-        <label class="form-label">Email</label>
+        <label class="form-label">{{ $t('student.email') }}</label>
         <input 
           type="email" 
           id="student-email" 
@@ -140,11 +140,11 @@
           required
         >
         <div class="invalid-feedback" v-if="v$.email.$error">
-          Email phải có định dạng hợp lệ
+          {{ $t('student.validation.email_invalid') }}
         </div>
       </div>
       <div class="col-md-6">
-        <label class="form-label">Số điện thoại</label>
+        <label class="form-label">{{ $t('student.phone') }}</label>
         <input 
           type="text" 
           id="student-phone" 
@@ -154,13 +154,13 @@
           required
         >
         <div class="invalid-feedback" v-if="v$.phoneNumber.$error">
-          Số điện thoại không hợp lệ
+          {{ $t('student.validation.phone_invalid') }}
         </div>
       </div>
     </div>
 
     <div class="mb-2">
-      <label class="form-label">Tình trạng</label>
+      <label class="form-label">{{ $t('student.status.title') }}</label>
       <select 
         id="student-status" 
         v-model="form.status" 
@@ -168,7 +168,7 @@
         :class="{ 'is-invalid': v$.status.$error, 'is-valid': !v$.status.$invalid && v$.status.$dirty }"
         required
       >
-        <option value="">-- Chọn tình trạng --</option>
+        <option value="">-- {{ $t('common.choose') }} {{ $t('student.status.title') }}--</option>
         <option 
           v-for="status in availableStatusTypes" 
           :key="status._id" 
@@ -179,10 +179,10 @@
         </option>
       </select>
       <div class="invalid-feedback" v-if="v$.status.$error">
-        Vui lòng chọn tình trạng
+        {{ $t('student.validation.status_required') }}
       </div>
       <small v-if="isEditing" class="form-text text-muted">
-        Một số trạng thái bị vô hiệu hóa vì không thể chuyển từ trạng thái hiện tại sang trạng thái đó.
+        {{ $t('student.validation.status_disabled') }}
       </small>
     </div>
 
@@ -207,9 +207,9 @@
     <div class="mt-4">
       <button type="submit" class="btn btn-primary mt-3 w-100" :disabled="loading">
         <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
-        {{ isEditing ? 'Cập nhật Sinh Viên' : 'Thêm Sinh Viên' }}
+        {{ isEditing ?  $t('student.edit_student')  : $t('student.add_student') }}
       </button>
-      <router-link to="/" class="btn btn-secondary mt-2 w-100">Hủy</router-link>
+      <router-link to="/" class="btn btn-secondary mt-2 w-100">{{ $t('common.cancel') }}</router-link>
     </div>
   </form>
 </template>
@@ -221,6 +221,7 @@ import { useVuelidate } from '@vuelidate/core'
 import { required, email, helpers } from '@vuelidate/validators'
 import AddressFields from './AddressFields.vue'
 import IdentityDocumentFields from './IdentityDocumentFields.vue'
+import { useI18n } from 'vue-i18n'
 
 export default {
   name: 'StudentForm',
@@ -240,6 +241,8 @@ export default {
   },
   emits: ['submit'],
   setup(props, { emit }) {
+    const { t } = useI18n()
+    console.log(t)
     const store = useStore()
     const currentYear = new Date().getFullYear()
     const currentStatusId = ref(null)
@@ -249,7 +252,7 @@ export default {
       studentId: '',
       fullName: '',
       dateOfBirth: '',
-      gender: 'Nam',
+      gender: t('student.gender_types.male'),
       nationality: '',
       department: '',
       schoolYear: currentYear,
@@ -310,47 +313,47 @@ export default {
     const rules = computed(() => {
       return {
         studentId: { 
-          required: helpers.withMessage('Mã số sinh viên là bắt buộc', required) 
+          required: helpers.withMessage(t('student.validation.required_student_id'), required) 
         },
         fullName: { 
-          required: helpers.withMessage('Họ tên là bắt buộc', required) 
+          required: helpers.withMessage(t('student.validation.required_name'), required) 
         },
         dateOfBirth: { 
-          required: helpers.withMessage('Ngày sinh là bắt buộc', required),
+          required: helpers.withMessage(t('student.validation.required_date_of_birth'), required),
           notFuture: helpers.withMessage(
-            'Ngày sinh không được là ngày trong tương lai', 
+            t('student.validation.dateOfBirth_future'), 
             (value) => new Date(value) <= new Date()
           )
         },
         nationality: { 
-          required: helpers.withMessage('Quốc tịch là bắt buộc', required) 
+          required: helpers.withMessage(t('student.validation.required_nationality'), required) 
         },
         department: { 
-          required: helpers.withMessage('Khoa là bắt buộc', required) 
+          required: helpers.withMessage(t('student.validation.required_department'), required) 
         },
         schoolYear: { 
-          required: helpers.withMessage('Khóa học là bắt buộc', required),
+          required: helpers.withMessage(t('student.validation.required_course'), required),
           notFutureYear: helpers.withMessage(
-            `Khóa học không thể vượt quá năm hiện tại (${currentYear})`,
+            `${t('student.validation.schoolYear_max')} (${currentYear})`,
             (value) => value <= currentYear
           )
         },
         program: { 
-          required: helpers.withMessage('Chương trình đào tạo là bắt buộc', required) 
+          required: helpers.withMessage(t('student.validation.required_program'), required) 
         },
         email: { 
-          required: helpers.withMessage('Email là bắt buộc', required),
-          email: helpers.withMessage('Email phải có định dạng hợp lệ', email)
+          required: helpers.withMessage(t('student.validation.required_email'), required),
+          email: helpers.withMessage(t('student.validation.email_invalid'), email)
         },
         phoneNumber: { 
-          required: helpers.withMessage('Số điện thoại là bắt buộc', required),
+          required: helpers.withMessage(t('student.validation.required_phone'), required),
           phoneFormat: helpers.withMessage(
-            'Số điện thoại không hợp lệ',
+            t('student.validation.phone_invalid'),
             (value) => /^(\+84|0)[3|5|7|8|9][0-9]{8}$/.test(value)
           )
         },
         status: { 
-          required: helpers.withMessage('Tình trạng là bắt buộc', required) 
+          required: helpers.withMessage(t('student.validation.required_status'), required) 
         }
       }
     })

@@ -1,12 +1,21 @@
 {
     "student": {
+        "basic_info": "Basic Information",
         "title": "Student",
+        "add_student": "Add Student",
+        "edit_student": "Edit Student",
+        "add_success": "Successfully added student",
         "management": "Student Management",
         "grade": "Grade",
         "student_id": "Student ID",
         "name": "Name",
         "dob": "Date of Birth",
+        "nationality": "Nationality",
         "gender": "Gender",
+        "gender_types": {
+            "male": "Male",
+            "female": "Female"
+        },
         "department": "Department",
         "course": "Course",
         "program": "Program",
@@ -29,7 +38,24 @@
             "max_length_name": "Name must not exceed 50 characters",
             "required_age": "Age is required",
             "min_age": "Age must be at least 18",
-            "max_age": "Age must not exceed 100"
+            "max_age": "Age must not exceed 100",
+            "required_date_of_birth": "Date of birth is required",
+            "dateOfBirth_future": "Date of birth cannot be in the future",
+            "nationality_required": "Please select a nationality",
+            "required_nationality": "Nationality is required",
+            "department_required": "Please select a department",
+            "required_course": "Course is required",
+            "required_program": "Program is required",
+            "required_department": "Department is required",
+            "schoolYear_max": "School year cannot exceed the current year",
+            "program_required": "Please select a program",
+            "required_email": "Email is required",
+            "email_invalid": "Email must be in a valid format",
+            "required_phone": "Phone number is required",
+            "phone_invalid": "Phone number is invalid",
+            "required_status": "Status is required",
+            "status_required": "Please select a status",
+            "status_disabled": "Some statuses are disabled because the current status cannot be changed to them"
         },
         "delete": {
             "confirm": "Are you sure you want to delete student",
@@ -70,6 +96,44 @@
         "export": {
             "title": "Export Data"
         }
+    },
+    "identity": {
+        "sectionTitle": "Identification Document",
+        "type": "Document Type",
+        "type_options": {
+            "CMND": "Identity Card (CMND)",
+            "CCCD": "Citizen ID Card (CCCD)",
+            "PASSPORT": "Passport"
+        },
+        "number": "Document Number",
+        "number_error": {
+            "CMND": "CMND number must be exactly 9 digits",
+            "CCCD": "CCCD number must be exactly 12 digits",
+            "PASSPORT": "Passport number must have 1 uppercase letter and 8 digits"
+        },
+        "hasChip": "Has Chip",
+        "hasChip_required": "Chip information is required",
+        "issueDate": "Issue Date",
+        "issueDate_error": "Issue date cannot be in the future",
+        "expiryDate": "Expiry Date",
+        "expiryDate_error": "Expiry date must be after today",
+        "issuedBy": "Issued By",
+        "issuedBy.required": "Issuing place is required",
+        "issuedCountry": "Issuing Country",
+        "issuedCountry_placeholder": "-- Select a country --",
+        "issuedCountry_required": "Issuing country is required",
+        "notes": "Notes (optional)"
+    },
+    "address": {
+        "title": "Address Information",
+        "permanent": "Permanent Address",
+        "temporary": "Temporary Address",
+        "mailing": "Mailing Address",
+        "house_number_street": "House number, Street name",
+        "country_select": "Select country",
+        "province_city_select": "Select province/city",
+        "district_county_select": "Select district/county",
+        "ward_commune_select": "Select ward/commune"
     },
     "sidebar": {
         "title": "Student Management",
@@ -235,7 +299,11 @@
         "cancel_success": "Successfully canceled",
         "fill_all_required": "Please fill in all required information.",
         "undefined_error": "Undefined error",
-        "error_detail": "Error details"
+        "error_detail": "Error details",
+        "yes": "Yes",
+        "no": "No",
+        "error": "Error",
+        "loading_error": "An error occurred while loading data"
     },
     "days": {
         "day_of_week": "Day of week",

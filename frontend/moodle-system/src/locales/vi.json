@@ -1,15 +1,24 @@
 {
     "student": {
+        "basic_info": "Thông tin cơ bản",
         "student": "Sinh viên",
+        "add_student": "Thêm sinh viên",
+        "edit_student": "Sửa thông tin sinh viên",
+        "add_success": "Thêm sinh viên thành công",
         "management": "Quản lí sinh viên",
         "grade": "Lớp học",
         "student_id": "Mã số sinh viên",
         "name": "Tên sinh viên",
         "dob": "Ngày sinh",
         "gender": "Giới tính",
+        "nationality": "Quốc tịch",
+        "gender_types": {
+            "male": "Nam",
+            "female": "Nữ"
+        },
         "department": "Khoa",
         "course": "Khóa",
-        "program": "Chương trình",
+        "program": "Chương trình dào tạo",
         "address": "Địa chỉ",
         "email": "Email",
         "phone": "Số điện thoại",
@@ -29,7 +38,24 @@
             "required_age": "Tuổi là bắt buộc",
             "min_age": "Tuổi phải lớn hơn hoặc bằng 18",
             "integer_age": "Tuổi phải là số nguyên",
-            "required_grade": "Lớp học là bắt buộc"
+            "required_grade": "Lớp học là bắt buộc",
+            "required_date_of_birth": "Ngày sinh là bắt buộc",
+            "dateOfBirth_future": "Ngày sinh không được là ngày trong tương lai",
+            "nationality_required": "Vui lòng chọn quốc tịch",
+            "required_nationality": "Quốc tịch là bắt buộc",
+            "department_required": "Vui lòng chọn khoa",
+            "required_department": "Khoa là bắt buộc",
+            "required_course": "Khóa học là bắt buộc",
+            "required_program": "Chương trình đào tạo là bắt buộc",
+            "schoolYear_max": "Khóa học không thể vượt quá năm hiện tại",
+            "program_required": "Vui lòng chọn chương trình đào tạo",
+            "required_email": "Email là bắt buộc",
+            "email_invalid": "Email phải có định dạng hợp lệ",
+            "required_phone": "Số điện thoại là bắt buộc",
+            "phone_invalid": "Số điện thoại không hợp lệ",
+            "required_status": "Tình trạng là bắt buộc",
+            "status_required": "Vui lòng chọn tình trạng",
+            "status_disabled": "Một số trạng thái bị vô hiệu hóa vì không thể chuyển từ trạng thái hiện tại sang trạng thái đó"
         },
         "delete": {
             "confirm": "Bạn có chắc chắn muốn xóa sinh viên"
@@ -64,6 +90,44 @@
         "export": {
             "title": "Export Dữ Liệu"
         }
+    },
+    "identity": {
+        "sectionTitle": "Giấy tờ chứng minh nhân thân",
+        "type": "Loại giấy tờ",
+        "type_options": {
+            "CMND": "Chứng minh nhân dân (CMND)",
+            "CCCD": "Căn cước công dân (CCCD)",
+            "PASSPORT": "Hộ chiếu (Passport)"
+        },
+        "number": "Số giấy tờ",
+        "number_error": {
+            "CMND": "Số CMND phải có đúng 9 chữ số",
+            "CCCD": "Số CCCD phải có đúng 12 chữ số",
+            "PASSPORT": "Số hộ chiếu phải có 1 chữ cái viết hoa và 8 chữ số"
+        },
+        "hasChip": "Có gắn chip",
+        "hasChip_required": "Thông tin về chip là trường bắt buộc",
+        "issueDate": "Ngày cấp",
+        "issueDate_error": "Ngày cấp không thể trong tương lai",
+        "expiryDate": "Ngày hết hạn",
+        "expiryDate.error": "Ngày hết hạn phải sau ngày hiện tại",
+        "issuedBy": "Nơi cấp",
+        "issuedBy_required": "Nơi cấp không được để trống",
+        "issuedCountry": "Quốc gia cấp",
+        "issuedCountry_placeholder": "-- Chọn quốc gia --",
+        "issuedCountry_required": "Quốc gia cấp không được để trống",
+        "notes": "Ghi chú (nếu có)"
+    },
+    "address": {
+        "title": "Thông tin địa chỉ",
+        "permanent": "Địa chỉ thường trú",
+        "temporary": "Địa chỉ tạm trú",
+        "mailing": "Địa chỉ nhận thư",
+        "house_number_street": "Số nhà, Tên đường",
+        "country_select": "Chọn quốc gia",
+        "province_city_select": "Chọn tỉnh/thành phố",
+        "district_county_select": "Chọn quận/huyện",
+        "ward_commune_select": "Chọn phường/xã"
     },
     "sidebar": {
         "title": "Quản lý Sinh Viên",
@@ -230,7 +294,11 @@
         "cancel_success": "Hủy thành công",
         "fill_all_required": "Vui lòng nhập đầy đủ thông tin.",
         "undefined_error": "Lỗi không xác định",
-        "error_detail": "Chi tiết lỗi"
+        "error_detail": "Chi tiết lỗi",
+        "yes": "Có",
+        "no": "Không",
+        "error": "Lỗi",
+        "loading_error": "Đã xảy ra lỗi khi tải dữ liệu"
     },
     "days": {
         "day_of_week": "Thứ",
