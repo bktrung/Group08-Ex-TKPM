@@ -23,18 +23,12 @@
 </template>
 
 <script>
-
 import { useRouter } from 'vue-router'
-import { useI18n } from 'vue-i18n'
 
 export default {
-  props: {
-  },
+  props: {},
   setup() {
-    const { t } = useI18n()
     const router = useRouter()
-
-    console.log(t)
 
     const goToRegisterPage = () => {
       router.push('/register-course')
@@ -44,10 +38,12 @@ export default {
       router.push('/drop-course')
     }
 
-    return { goToRegisterPage, goToDropPage }
+    return { 
+      goToRegisterPage, 
+      goToDropPage 
+    }
   }
 }
-
 </script>
 
 

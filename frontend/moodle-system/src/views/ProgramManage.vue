@@ -56,7 +56,6 @@ export default {
   components: { BaseModal },
   setup() {
     const { t } = useI18n()
-    console.log(t)
     const store = useStore()
     const programName = ref('')
     const originalProgramName = ref('')

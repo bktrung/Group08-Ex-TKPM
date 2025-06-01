@@ -76,14 +76,12 @@ export default {
             modal.show()
         }
 
-
         const generateTranscript = async () => {
             if (!studentId.value) {
                 errorMessage.value = 'Vui lòng nhập MSSV';
                 showModal('errorModal');
                 return;
             }
-
 
             transcriptData.value = await store.dispatch('transcript/getTranscript', studentId.value);
 
@@ -112,7 +110,6 @@ export default {
                 pdfGenerated.value = true;
             }
         }
-
 
         const downloadPDF = () => {
             if (pdfDoc.value) {

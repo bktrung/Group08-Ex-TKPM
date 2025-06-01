@@ -81,13 +81,11 @@ export default {
     let successModal = null
     let errorModal = null
     
-    // Load initial reference data
     const loadReferenceData = async () => {
       loading.value = true
       error.value = null
       
       try {
-        // Load all reference data needed for the form
         await Promise.all([
           store.dispatch('department/fetchDepartments'),
           store.dispatch('program/fetchPrograms'),
@@ -108,20 +106,15 @@ export default {
       try {
         console.log('Adding new student:', JSON.stringify(studentData, null, 2))
         
-        // Create a clean copy of the data to send to the API
         const cleanData = {}
         
-        // Process all fields
         for (const [key, value] of Object.entries(studentData)) {
-          // Handle reference fields
           if (key === 'department' || key === 'program' || key === 'status') {
             cleanData[key] = typeof value === 'object' ? value._id : value
           } 
-          // Handle date fields
           else if (key === 'dateOfBirth') {
             cleanData[key] = new Date(value).toISOString()
           }
-          // Handle identity document
           else if (key === 'identityDocument') {
             const docCopy = {...value}
             
@@ -139,14 +132,11 @@ export default {
             
             cleanData[key] = docCopy
           }
-          // Handle address fields - copy these directly
           else if (key === 'mailingAddress' || key === 'permanentAddress' || key === 'temporaryAddress') {
-            // Only include non-empty addresses
             if (value && value.houseNumberStreet && value.houseNumberStreet.trim() !== '') {
               cleanData[key] = {...value}
             }
           }
-          // Handle all other fields
           else {
             cleanData[key] = value
           }
@@ -154,10 +144,8 @@ export default {
         
         console.log('Prepared data for API:', JSON.stringify(cleanData, null, 2))
         
-        // Send the data to the API
         await store.dispatch('student/createStudent', cleanData)
         
-        // Show success modal
         if (successModal) {
           successModal.show()
         }
@@ -165,7 +153,6 @@ export default {
         console.error('Error adding student:', error)
         errorMessage.value = error.response?.data?.message || error.message || 'Có lỗi xảy ra. Vui lòng thử lại!'
         
-        // Show error modal
         if (errorModal) {
           errorModal.show()
         }
@@ -185,7 +172,6 @@ export default {
     onMounted(async () => {
       await loadReferenceData()
       
-      // Initialize Bootstrap modals
       const successModalElement = document.getElementById('successModal')
       if (successModalElement) {
         successModal = new Modal(successModalElement)

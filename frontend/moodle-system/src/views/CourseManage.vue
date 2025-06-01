@@ -48,33 +48,28 @@ export default {
     const error = ref('')
     const success = ref('')
 
-    // Show the add course form
     const showAddForm = () => {
       selectedCourse.value = {}
       isEditing.value = false
       showForm.value = true
     }
 
-    // Show the edit course form
     const showEditForm = (course) => {
       selectedCourse.value = { ...course }
       isEditing.value = true
       showForm.value = true
     }
 
-    // Cancel the form
     const cancelForm = () => {
       showForm.value = false
       selectedCourse.value = {}
     }
 
-    // Save a course (create or update)
     const saveCourse = async (courseData) => {
       try {
         console.log('CourseManage - Saving course:', courseData);
 
         if (isEditing.value) {
-          // Update existing course
           console.log(`Updating course with code: ${selectedCourse.value.courseCode}`);
 
           const updateData = {};
@@ -126,7 +121,6 @@ export default {
           if (err.response.data.message) {
             errorMessage = err.response.data.message;
           } else if (err.response.data.errors) {
-            // Join multiple validation errors
             errorMessage = Object.values(err.response.data.errors).join(', ');
           }
         }
@@ -135,22 +129,18 @@ export default {
       }
     }
 
-    // Delete a course
     const deleteCourse = async (course) => {
       try {
         console.log('Attempting to delete course:', course);
 
-        // Gọi action deleteCourse, backend sẽ xử lý xóa hoàn toàn hoặc chỉ deactivate
         const result = await store.dispatch('course/deleteCourse', course.courseCode);
 
         if (result.success) {
           success.value = result.message || t('course.delete_success');
 
-          // Refresh courses data
           await store.dispatch('course/fetchCourses');
         }
 
-        // Clear success message after 5 seconds
         setTimeout(() => {
           success.value = '';
         }, 5000);
@@ -166,15 +156,12 @@ export default {
       }
     }
 
-    // Toggle course active status
     const toggleCourseActiveStatus = async (course) => {
       try {
         console.log('Toggling course active status:', course);
 
         const newStatus = !course.isActive;
 
-        // Lưu ý: Nếu newStatus = true (mở lại khóa học), có thể không được hỗ trợ
-        // vì backend không có API để reactivate khóa học
         if (newStatus === true) {
           error.value = t('course.reopen_not_supported');
           return;
@@ -190,7 +177,6 @@ export default {
             t(newStatus ? 'course.reopen_success' : 'course.close_success');
         }
 
-        // Clear success message after 5 seconds
         setTimeout(() => {
           success.value = '';
         }, 5000);
@@ -207,19 +193,15 @@ export default {
       }
     }
 
-    // Load initial data
     onMounted(async () => {
       try {
-        // Load departments first
         await store.dispatch('department/fetchDepartments');
 
-        // Then load courses with logging to debug issues
         console.log('Fetching courses...');
         const result = await store.dispatch('course/fetchCourses');
         console.log('Courses fetched:', result);
         console.log('Current courses in store:', store.state.course.courses);
 
-        // If we still don't have courses but know they should exist, try again
         if (!Array.isArray(store.state.course.courses) || store.state.course.courses.length === 0) {
           console.log('No courses found, retrying...');
           setTimeout(async () => {

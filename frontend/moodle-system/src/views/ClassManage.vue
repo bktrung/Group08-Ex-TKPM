@@ -215,26 +215,20 @@ export default {
     const error = ref('')
     const success = ref('')
 
-    // Pagination state
     const currentPage = ref(1)
     const pageSize = ref(10)
 
-    // Filtering state
     const searchQuery = ref('')
     const selectedAcademicYear = ref('')
     const selectedSemester = ref('')
 
-    // Modal refs
     const scheduleModalRef = ref(null)
 
-    // Bootstrap modal instances
     let scheduleModal = null
 
-    // Current date for academic years
     const currentDate = new Date()
     const currentYear = currentDate.getFullYear()
 
-    // Generate academic years (current year - 1 to current year + 2)
     const academicYears = computed(() => {
       const years = []
       for (let i = -1; i <= 2; i++) {
@@ -245,36 +239,28 @@ export default {
       return years
     })
 
-    // Computed properties
     const classes = computed(() => store.state.class.classes)
     const loading = computed(() => store.state.class.loading)
     const courses = computed(() => store.state.course.courses)
 
-    // Filtered classes
     const filteredClasses = computed(() => {
       let filtered = Array.isArray(classes.value) ? [...classes.value] : []
 
-      // Filter by academic year
       if (selectedAcademicYear.value) {
         filtered = filtered.filter(cls => cls.academicYear === selectedAcademicYear.value)
       }
 
-      // Filter by semester
       if (selectedSemester.value) {
         filtered = filtered.filter(cls => cls.semester === Number(selectedSemester.value))
       }
 
-      // Filter by search query
       if (searchQuery.value) {
         const query = searchQuery.value.toLowerCase()
         filtered = filtered.filter(cls => {
-          // Check class code
           if (cls.classCode.toLowerCase().includes(query)) return true
 
-          // Check instructor
           if (cls.instructor.toLowerCase().includes(query)) return true
 
-          // Check course info
           const course = getCourseById(cls.course)
           if (course) {
             if (course.courseCode.toLowerCase().includes(query)) return true
@@ -285,40 +271,33 @@ export default {
         })
       }
 
-      // Sort by academic year, semester, course code
       filtered.sort((a, b) => {
-        // First compare academic year (newest first)
         if (a.academicYear !== b.academicYear) {
           return b.academicYear.localeCompare(a.academicYear)
         }
 
-        // Then compare semester
         if (a.semester !== b.semester) {
           return a.semester - b.semester
         }
 
-        // Finally compare class code
         return a.classCode.localeCompare(b.classCode)
       })
 
       return filtered
     })
 
-    // Total pages for pagination
     const totalPages = computed(() => {
       return Math.ceil(filteredClasses.value.length / pageSize.value) || 1
     })
 
-    // Current page of classes
     const paginatedClasses = computed(() => {
       const start = (currentPage.value - 1) * pageSize.value
       const end = start + pageSize.value
       return filteredClasses.value.slice(start, end)
     })
 
-    // Methods
     const filterClasses = () => {
-      currentPage.value = 1 // Reset to first page when filtering
+      currentPage.value = 1
     }
 
     const resetFilter = () => {
@@ -354,26 +333,21 @@ export default {
     const saveClass = async (classData) => {
       try {
         if (isEditing.value) {
-          // Update existing class
           await store.dispatch('class/updateClass', {
             classCode: selectedClass.value.classCode,
             data: classData
           })
           success.value = t('class.update_success', { classCode: classData.classCode })
         } else {
-          // Create new class
           await store.dispatch('class/addClass', classData)
           success.value = t('class.add_success', { classCode: classData.classCode })
         }
 
-        // Refresh classes data
         await store.dispatch('class/fetchClasses')
 
-        // Reset form
         showForm.value = false
         selectedClass.value = {}
 
-        // Clear success message after 5 seconds
         setTimeout(() => {
           success.value = ''
         }, 5000)
@@ -418,12 +392,9 @@ export default {
       if (ratio >= 0.75) return 'bg-warning'
       return 'bg-success'
     }
-    // Load data
-    // In ClassManage.vue, modify the onMounted function to add better debugging:
 
     onMounted(async () => {
       try {
-        // Clear filters first
         resetFilter();
 
         console.log('Fetching classes and courses...');
@@ -432,29 +403,24 @@ export default {
           store.dispatch('course/fetchCourses')
         ]);
 
-        // Add debugging to check what's in the store
         console.log('Classes in store:', store.state.class.classes);
         console.log('Filtered classes:', filteredClasses.value);
 
-        // If no classes were found but they should exist
         if (!Array.isArray(store.state.class.classes) || store.state.class.classes.length === 0) {
           console.log('No classes found, trying direct API call...');
 
-          // Try again with direct API call
           const apiResponse = await store.dispatch('class/fetchClasses', {
             page: 1,
-            limit: 50 // Get more classes to ensure we get something
+            limit: 50
           });
 
           console.log('Direct API response:', apiResponse);
         }
 
-        // Set default academic year to current year only if we have classes
         if (store.state.class.classes.length > 0) {
           selectedAcademicYear.value = academicYears.value[1];
         }
 
-        // Initialize modals
         if (document.getElementById('scheduleModal')) {
           scheduleModal = new Modal(document.getElementById('scheduleModal'));
         }

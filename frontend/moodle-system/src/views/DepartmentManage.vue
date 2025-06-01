@@ -52,13 +52,10 @@ import { useStore } from 'vuex'
 import BaseModal from '../components/layout/BaseModal.vue'
 
 export default {
-  watch: {
-  },
+  watch: {},
   components: { BaseModal },
   setup() {
-
     const { t } = useI18n()
-    console.log(t('department.add_department'))
     const store = useStore()
     const departmentName = ref('')
     const originalDepartmentName = ref('')

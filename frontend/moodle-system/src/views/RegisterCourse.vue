@@ -54,8 +54,6 @@
 </template>
 
 <script>
-
-
 import { ref, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
@@ -63,7 +61,6 @@ import { Modal } from 'bootstrap'
 import CourseTable from '@/components/course/CourseTable.vue'
 import ClassTable from '@/components/class/ClassTable.vue'
 import { useI18n } from 'vue-i18n'
-
 
 export default {
   name: 'RegisterCourse',
@@ -73,7 +70,6 @@ export default {
   },
   setup() {
     const { t } = useI18n()
-    console.log(t)  
     const router = useRouter()
     const store = useStore()
 
@@ -135,7 +131,6 @@ export default {
     }
   }
 }
-
 </script>
 
 <style scoped>

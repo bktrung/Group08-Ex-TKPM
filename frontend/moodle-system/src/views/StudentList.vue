@@ -154,10 +154,8 @@
 <script>
 import { useStore } from 'vuex'
 import { Modal } from 'bootstrap'
-import { useI18n } from 'vue-i18n'
 import { ref, computed, onMounted } from 'vue'
 import StudentImportExport from '@/components/student/ImportExport.vue'
-
 
 export default {
   name: 'StudentList',
@@ -165,8 +163,6 @@ export default {
     StudentImportExport
   },
   setup() {
-    const { t } = useI18n()
-    console.log(t)
     const initialDataLoaded = ref(false);
     const store = useStore()
     const searchQuery = ref('')
@@ -175,14 +171,12 @@ export default {
     const deleteModal = ref(null)
     const modalRef = ref(null)
 
-    // Computed properties
     const students = computed(() => store.state.student.students)
     const loading = computed(() => store.state.student.loading)
     const currentPage = computed(() => store.state.student.currentPage)
     const totalPages = computed(() => store.state.student.totalPages)
     const departments = computed(() => store.state.department.departments)
 
-    // Calculate pagination range
     const startPage = computed(() => {
       return Math.max(1, currentPage.value - 2)
     })
@@ -246,7 +240,6 @@ export default {
           await store.dispatch('student/deleteStudent', studentToDelete.value.studentId)
           deleteModal.value.hide()
 
-          // Refresh data after deletion
           if (store.state.student.isSearchMode) {
             await search()
           } else {
@@ -292,11 +285,9 @@ export default {
       return store.getters['status/getStatusTypeName'](status) || status
     }
 
-    // Lifecycle hooks
     onMounted(async () => {
       await loadData()
 
-      // Initialize Bootstrap modal
       const modalElement = document.getElementById('confirmDeleteModal')
       if (modalElement) {
         deleteModal.value = new Modal(modalElement)

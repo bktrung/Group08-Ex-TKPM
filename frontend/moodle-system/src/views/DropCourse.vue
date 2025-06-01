@@ -117,113 +117,130 @@
     </div>
 </template>
 
-<script setup>
+<script>
 import { ref, nextTick, onMounted } from 'vue'
 import { Modal } from 'bootstrap'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 
-const store = useStore()
-const router = useRouter()
+export default {
+  setup() {
+    const store = useStore()
+    const router = useRouter()
+    const { t } = useI18n()
 
-const studentId = ref('')
-const classCode = ref('')
-const reason = ref('')
-const dropError = ref('')
+    const studentId = ref('')
+    const classCode = ref('')
+    const reason = ref('')
+    const dropError = ref('')
 
-const confirmModalRef = ref(null)
-let confirmModal = null
+    const confirmModalRef = ref(null)
+    let confirmModal = null
 
-const dropHistory = ref([])
-const searchMSSV = ref('')
+    const dropHistory = ref([])
+    const searchMSSV = ref('')
 
-const { t } = useI18n()
+    onMounted(async () => {
+      await nextTick()
+      confirmModal = new Modal(confirmModalRef.value)
+    })
 
-console.log(t)
-
-onMounted(async () => {
-    await nextTick()
-    confirmModal = new Modal(confirmModalRef.value)
-})
-
-const confirmDelete = () => {
-    dropError.value = ''
-    if (!studentId.value.trim() || !classCode.value.trim() || !reason.value.trim()) {
+    const confirmDelete = () => {
+      dropError.value = ''
+      if (!studentId.value.trim() || !classCode.value.trim() || !reason.value.trim()) {
         dropError.value = t('common.fill_all_required')
         showModal('errorModal')
         return
+      }
+      confirmModal.show()
     }
-    confirmModal.show()
-}
 
-const loadHistory = async () => {
-    try {
+    const loadHistory = async () => {
+      try {
         await store.dispatch('enrollment/getDropHistory', searchMSSV.value)
         dropHistory.value = store.state.enrollment.history || []
         console.log(dropHistory.value)
 
         const error = store.state.enrollment.historyError
         if (error) {
-            dropHistory.value = []
-            dropError.value = error
-            showModal('errorModal')
+          dropHistory.value = []
+          dropError.value = error
+          showModal('errorModal')
         } else {
-            dropError.value = ''
+          dropError.value = ''
         }
 
-    } catch (err) {
+      } catch (err) {
         dropError.value = t('enrollment.drop.istory.loading_error')
         showModal('errorModal')
+      }
     }
-}
 
-const hideConfirmModal = () => {
-    confirmModal?.hide()
-}
+    const hideConfirmModal = () => {
+      confirmModal?.hide()
+    }
 
-const showModal = async (id) => {
-    await nextTick()
-    const modal = new Modal(document.getElementById(id))
-    modal.show()
-}
+    const showModal = async (id) => {
+      await nextTick()
+      const modal = new Modal(document.getElementById(id))
+      modal.show()
+    }
 
-const goBack = () => {
-    router.back()
-}
+    const goBack = () => {
+      router.back()
+    }
 
-const resetForm = () => {
-    studentId.value = ''
-    classCode.value = ''
-    reason.value = ''
-}
+    const resetForm = () => {
+      studentId.value = ''
+      classCode.value = ''
+      reason.value = ''
+    }
 
-const performDelete = async () => {
-    hideConfirmModal()
-    try {
+    const performDelete = async () => {
+      hideConfirmModal()
+      try {
         await store.dispatch('enrollment/dropEnrollment', {
-            studentId: studentId.value,
-            classCode: classCode.value,
-            dropReason: reason.value
+          studentId: studentId.value,
+          classCode: classCode.value,
+          dropReason: reason.value
         })
 
         const error = store.state.enrollment.error
         if (error) {
-            dropError.value = error
-            showModal('errorModal')
+          dropError.value = error
+          showModal('errorModal')
         } else {
-            resetForm()
-            showModal('successModal')
+          resetForm()
+          showModal('successModal')
         }
-    } catch (err) {
+      } catch (err) {
         dropError.value = err.message || t('common.undefined_error')
         showModal('errorModal')
+      }
     }
-}
 
-const formatDate = (isoString) => {
-    const d = new Date(isoString)
-    return d.toLocaleString('vi-VN')
+    const formatDate = (isoString) => {
+      const d = new Date(isoString)
+      return d.toLocaleString('vi-VN')
+    }
+
+    return {
+      studentId,
+      classCode,
+      reason,
+      dropError,
+      confirmModalRef,
+      dropHistory,
+      searchMSSV,
+      confirmDelete,
+      loadHistory,
+      hideConfirmModal,
+      goBack,
+      performDelete,
+      formatDate
+    }
+  }
 }
 </script>
 
