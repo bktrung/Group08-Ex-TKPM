@@ -15,7 +15,7 @@ class ConfigService extends EventEmitter {
 
 	constructor(configPath?: string) {
 		super();
-		this.configPath = configPath || path.resolve(__dirname, '../../config.json');
+		this.configPath = configPath || path.resolve(__dirname, '../../rule_config.json');
 		this.config = this.loadConfig();
 		this.watchConfig();
 	}

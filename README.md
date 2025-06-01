@@ -482,16 +482,3 @@ Chạy lệnh `npm run start` để chạy cả frontend và backend, sau đó t
    - Ở trang Bảng điểm, nhập MSSV của sinh viên muốn in bảng điểm, nhấn Tạo bảng điểm
      ![image](https://github.com/user-attachments/assets/acdeff5f-a908-4fcd-9c49-3dd11816889a)
    - Nhấn Download PDF để tải file về
-
-
-
-
-
-
-
-
-
-
-
-   
-   
