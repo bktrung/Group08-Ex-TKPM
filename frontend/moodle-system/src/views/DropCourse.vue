@@ -1,56 +1,57 @@
 <template>
     <div class="container py-4">
-        <h3>Hủy đăng kí môn học</h3>
+        <h3 class="pb-3">{{ $t('enrollment.drop.title') }}</h3>
 
         <!-- Form input -->
         <div class="mb-3">
-            <label class="form-label">Mã số sinh viên (MSSV)</label>
-            <input v-model="studentId" class="form-control" placeholder="Nhập MSSV" />
+            <label class="form-label">{{ $t('student.student_id') }}</label>
+            <input v-model="studentId" class="form-control" :placeholder="$t('student.enter_student_id')" />
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Mã lớp</label>
-            <input v-model="classCode" class="form-control" placeholder="Nhập mã lớp" />
+            <label class="form-label">{{ $t('class.class_code') }}</label>
+            <input v-model="classCode" class="form-control" :placeholder="$t('enrollment.enter_class_code')" />
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Lý do xóa</label>
-            <textarea v-model="reason" class="form-control" rows="3" placeholder="Nhập lý do hủy"></textarea>
+            <label class="form-label">{{ $t('enrollment.drop.reason') }}</label>
+            <textarea v-model="reason" class="form-control" rows="3"
+                :placeholder="$t('enrollment.drop.enter_reason')"></textarea>
         </div>
 
         <!-- Delete button -->
-        <button class="btn btn-danger" @click="confirmDelete">Xóa</button>
+        <button class="btn btn-danger" @click="confirmDelete">{{ $t('common.delete') }}</button>
 
         <!-- Confirm delete modal -->
         <div class="modal fade" ref="confirmModalRef" tabindex="-1">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header">
-                        <h5 class="modal-title">Xác nhận hủy</h5>
+                        <h5 class="modal-title">{{ $t('common.confirm_cancel') }}</h5>
                         <button type="button" class="btn-close" @click="hideConfirmModal"></button>
                     </div>
                     <div class="modal-body">
-                        <p>Bạn có chắc chắn muốn xóa sinh viên {{ studentId }} khỏi lớp {{ classCode }} không?</p>
-                        <p><strong>Lý do:</strong> {{ reason }}</p>
+                        <p>{{ $t('enrollment.drop.confirmation', { studentId, classCode }) }}</p>
+                        <p><strong>{{ $t('common.reason') }}:</strong> {{ reason }}</p>
                     </div>
                     <div class="modal-footer">
-                        <button class="btn btn-secondary" @click="hideConfirmModal">Hủy</button>
-                        <button class="btn btn-danger" @click="performDelete">Xác nhận</button>
+                        <button class="btn btn-secondary" @click="hideConfirmModal">{{ $t('common.cancel') }}</button>
+                        <button class="btn btn-danger" @click="performDelete">{{ $t('common.confirm') }}</button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Modal Thành Công -->
+        <!-- Modal Success -->
         <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header bg-success text-white">
-                        <h5 class="modal-title">Hủy thành công</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                        <h5 class="modal-title">{{ $t('common.cancel_success') }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('common.close')"></button>
                     </div>
                     <div class="modal-body">
-                        ✅ Đã xóa sinh viên {{ studentId }} khỏi lớp {{ classCode }} thành công.
+                        ✅ {{ $t('enrollment.drop.confirm_success', { studentId, classCode }) }}
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-success" data-bs-dismiss="modal"
@@ -60,13 +61,14 @@
             </div>
         </div>
 
-        <!-- Modal Thất Bại -->
+        <!-- Modal Failed -->
         <div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header bg-danger text-white">
-                        <h5 class="modal-title">Hủy thất bại</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                        <h5 class="modal-title">{{ $t('common.cancel_failed') }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                            :aria-label="$t('common.close')"></button>
                     </div>
                     <div class="modal-body">
                         ❌ {{ dropError }}
@@ -80,10 +82,10 @@
 
         <!-- Filter MSSV -->
         <div class="mt-5 mb-3">
-            <label class="form-label">Tìm lịch sử theo MSSV</label>
+            <label class="form-label">{{ $t('enrollment.drop.history.search_by_id') }}</label>
             <div class="input-group">
-                <input v-model="searchMSSV" class="form-control" placeholder="Nhập MSSV để lọc" />
-                <button class="btn btn-primary" @click="loadHistory">Tìm kiếm</button>
+                <input v-model="searchMSSV" class="form-control" :placeholder="$t('student.enter_student_id')" />
+                <button class="btn btn-primary" @click="loadHistory">{{ $t('common.search') }}</button>
             </div>
         </div>
         <!-- Drop history table -->
@@ -91,12 +93,12 @@
             <table class="table table-bordered table-hover">
                 <thead class="table-light">
                     <tr>
-                        <th>MSSV</th>
-                        <th>Họ tên</th>
-                        <th>Mã lớp</th>
-                        <th>Lý do</th>
-                        <th>Ngày đăng kí</th>
-                        <th>Ngày hủy</th>
+                        <th>{{ $t('student.student_id') }}</th>
+                        <th>{{ $t('student.name') }}</th>
+                        <th>{{ $t('class.class_code') }}</th>
+                        <th>{{ $t('common.reason') }}</th>
+                        <th>{{ $t('enrollment.registered_date') }}</th>
+                        <th>{{ $t('enrollment.dropped_date') }}</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -111,112 +113,134 @@
                 </tbody>
             </table>
         </div>
-        <div v-else class="text-muted">Không có lịch sử hủy nào.</div>
+        <div v-else class="text-muted">{{ $t('enrollment.drop.history.no_data') }}</div>
     </div>
 </template>
 
-<script setup>
+<script>
 import { ref, nextTick, onMounted } from 'vue'
 import { Modal } from 'bootstrap'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
 
-const store = useStore()
-const router = useRouter()
+export default {
+  setup() {
+    const store = useStore()
+    const router = useRouter()
+    const { t } = useI18n()
 
-const studentId = ref('')
-const classCode = ref('')
-const reason = ref('')
-const dropError = ref('')
+    const studentId = ref('')
+    const classCode = ref('')
+    const reason = ref('')
+    const dropError = ref('')
 
-const confirmModalRef = ref(null)
-let confirmModal = null
+    const confirmModalRef = ref(null)
+    let confirmModal = null
 
-const dropHistory = ref([])
-const searchMSSV = ref('')
+    const dropHistory = ref([])
+    const searchMSSV = ref('')
 
-onMounted(async () => {
-    await nextTick()
-    confirmModal = new Modal(confirmModalRef.value)
-})
+    onMounted(async () => {
+      await nextTick()
+      confirmModal = new Modal(confirmModalRef.value)
+    })
 
-const confirmDelete = () => {
-    dropError.value = ''
-    if (!studentId.value.trim() || !classCode.value.trim() || !reason.value.trim()) {
-        dropError.value = 'Vui lòng nhập đầy đủ thông tin.'
+    const confirmDelete = () => {
+      dropError.value = ''
+      if (!studentId.value.trim() || !classCode.value.trim() || !reason.value.trim()) {
+        dropError.value = t('common.fill_all_required')
         showModal('errorModal')
         return
+      }
+      confirmModal.show()
     }
-    confirmModal.show()
-}
 
-const loadHistory = async () => {
-    try {
+    const loadHistory = async () => {
+      try {
         await store.dispatch('enrollment/getDropHistory', searchMSSV.value)
         dropHistory.value = store.state.enrollment.history || []
         console.log(dropHistory.value)
 
         const error = store.state.enrollment.historyError
         if (error) {
-            dropHistory.value = []
-            dropError.value = error
-            showModal('errorModal')
+          dropHistory.value = []
+          dropError.value = error
+          showModal('errorModal')
         } else {
-            dropError.value = ''
+          dropError.value = ''
         }
 
-    } catch (err) {
-        dropError.value = 'Không thể tải lịch sử hủy.'
+      } catch (err) {
+        dropError.value = t('enrollment.drop.istory.loading_error')
         showModal('errorModal')
+      }
     }
-}
 
-const hideConfirmModal = () => {
-    confirmModal?.hide()
-}
+    const hideConfirmModal = () => {
+      confirmModal?.hide()
+    }
 
-const showModal = async (id) => {
-    await nextTick()
-    const modal = new Modal(document.getElementById(id))
-    modal.show()
-}
+    const showModal = async (id) => {
+      await nextTick()
+      const modal = new Modal(document.getElementById(id))
+      modal.show()
+    }
 
-const goBack = () => {
-    router.back()
-}
+    const goBack = () => {
+      router.back()
+    }
 
-const resetForm = () => {
-    studentId.value = ''
-    classCode.value = ''
-    reason.value = ''
-}
+    const resetForm = () => {
+      studentId.value = ''
+      classCode.value = ''
+      reason.value = ''
+    }
 
-const performDelete = async () => {
-    hideConfirmModal()
-    try {
+    const performDelete = async () => {
+      hideConfirmModal()
+      try {
         await store.dispatch('enrollment/dropEnrollment', {
-            studentId: studentId.value,
-            classCode: classCode.value,
-            dropReason: reason.value
+          studentId: studentId.value,
+          classCode: classCode.value,
+          dropReason: reason.value
         })
 
         const error = store.state.enrollment.error
         if (error) {
-            dropError.value = error
-            showModal('errorModal')
+          dropError.value = error
+          showModal('errorModal')
         } else {
-            resetForm()
-            showModal('successModal')
+          resetForm()
+          showModal('successModal')
         }
-    } catch (err) {
-        dropError.value = err.message || 'Lỗi không xác định.'
+      } catch (err) {
+        dropError.value = err.message || t('common.undefined_error')
         showModal('errorModal')
+      }
     }
-}
 
-const formatDate = (isoString) => {
-    const d = new Date(isoString)
-    return d.toLocaleString('vi-VN')
+    const formatDate = (isoString) => {
+      const d = new Date(isoString)
+      return d.toLocaleString('vi-VN')
+    }
+
+    return {
+      studentId,
+      classCode,
+      reason,
+      dropError,
+      confirmModalRef,
+      dropHistory,
+      searchMSSV,
+      confirmDelete,
+      loadHistory,
+      hideConfirmModal,
+      goBack,
+      performDelete,
+      formatDate
+    }
+  }
 }
 </script>
 

@@ -5,26 +5,26 @@
             <table class="table table-bordered table-striped">
                 <thead class="table-primary text-center">
                     <tr>
-                        <th>Mã lớp</th>
-                        <th>Năm học</th>
-                        <th>Học kỳ</th>
-                        <th>Giảng viên</th>
-                        <th>Sĩ số</th>
-                        <th>Lịch học</th>
-                        <th>Hành động</th>
+                        <th>{{ $t('class.class_code') }}</th>
+                        <th>{{ $t('class.academic_year') }}</th>
+                        <th>{{ $t('class.semester') }}</th>
+                        <th>{{ $t('class.lecturer') }}</th>
+                        <th>{{ $t('class.student_count') }}</th>
+                        <th>{{ $t('class.schedule') }}</th>
+                        <th>{{ $t('common.action') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-if="loading" class="text-center">
                         <td colspan="7">
                             <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
+                                <span class="visually-hidden">{{ $t('common.loading') }}</span>
                             </div>
                         </td>
                     </tr>
                     <tr v-else-if="paginatedClasses.length === 0" class="text-center">
                         <td colspan="7">
-                            Không có lớp học nào phù hợp.
+                            {{ $t('class.no_matching_classes') }}
                         </td>
                     </tr>
                     <tr v-for="classItem in paginatedClasses" :key="classItem._id">
@@ -42,12 +42,12 @@
                         </td>
                         <td>
                             <button class="btn btn-sm btn-outline-primary" @click="showScheduleModal(classItem)">
-                                Xem lịch học
+                                 {{ $t('class.view_schedule') }}
                             </button>
                         </td>
                         <td class="text-center">
                             <button class="btn btn-sm btn-outline-success" @click="register(classItem)">
-                                Đăng ký
+                                {{ $t('common.register') }}
                             </button>
                         </td>
                     </tr>
@@ -58,27 +58,31 @@
         <!-- Pagination -->
         <div class="d-flex justify-content-between align-items-center">
             <div>
-                <span>Hiển thị {{ paginatedClasses.length }} / {{ filteredClasses.length }} lớp học</span>
+                <span>{{ $t('class.display_count', {
+                    current: paginatedClasses.length, total: filteredClasses.length
+                }) }}</span>
             </div>
             <nav>
                 <ul class="pagination">
                     <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                        <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">Trước</a>
+                        <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">{{
+                            $t('common.previous') }}</a>
                     </li>
                     <li v-for="page in totalPages" :key="page" class="page-item"
                         :class="{ active: page === currentPage }">
                         <a class="page-link" href="#" @click.prevent="changePage(page)">{{ page }}</a>
                     </li>
                     <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                        <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">Sau</a>
+                        <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">{{ $t('common.next')
+                        }}</a>
                     </li>
                 </ul>
             </nav>
             <div>
                 <select v-model="pageSize" class="form-select form-select-sm" style="width: auto;">
-                    <option :value="5">5 / trang</option>
-                    <option :value="10">10 / trang</option>
-                    <option :value="20">20 / trang</option>
+                    <option :value="5">5 / {{ $t('common.page') }}</option>
+                    <option :value="10">10 / {{ $t('common.page') }}</option>
+                    <option :value="20">20 / {{ $t('common.page') }}</option>
                 </select>
             </div>
         </div>
@@ -89,7 +93,7 @@
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title" v-if="selectedClass">
-                            Lịch học: {{ selectedClass.classCode }}
+                            {{ $t('class.schedule') }}: {{ selectedClass.classCode }}
                         </h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
@@ -98,10 +102,10 @@
                             <table class="table table-bordered">
                                 <thead>
                                     <tr class="text-center">
-                                        <th>Thứ</th>
-                                        <th>Phòng học</th>
-                                        <th>Tiết bắt đầu</th>
-                                        <th>Tiết kết thúc</th>
+                                        <th>{{ $t('days.day_of_week') }}</th>
+                                        <th>{{ $t('class.room') }}</th>
+                                        <th>{{ $t('class.start_period') }}</th>
+                                        <th>{{ $t('class.end_period') }}</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -116,7 +120,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ $t('common.close')
+                        }}</button>
                     </div>
                 </div>
             </div>
@@ -128,6 +133,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import { Modal } from 'bootstrap'
+import { useI18n } from 'vue-i18n'
 
 export default {
     name: 'ClassTable',
@@ -139,9 +145,9 @@ export default {
     },
     emits: ['register'],
     setup(props, { emit }) {
+        const { t } = useI18n()
         const store = useStore()
 
-        // State
         const selectedClass = ref(null)
         const error = ref('')
         const currentPage = ref(1)
@@ -149,7 +155,6 @@ export default {
         const scheduleModalRef = ref(null)
         let scheduleModal = null
 
-        // Computed properties
         const classes = computed(() => store.state.class.classes)
 
         const filteredClasses = computed(() => {
@@ -170,7 +175,6 @@ export default {
 
         const loading = computed(() => store.state.classes?.loading || false)
 
-        // Methods
         const changePage = (page) => {
             if (page >= 1 && page <= totalPages.value) {
                 currentPage.value = page
@@ -189,21 +193,12 @@ export default {
         }
 
         const formatDayOfWeek = (day) => {
-            const dayMapping = {
-                2: 'Thứ Hai',
-                3: 'Thứ Ba',
-                4: 'Thứ Tư',
-                5: 'Thứ Năm',
-                6: 'Thứ Sáu',
-                7: 'Thứ Bảy',
-                8: 'Chủ Nhật'
-            }
-            return dayMapping[day] || `Thứ ${day}`
+            return t(`days.${day}`) || `Thứ ${day}`
         }
 
         const formatSemester = (semester) => {
-            if (semester === 3) return 'Học kỳ hè'
-            return `Học kỳ ${semester}`
+            if (semester === 3) return t('semester.summer')
+            return t('semester.regular', { semester })
         }
 
         const getProgressBarClass = (classItem) => {
@@ -213,7 +208,6 @@ export default {
             return 'bg-success'
         }
 
-        // Lifecycle
         onMounted(async () => {
             try {
                 if (scheduleModalRef.value) {
@@ -222,8 +216,9 @@ export default {
 
                 await store.dispatch('class/fetchClasses')
             } catch (err) {
-                error.value = `Lỗi: ${err.message || 'Đã xảy ra lỗi khi tải dữ liệu'}`
-                console.error('Error loading data:', err)
+                console.error('Error loading data:', err);
+                const msg = err.message || t('error.load_failed')
+                error.value = `${t('error.prefix')}: ${msg}`
             }
         })
 

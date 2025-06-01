@@ -1,10 +1,10 @@
 <template>
   <div>
-    <div class="section-title">Giấy tờ chứng minh nhân thân</div>
+    <div class="section-title">{{ $t('identity.sectionTitle') }}</div>
     <div class="mb-3">
       <div class="row mb-2">
         <div class="col-md-4">
-          <label class="form-label">Loại giấy tờ</label>
+          <label class="form-label">{{ $t('identity.type') }}</label>
           <select 
             id="identity-type" 
             v-model="internalDocument.type" 
@@ -14,13 +14,13 @@
             @change="handleTypeChange"
             @blur="onFieldTouched('type')"
           >
-            <option value="CMND">Chứng minh nhân dân (CMND)</option>
-            <option value="CCCD">Căn cước công dân (CCCD)</option>
-            <option value="PASSPORT">Hộ chiếu (Passport)</option>
+            <option value="CMND">{{ $t('identity.type_options.CMND') }}</option>
+            <option value="CCCD">{{ $t('identity.type_options.CCCD') }}</option>
+            <option value="PASSPORT">{{ $t('identity.type_options.PASSPORT') }}</option>
           </select>
         </div>
         <div class="col-md-4">
-          <label class="form-label">Số giấy tờ</label>
+          <label class="form-label">{{ $t('identity.number') }}</label>
           <input 
             type="text" 
             v-model="internalDocument.number" 
@@ -30,31 +30,31 @@
             @blur="onFieldTouched('number')"
           >
           <div class="invalid-feedback" v-if="isInvalid.number && touched.number">
-            <span v-if="internalDocument.type === 'CMND'">Số CMND phải có đúng 9 chữ số</span>
-            <span v-else-if="internalDocument.type === 'CCCD'">Số CCCD phải có đúng 12 chữ số</span>
-            <span v-else-if="internalDocument.type === 'PASSPORT'">Số hộ chiếu phải có 1 chữ cái viết hoa và 8 chữ số</span>
+            <span v-if="internalDocument.type === 'CMND'">{{ $t('identity.number_error.CMND') }}</span>
+            <span v-else-if="internalDocument.type === 'CCCD'">{{ $t('identity.number_error.CCCD') }}</span>
+            <span v-else-if="internalDocument.type === 'PASSPORT'">{{ $t('identity.number_error.PASSPORT') }}</span>
           </div>
         </div>
         <div class="col-md-4" v-if="internalDocument.type === 'CCCD'">
-          <label class="form-label">Có gắn chip</label>
+          <label class="form-label">{{ $t('identity.hasChip') }}</label>
           <select 
             v-model="internalDocument.hasChip" 
             class="form-select"
             :class="{ 'is-valid': isValid.hasChip && touched.hasChip, 'is-invalid': isInvalid.hasChip && touched.hasChip }"
             @blur="onFieldTouched('hasChip')"
           >
-            <option :value="true">Có</option>
-            <option :value="false">Không</option>
+            <option :value="true">{{ $t('common.yes') }}</option>
+            <option :value="false">{{ $t('common.no') }}</option>
           </select>
           <div class="invalid-feedback" v-if="isInvalid.hasChip && touched.hasChip">
-            Thông tin về chip là trường bắt buộc
+            {{ $t('identity.hasChip_required') }}
           </div>
         </div>
       </div>
 
       <div class="row mb-2">
         <div class="col-md-4">
-          <label class="form-label">Ngày cấp</label>
+          <label class="form-label">{{ $t('identity.issueDate') }}</label>
           <input 
             type="date" 
             v-model="internalDocument.issueDate" 
@@ -64,11 +64,11 @@
             @blur="onFieldTouched('issueDate')"
           >
           <div class="invalid-feedback" v-if="isInvalid.issueDate && touched.issueDate">
-            Ngày cấp không thể trong tương lai
+            {{ $t('identity.issueDate_error') }}
           </div>
         </div>
         <div class="col-md-4">
-          <label class="form-label">Ngày hết hạn</label>
+          <label class="form-label">{{ $t('identity.expiryDate') }}</label>
           <input 
             type="date" 
             v-model="internalDocument.expiryDate" 
@@ -78,11 +78,11 @@
             @blur="onFieldTouched('expiryDate')"
           >
           <div class="invalid-feedback" v-if="isInvalid.expiryDate && touched.expiryDate">
-            Ngày hết hạn phải sau ngày hiện tại
+            {{ $t('identity.expiryDate.error') }}
           </div>
         </div>
         <div class="col-md-4">
-          <label class="form-label">Nơi cấp</label>
+          <label class="form-label">{{ $t('identity.issuedBy') }}</label>
           <input 
             type="text" 
             v-model="internalDocument.issuedBy" 
@@ -92,7 +92,7 @@
             @blur="onFieldTouched('issuedBy')"
           >
           <div class="invalid-feedback" v-if="isInvalid.issuedBy && touched.issuedBy">
-            Nơi cấp không được để trống
+            {{ $t('identity.issuedBy_required') }}
           </div>
         </div>
       </div>
@@ -101,7 +101,7 @@
       <div v-if="internalDocument.type === 'PASSPORT'">
         <div class="row mb-2">
           <div class="col-md-6">
-            <label class="form-label">Quốc gia cấp</label>
+            <label class="form-label">{{ $t('identity.issuedCountry') }}</label>
             <select 
               v-model="internalDocument.issuedCountry" 
               class="form-select"
@@ -109,17 +109,17 @@
               required
               @blur="onFieldTouched('issuedCountry')"
             >
-              <option value="">-- Chọn quốc gia --</option>
+              <option value="">{{ $t('identity.issuedCountry_placeholder') }}</option>
               <option v-for="country in countries" :key="country.geonameId" :value="country.countryName">
                 {{ country.countryName }}
               </option>
             </select>
             <div class="invalid-feedback" v-if="isInvalid.issuedCountry && touched.issuedCountry">
-              Quốc gia cấp không được để trống
+              {{ $t('identity.issuedCountry_required') }}
             </div>
           </div>
           <div class="col-md-6">
-            <label class="form-label">Ghi chú (nếu có)</label>
+            <label class="form-label">{{ $t('identity.notes') }}</label>
             <input 
               type="text" 
               v-model="internalDocument.notes" 
@@ -136,6 +136,7 @@
   
 <script>
 import { toRefs, ref, watch } from 'vue'
+// import { useI18n } from 'vue-i18n'
 
 export default {
   name: 'IdentityDocumentFields',
@@ -151,11 +152,11 @@ export default {
   },
   emits: ['update:identityDocument'],
   setup(props, { emit }) {
+    // const { t } = useI18n()
     const { identityDocument } = toRefs(props)
     
     const internalDocument = ref({...identityDocument.value})
     
-    // Track touched state for each field
     const touched = ref({
       type: false,
       number: false,
@@ -167,19 +168,16 @@ export default {
       notes: false
     })
     
-    // Function to mark a field as touched
     const onFieldTouched = (field) => {
       touched.value[field] = true
     }
     
-    // Mark all fields as touched (useful when submitting the form)
     const markAllFieldsTouched = () => {
       Object.keys(touched.value).forEach(field => {
         touched.value[field] = true
       })
     }
     
-    // Validation state
     const isValid = ref({
       type: false,
       number: false,
@@ -211,13 +209,10 @@ export default {
       let isValidNumber = false
       
       if (internalDocument.value.type === 'CMND') {
-        // CMND must be 9 digits
         isValidNumber = /^[0-9]{9}$/.test(number)
       } else if (internalDocument.value.type === 'CCCD') {
-        // CCCD must be 12 digits
         isValidNumber = /^[0-9]{12}$/.test(number)
       } else if (internalDocument.value.type === 'PASSPORT') {
-        // Passport must be 1 uppercase letter followed by 8 digits
         isValidNumber = /^[A-Z][0-9]{8}$/.test(number)
       }
       
@@ -337,7 +332,6 @@ export default {
         const newDocument = {...internalDocument.value}
         delete newDocument.hasChip
         
-        // Set defaults
         newDocument.issuedCountry = newDocument.issuedCountry || 'Vietnam'
         internalDocument.value = newDocument
       } 
@@ -386,16 +380,13 @@ export default {
       emit('update:identityDocument', {...internalDocument.value})
     })
     
-    // Watch for prop changes
     watch(identityDocument, (newValue) => {
       if (JSON.stringify(internalDocument.value) !== JSON.stringify(newValue)) {
         internalDocument.value = {...newValue}
-        // Validate after updating from props, but don't mark as touched
         validateAll()
       }
     }, { deep: true })
     
-    // Initial validation on setup
     validateAll()
     
     return {

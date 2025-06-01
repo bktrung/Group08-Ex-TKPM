@@ -1,29 +1,29 @@
 <template>
   <div class="container mt-4">
-    <h3>Đăng ký môn học</h3>
+    <h3 class="pb-3">{{ $t('enrollment.register.title') }}</h3>
 
-    <!-- Tìm kiếm sinh viên -->
+    <!-- Search Student -->
     <div class="mb-3">
-      <label class="form-label">MSSV</label>
-      <input type="text" class="form-control" v-model="studentQuery" placeholder="Nhập MSSV..." />
+      <label class="form-label">{{ $t('student.student_id') }}</label>
+      <input type="text" class="form-control" v-model="studentQuery" :placeholder="$t('student.enter_student_id')" />
     </div>
 
-    <!-- Bảng danh sách khóa học -->
+    <!-- Course Table -->
     <CourseTable @select-course="selectCourse" />
 
-    <!-- Bảng danh sách lớp học của môn đã chọn -->
+    <!-- Class Table of Selected Course -->
     <ClassTable v-if="selectedCourseId" :courseId="selectedCourseId" @register="register" />
 
-    <!-- Modal Thành Công -->
+    <!-- Modal Success -->
     <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header bg-success text-white">
-            <h5 class="modal-title" id="successModalLabel">Đăng ký thành công</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            <h5 class="modal-title" id="successModalLabel">{{ $t('enrollment.register.success') }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('common.close')"></button>
           </div>
           <div class="modal-body">
-            ✅ Đã đăng ký lớp {{ registeredClassCode }} thành công cho sinh viên {{ studentQuery }}
+            ✅ {{ $t('enrollment.register.confirm_success', { registeredClassCode, studentQuery }) }}
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-success" data-bs-dismiss="modal" @click="goBack">OK</button>
@@ -32,13 +32,13 @@
       </div>
     </div>
 
-    <!-- Modal Thất Bại -->
+    <!-- Modal Failed -->
     <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header bg-danger text-white">
-            <h5 class="modal-title" id="errorModalLabel">Đăng ký thất bại</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+            <h5 class="modal-title" id="errorModalLabel">{{ $t('enrollment.register.failed') }}</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('common.close')"></button>
           </div>
           <div class="modal-body">
             ❌ {{ registerError }}
@@ -50,21 +50,17 @@
       </div>
     </div>
 
-
-
   </div>
 </template>
 
 <script>
-
-
 import { ref, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import { Modal } from 'bootstrap'
 import CourseTable from '@/components/course/CourseTable.vue'
 import ClassTable from '@/components/class/ClassTable.vue'
-
+import { useI18n } from 'vue-i18n'
 
 export default {
   name: 'RegisterCourse',
@@ -73,6 +69,7 @@ export default {
     ClassTable
   },
   setup() {
+    const { t } = useI18n()
     const router = useRouter()
     const store = useStore()
 
@@ -92,12 +89,12 @@ export default {
     }
 
     const goBack = () => {
-      router.back()  // Hoặc router.go(-1)
+      router.back()  
     }
 
     const register = async (classCode) => {
       if (!studentQuery.value.trim()) {
-        registerError.value = 'Vui lòng nhập MSSV trước khi đăng ký.'
+        registerError.value = t('student.validation.required_student_id')
         showModal('errorModal')
         return
       }
@@ -134,7 +131,6 @@ export default {
     }
   }
 }
-
 </script>
 
 <style scoped>

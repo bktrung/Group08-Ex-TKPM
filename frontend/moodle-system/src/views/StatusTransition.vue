@@ -126,170 +126,165 @@
     </div>
   </template>
   
-  <script>
-  import { ref, computed, onMounted } from 'vue'
-  import { useStore } from 'vuex'
-  import { Modal, Toast } from 'bootstrap'
-  
-  export default {
-    name: 'StatusTransition',
-    setup() {
-      const store = useStore()
-      const fromStatusId = ref('')
-      const toStatusId = ref('')
-      const deleteModalRef = ref(null)
-      const toastRef = ref(null)
-      const deleteModal = ref(null)
-      const toast = ref(null)
-      
-      // For delete confirmation
-      const deleteTransitionData = ref({
-        fromStatusId: null,
-        toStatusId: null
-      })
-      const deleteFromStatus = ref('')
-      const deleteToStatus = ref('')
-      
-      // Toast state
-      const toastTitle = ref('Thông báo')
-      const toastMessage = ref('')
-      const toastType = ref('info') // 'info', 'success', 'error'
-  
-      // Computed properties
-      const statusTypes = computed(() => store.state.status.statusTypes)
-      const statusTransitions = computed(() => store.state.status.statusTransitions)
-      const loading = computed(() => store.state.status.loading)
-      
-      const toastClass = computed(() => {
-        return { 'show': toastType.value !== '' && toastMessage.value !== '' }
-      })
-      
-      const toastHeaderClass = computed(() => {
-        switch (toastType.value) {
-          case 'success': return 'bg-success text-white'
-          case 'error': return 'bg-danger text-white'
-          default: return 'bg-info text-white'
-        }
-      })
-  
-      // Methods
-      const addTransition = async () => {
-        if (!fromStatusId.value || !toStatusId.value) return
-        
-        try {
-          await store.dispatch('status/createStatusTransition', {
-            fromStatus: fromStatusId.value,
-            toStatus: toStatusId.value
-          })
-          
-          fromStatusId.value = ''
-          toStatusId.value = ''
-          
-          showToast('Thành công', 'Thêm quy tắc chuyển trạng thái thành công', 'success')
-        } catch (error) {
-          console.error('Error adding transition rule:', error)
-          showToast('Lỗi', `Không thể thêm quy tắc: ${error.message}`, 'error')
-        }
+<script>
+import { ref, computed, onMounted } from 'vue'
+import { useStore } from 'vuex'
+import { Modal, Toast } from 'bootstrap'
+
+export default {
+  name: 'StatusTransition',
+  setup() {
+    const store = useStore()
+    const fromStatusId = ref('')
+    const toStatusId = ref('')
+    const deleteModalRef = ref(null)
+    const toastRef = ref(null)
+    const deleteModal = ref(null)
+    const toast = ref(null)
+    
+    const deleteTransitionData = ref({
+      fromStatusId: null,
+      toStatusId: null
+    })
+    const deleteFromStatus = ref('')
+    const deleteToStatus = ref('')
+    
+    const toastTitle = ref('Thông báo')
+    const toastMessage = ref('')
+    const toastType = ref('info')
+
+    const statusTypes = computed(() => store.state.status.statusTypes)
+    const statusTransitions = computed(() => store.state.status.statusTransitions)
+    const loading = computed(() => store.state.status.loading)
+    
+    const toastClass = computed(() => {
+      return { 'show': toastType.value !== '' && toastMessage.value !== '' }
+    })
+    
+    const toastHeaderClass = computed(() => {
+      switch (toastType.value) {
+        case 'success': return 'bg-success text-white'
+        case 'error': return 'bg-danger text-white'
+        default: return 'bg-info text-white'
       }
+    })
+
+    const addTransition = async () => {
+      if (!fromStatusId.value || !toStatusId.value) return
       
-      const confirmDeleteTransition = (fromId, toId, fromName, toName) => {
-        deleteTransitionData.value = {
-          fromStatusId: fromId,
-          toStatusId: toId
-        }
-        deleteFromStatus.value = fromName
-        deleteToStatus.value = toName
+      try {
+        await store.dispatch('status/createStatusTransition', {
+          fromStatus: fromStatusId.value,
+          toStatus: toStatusId.value
+        })
         
-        deleteModal.value.show()
-      }
-      
-      const deleteTransition = async () => {
-        try {
-          await store.dispatch('status/deleteStatusTransition', {
-            fromStatus: deleteTransitionData.value.fromStatusId,
-            toStatus: deleteTransitionData.value.toStatusId
-          })
-          
-          deleteModal.value.hide()
-          showToast('Thành công', 'Xóa quy tắc chuyển trạng thái thành công', 'success')
-        } catch (error) {
-          console.error('Error deleting transition rule:', error)
-          showToast('Lỗi', `Không thể xóa quy tắc: ${error.message}`, 'error')
-        }
-      }
-      
-      const showToast = (title, message, type = 'info') => {
-        if (!message) return;
+        fromStatusId.value = ''
+        toStatusId.value = ''
         
-        toastTitle.value = title || 'Thông báo';
-        toastMessage.value = message;
-        toastType.value = type;
-        
-        if (toast.value) {
-          toast.value.show();
-        }
-      }
-  
-      onMounted(async () => {
-        await Promise.all([
-          store.dispatch('status/fetchStatusTypes'),
-          store.dispatch('status/fetchStatusTransitions')
-        ])
-        
-        // Initialize Bootstrap components
-        const modalElement = document.getElementById('confirmDeleteModal')
-        if (modalElement) {
-          deleteModal.value = new Modal(modalElement)
-        }
-        
-        const toastElement = document.getElementById('toast')
-        if (toastElement) {
-          toast.value = new Toast(toastElement, { delay: 3000 })
-        }
-      })
-  
-      return {
-        statusTypes,
-        statusTransitions,
-        loading,
-        fromStatusId,
-        toStatusId,
-        deleteModalRef,
-        toastRef,
-        deleteFromStatus,
-        deleteToStatus,
-        toastTitle,
-        toastMessage,
-        toastClass,
-        toastHeaderClass,
-        addTransition,
-        confirmDeleteTransition,
-        deleteTransition
+        showToast('Thành công', 'Thêm quy tắc chuyển trạng thái thành công', 'success')
+      } catch (error) {
+        console.error('Error adding transition rule:', error)
+        showToast('Lỗi', `Không thể thêm quy tắc: ${error.message}`, 'error')
       }
     }
+    
+    const confirmDeleteTransition = (fromId, toId, fromName, toName) => {
+      deleteTransitionData.value = {
+        fromStatusId: fromId,
+        toStatusId: toId
+      }
+      deleteFromStatus.value = fromName
+      deleteToStatus.value = toName
+      
+      deleteModal.value.show()
+    }
+    
+    const deleteTransition = async () => {
+      try {
+        await store.dispatch('status/deleteStatusTransition', {
+          fromStatus: deleteTransitionData.value.fromStatusId,
+          toStatus: deleteTransitionData.value.toStatusId
+        })
+        
+        deleteModal.value.hide()
+        showToast('Thành công', 'Xóa quy tắc chuyển trạng thái thành công', 'success')
+      } catch (error) {
+        console.error('Error deleting transition rule:', error)
+        showToast('Lỗi', `Không thể xóa quy tắc: ${error.message}`, 'error')
+      }
+    }
+    
+    const showToast = (title, message, type = 'info') => {
+      if (!message) return;
+      
+      toastTitle.value = title || 'Thông báo';
+      toastMessage.value = message;
+      toastType.value = type;
+      
+      if (toast.value) {
+        toast.value.show();
+      }
+    }
+
+    onMounted(async () => {
+      await Promise.all([
+        store.dispatch('status/fetchStatusTypes'),
+        store.dispatch('status/fetchStatusTransitions')
+      ])
+      
+      const modalElement = document.getElementById('confirmDeleteModal')
+      if (modalElement) {
+        deleteModal.value = new Modal(modalElement)
+      }
+      
+      const toastElement = document.getElementById('toast')
+      if (toastElement) {
+        toast.value = new Toast(toastElement, { delay: 3000 })
+      }
+    })
+
+    return {
+      statusTypes,
+      statusTransitions,
+      loading,
+      fromStatusId,
+      toStatusId,
+      deleteModalRef,
+      toastRef,
+      deleteFromStatus,
+      deleteToStatus,
+      toastTitle,
+      toastMessage,
+      toastClass,
+      toastHeaderClass,
+      addTransition,
+      confirmDeleteTransition,
+      deleteTransition
+    }
   }
-  </script>
-  
-  <style scoped>
-  .destination-status {
-    margin: 5px;
-    padding: 8px 15px;
-    display: inline-block;
-    border-radius: 20px;
-    background-color: #e9ecef;
-  }
-  
-  .destination-status .remove-btn {
-    margin-left: 8px;
-    cursor: pointer;
-    color: #dc3545;
-  }
-  
-  .remove-btn:hover {
-    color: #bb2d3b;
-  }
-  
-  .transition-card {
-    margin-bottom: 20px;
-  }
-  </style>
+}
+</script>
+
+<style scoped>
+.destination-status {
+  margin: 5px;
+  padding: 8px 15px;
+  display: inline-block;
+  border-radius: 20px;
+  background-color: #e9ecef;
+}
+
+.destination-status .remove-btn {
+  margin-left: 8px;
+  cursor: pointer;
+  color: #dc3545;
+}
+
+.remove-btn:hover {
+  color: #bb2d3b;
+}
+
+.transition-card {
+  margin-bottom: 20px;
+}
+</style>

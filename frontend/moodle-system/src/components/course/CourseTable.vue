@@ -5,9 +5,9 @@
             <div class="col-md-9">
                 <div class="input-group">
                     <input v-model="searchQuery" type="text" class="form-control"
-                        placeholder="Tìm kiếm theo mã hoặc tên khóa học..." @keyup.enter="filterCourses">
-                    <button @click="filterCourses" class="btn btn-primary">Tìm kiếm</button>
-                    <button @click="resetFilter" class="btn btn-secondary">Đặt lại</button>
+                        :placeholder="$t('course.search_placeholder')" @keyup.enter="filterCourses">
+                    <button @click="filterCourses" class="btn btn-primary">{{ $t('common.search') }}</button>
+                    <button @click="resetFilter" class="btn btn-secondary">{{ $t('common.reset') }}</button>
                 </div>
             </div>
         </div>
@@ -17,30 +17,30 @@
             <table class="table table-bordered table-striped">
                 <thead class="table-primary text-center">
                     <tr>
-                        <th>Mã khóa học</th>
-                        <th>Tên khóa học</th>
-                        <th>Khoa</th>
-                        <th>Tín chỉ</th>
-                        <th>Môn học tiên quyết</th>
-                        <th>Trạng thái</th>
-                        <th>Hành động</th>
+                        <th>{{ $t('course.course_code') }}</th>
+                        <th>{{ $t('course.name') }}</th>
+                        <th>{{ $t('course.department') }}</th>
+                        <th>{{ $t('course.credits') }}</th>
+                        <th>{{ $t('course.prerequisite') }}</th>
+                        <th>{{ $t('common.status') }}</th>
+                        <th>{{ $t('common.action') }}</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr v-if="loading" class="text-center">
                         <td colspan="7">
                             <div class="spinner-border text-primary" role="status">
-                                <span class="visually-hidden">Loading...</span>
+                                <span class="visually-hidden">{{ $t('common.loading') }}</span>
                             </div>
                         </td>
                     </tr>
                     <tr v-else-if="filteredCourses.length === 0" class="text-center">
                         <td colspan="7">
                             <div v-if="searchQuery">
-                                Không tìm thấy khóa học phù hợp với tìm kiếm của bạn.
+                                {{ $t('course.no_search_result') }}
                             </div>
                             <div v-else>
-                                Chưa có khóa học nào.
+                                {{ $t('course.no_data') }}
                             </div>
                         </td>
                     </tr>
@@ -55,16 +55,16 @@
                                     {{ prereq }}
                                 </div>
                             </div>
-                            <span v-else class="text-muted">Không có</span>
+                            <span v-else class="text-muted">{{ $t('common.none') }}</span>
                         </td>
                         <td class="text-center">
                             <span :class="course.isActive ? 'badge bg-success' : 'badge bg-danger'">
-                                {{ course.isActive ? 'Đang mở' : 'Đã đóng' }}
+                                {{ course.isActive ? $t('course.status.active') : $t('course.status.inactive') }}
                             </span>
                         </td>
                         <td class="text-center">
                             <button @click="viewClass(course)" class="btn btn-info btn-sm">
-                                <i class="bi bi-eye"></i> Xem lớp
+                                <i class="bi bi-eye"></i> {{ $t('course.view_class') }}
                             </button>
                         </td>
                     </tr>
@@ -75,27 +75,32 @@
         <!-- Pagination -->
         <div class="d-flex justify-content-between align-items-center">
             <div>
-                <span>Hiển thị {{ paginatedCourses.length }} / {{ filteredCourses.length }} khóa học</span>
+                <span>
+                    {{ $t('course.display_count', { current: paginatedCourses.length, total: filteredCourses.length })
+                    }}
+                </span>
             </div>
             <nav>
                 <ul class="pagination">
                     <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                        <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">Trước</a>
+                        <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">{{
+                            $t('common.previous') }}</a>
                     </li>
                     <li v-for="page in totalPages" :key="page" class="page-item"
                         :class="{ active: page === currentPage }">
                         <a class="page-link" href="#" @click.prevent="changePage(page)">{{ page }}</a>
                     </li>
                     <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                        <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">Sau</a>
+                        <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">{{ $t('common.next')
+                            }}</a>
                     </li>
                 </ul>
             </nav>
             <div>
                 <select v-model="pageSize" class="form-select form-select-sm" style="width: auto;">
-                    <option :value="5">5 / trang</option>
-                    <option :value="10">10 / trang</option>
-                    <option :value="20">20 / trang</option>
+                    <option :value="5">5 / {{ $t('common.page') }}</option>
+                    <option :value="10">10 / {{ $t('common.page') }}</option>
+                    <option :value="20">20 / {{ $t('common.page') }}</option>
                 </select>
             </div>
         </div>
@@ -105,10 +110,12 @@
 <script>
 import { ref, computed } from 'vue'
 import { useStore } from 'vuex'
+// import { useI18n } from 'vue-i18n'
 
 export default {
     name: 'CourseTable',
     setup(props, { emit }) {
+        // const { t } = useI18n()
         const store = useStore()
         const searchQuery = ref('')
         const currentPage = ref(1)
@@ -182,7 +189,7 @@ export default {
         }
 
         const viewClass = (course) => {
-            emit('select-course', course)  // Phát sự kiện với khóa học đã chọn
+            emit('select-course', course)  
         }
 
         return {

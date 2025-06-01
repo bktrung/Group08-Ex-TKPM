@@ -152,11 +152,21 @@ Directory structure:
     │       ├── tsconfig.json
     │       └── unit/
     │           ├── repositories/
+    │           │   ├── class.repo.spec.ts
     │           │   ├── department.repo.spec.ts
     │           │   ├── enrollment.repo.spec.ts
     │           │   └── student.repo.spec.ts
-    │           └── services/
-    │               └── student-status.service.spec.ts
+    │           ├── services/
+    │           │   ├── class.service.spec.ts
+    │           │   ├── course.service.spec.ts
+    │           │   ├── department.service.spec.ts
+    │           │   ├── enrollment.service.spec.ts
+    │           │   ├── grade.service.spec.ts
+    │           │   ├── logger.service.spec.ts
+    │           │   ├── student.service.spec.ts
+    │           │   └── transcript.service.spec.ts
+    │           └── utils/
+    │               └── index.spec.ts
     ├── frontend/
     │   └── moodle-system/
     │       ├── README.md
@@ -225,8 +235,6 @@ Directory structure:
     │               └── StudentList.vue
     └── report/
         └── Unit Testing.pptx
-        └── The Broken Window Theory & The Boy Scout Rule.pdf
-        
 ```
 
 ## Hướng dẫn cài đặt & chạy chương trình
@@ -279,10 +287,13 @@ Note:
 #### 4. Chạy chương trình.
 Chạy lệnh `npm run start` để chạy cả frontend và backend, sau đó truy cập vào trang web tại địa chỉ http://localhost:8080
 
-## Hướng dẫn chạy unit test
+## Hướng dẫn chạy Unit Test
 1. Mở terminal, di chuyển tới thư mục backend
 2. Chạy lệnh `npm install --save-dev jest @types/jest ts-jest mongodb-memory-server @shelf/jest-mongodb`
 3. Chạy lệnh `npm run test` để chạy tất cả các unit test
+4. Kết quả sẽ hiển thị trong console hoặc có thể xem thông qua file `coverage/lcov-report/index.html` được tạo tự động trong folder backend sau khi run test.
+![image](https://github.com/user-attachments/assets/9b90e774-059e-42cd-936e-74cb9201f77b)
+
 
 ## Hướng dẫn sử dụng các chức năng
 

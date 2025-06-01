@@ -25,5 +25,8 @@
     "mongodb-memory-server": "^10.1.4",
     "ts-jest": "^29.3.3",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "vue-i18n": "^8.28.2"
   }
 }

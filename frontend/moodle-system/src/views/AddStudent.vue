@@ -1,10 +1,10 @@
 <template>
   <div class="container mt-5 mb-5">
-    <h2 class="mb-4 text-center">Thêm Sinh Viên</h2>
+    <h2 class="mb-4 text-center">{{ $t('student.add_student') }}</h2>
 
     <div v-if="loading" class="text-center py-5">
       <div class="spinner-border text-primary" role="status">
-        <span class="visually-hidden">Loading...</span>
+        <span class="visually-hidden">{{ $t('common.loading') }}...</span>
       </div>
     </div>
 
@@ -23,11 +23,11 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header bg-success text-white">
-            <h5 class="modal-title">Thành công!</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <h5 class="modal-title">{{ $t('common.success') }}!</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('common.close')"></button>
           </div>
           <div class="modal-body">
-            Thêm sinh viên thành công!
+            {{ $t('student.add_success') }}!
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-primary" @click="redirectToList">OK</button>
@@ -41,14 +41,14 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header bg-danger text-white">
-            <h5 class="modal-title">Lỗi!</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            <h5 class="modal-title">{{ $t('common.error') }}!</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('common.close')"></button>
           </div>
           <div class="modal-body">
             {{ errorMessage }}
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Đóng</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ $t('common.close') }}</button>
           </div>
         </div>
       </div>
@@ -62,6 +62,7 @@ import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import { Modal } from 'bootstrap'
 import StudentForm from '@/components/student/StudentForm.vue'
+import { useI18n } from 'vue-i18n'
 
 export default {
   name: 'AddStudent',
@@ -69,6 +70,7 @@ export default {
     StudentForm
   },
   setup() {
+    const { t } = useI18n()
     const store = useStore()
     const router = useRouter()
     const modalRef = ref(null)
@@ -79,13 +81,11 @@ export default {
     let successModal = null
     let errorModal = null
     
-    // Load initial reference data
     const loadReferenceData = async () => {
       loading.value = true
       error.value = null
       
       try {
-        // Load all reference data needed for the form
         await Promise.all([
           store.dispatch('department/fetchDepartments'),
           store.dispatch('program/fetchPrograms'),
@@ -96,7 +96,7 @@ export default {
         ])
       } catch (err) {
         console.error('Error loading reference data:', err)
-        error.value = err.message || 'Không thể tải dữ liệu tham chiếu'
+        error.value = err.message || t('common.loading_error')
       } finally {
         loading.value = false
       }
@@ -106,20 +106,15 @@ export default {
       try {
         console.log('Adding new student:', JSON.stringify(studentData, null, 2))
         
-        // Create a clean copy of the data to send to the API
         const cleanData = {}
         
-        // Process all fields
         for (const [key, value] of Object.entries(studentData)) {
-          // Handle reference fields
           if (key === 'department' || key === 'program' || key === 'status') {
             cleanData[key] = typeof value === 'object' ? value._id : value
           } 
-          // Handle date fields
           else if (key === 'dateOfBirth') {
             cleanData[key] = new Date(value).toISOString()
           }
-          // Handle identity document
           else if (key === 'identityDocument') {
             const docCopy = {...value}
             
@@ -137,14 +132,11 @@ export default {
             
             cleanData[key] = docCopy
           }
-          // Handle address fields - copy these directly
           else if (key === 'mailingAddress' || key === 'permanentAddress' || key === 'temporaryAddress') {
-            // Only include non-empty addresses
             if (value && value.houseNumberStreet && value.houseNumberStreet.trim() !== '') {
               cleanData[key] = {...value}
             }
           }
-          // Handle all other fields
           else {
             cleanData[key] = value
           }
@@ -152,10 +144,8 @@ export default {
         
         console.log('Prepared data for API:', JSON.stringify(cleanData, null, 2))
         
-        // Send the data to the API
         await store.dispatch('student/createStudent', cleanData)
         
-        // Show success modal
         if (successModal) {
           successModal.show()
         }
@@ -163,7 +153,6 @@ export default {
         console.error('Error adding student:', error)
         errorMessage.value = error.response?.data?.message || error.message || 'Có lỗi xảy ra. Vui lòng thử lại!'
         
-        // Show error modal
         if (errorModal) {
           errorModal.show()
         }
@@ -183,7 +172,6 @@ export default {
     onMounted(async () => {
       await loadReferenceData()
       
-      // Initialize Bootstrap modals
       const successModalElement = document.getElementById('successModal')
       if (successModalElement) {
         successModal = new Modal(successModalElement)
