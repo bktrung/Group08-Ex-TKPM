@@ -148,7 +148,6 @@ export default {
         const { t } = useI18n()
         const store = useStore()
 
-        // State
         const selectedClass = ref(null)
         const error = ref('')
         const currentPage = ref(1)
@@ -156,7 +155,6 @@ export default {
         const scheduleModalRef = ref(null)
         let scheduleModal = null
 
-        // Computed properties
         const classes = computed(() => store.state.class.classes)
 
         const filteredClasses = computed(() => {
@@ -177,7 +175,6 @@ export default {
 
         const loading = computed(() => store.state.classes?.loading || false)
 
-        // Methods
         const changePage = (page) => {
             if (page >= 1 && page <= totalPages.value) {
                 currentPage.value = page
@@ -211,7 +208,6 @@ export default {
             return 'bg-success'
         }
 
-        // Lifecycle
         onMounted(async () => {
             try {
                 if (scheduleModalRef.value) {

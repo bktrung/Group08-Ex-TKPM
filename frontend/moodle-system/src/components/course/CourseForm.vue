@@ -108,9 +108,6 @@ export default {
     const { t } = useI18n()
     const store = useStore()
 
-    console.log(t)
-
-    // Create a reactive form state that's separate from the props
     const formState = reactive({
       courseCode: '',
       name: '',
@@ -123,14 +120,11 @@ export default {
     const loading = ref(false)
     const validationErrors = reactive({})
 
-    // Get departments and courses from store
     const departments = computed(() => store.state.department.departments)
     const courses = computed(() => store.state.course.courses || [])
 
-    // Filter available courses for prerequisites (exclude current course if editing)
     const availableCourses = computed(() => {
       return courses.value.filter(course => {
-        // If editing, exclude the current course
         if (props.isEditing && course.courseCode === formState.courseCode) {
           return false
         }
@@ -164,11 +158,9 @@ export default {
       }
     }, { immediate: true, deep: true })
 
-    // Validate form data
     const validateForm = () => {
       const errors = {}
 
-      // Validate course code (only if not editing)
       if (!props.isEditing && !formState.courseCode.trim()) {
         errors.courseCode = t('course.validation.required_course_code')
       } else if (
@@ -178,14 +170,12 @@ export default {
         errors.courseCode = t('course.validation.invalid_course_code')
       }
 
-      // Validate name
       if (!formState.name.trim()) {
         errors.name = t('course.validation.required_name')
       } else if (formState.name.length < 3) {
         errors.name = t('course.validation.short_name')
       }
 
-      // Validate credits
       if (!formState.credits) {
         errors.credits = t('course.validation.required_credits')
       } else if (formState.credits < 2) {
@@ -194,12 +184,10 @@ export default {
         errors.credits = t('course.validation.integer_credits')
       }
 
-      // Validate department
       if (!formState.department) {
         errors.department = t('course.validation.required_department')
       }
 
-      // Validate description
       if (!formState.description.trim()) {
         errors.description = t('course.validation.required_description')
       } else if (formState.description.length < 10) {
@@ -210,8 +198,6 @@ export default {
       return Object.keys(errors).length === 0
     }
 
-
-    // Submit form
     const submitForm = async () => {
       if (!validateForm()) {
         return
@@ -237,12 +223,10 @@ export default {
       }
     }
 
-    // Cancel form
     const cancelForm = () => {
       emit('cancel')
     }
 
-    // Load initial data
     onMounted(async () => {
       if (departments.value.length === 0) {
         await store.dispatch('department/fetchDepartments')

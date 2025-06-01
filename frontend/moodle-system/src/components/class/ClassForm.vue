@@ -192,7 +192,6 @@ export default {
     const { t } = useI18n()
     const store = useStore()
 
-    // Default schedule item template
     const defaultScheduleItem = () => ({
       dayOfWeek: '',
       startPeriod: '',
@@ -200,7 +199,6 @@ export default {
       classroom: ''
     })
 
-    // Form state
     const form = ref({
       classCode: '',
       course: '',
@@ -211,10 +209,8 @@ export default {
       schedule: []
     })
 
-    // Schedule error state
     const scheduleErrors = ref([])
 
-    // Generate academic years (current year - 1 to current year + 2)
     const currentYear = new Date().getFullYear()
     const academicYears = computed(() => {
       const years = []
@@ -226,62 +222,51 @@ export default {
       return years
     })
 
-    // Validation rules
-    const rules = computed(() => {
-      return {
-        classCode: {
-          required: helpers.withMessage(t('class.required_class_code'), required),
-          alphanumeric: helpers.withMessage(
-            t('class.alphanumeric_class_code'),
-            (value) => /^[a-zA-Z0-9-]+$/.test(value)
-          )
-        },
-        course: {
-          required: helpers.withMessage(t('class.required_course'), required)
-        },
-        academicYear: {
-          required: helpers.withMessage(t('class.required_academic_year'), required)
-        },
-        semester: {
-          required: helpers.withMessage(t('class.required_semester'), required)
-        },
-        instructor: {
-          required: helpers.withMessage(t('class.required_instructor'), required)
-        },
-        maxCapacity: {
-          required: helpers.withMessage(t('class.max_class_size_required'), required),
-          minValue: helpers.withMessage(t('class.max_class_size_validation'), minValue(1))
-        },
-        schedule: {
-          required: helpers.withMessage(t('class.required_schedule'), required),
-          minLength: helpers.withMessage(t('class.min_length_schedule'), minLength(1))
-        }
+    const rules = computed(() => ({
+      classCode: {
+        required: helpers.withMessage(t('class.required_class_code'), required),
+        alphanumeric: helpers.withMessage(
+          t('class.alphanumeric_class_code'),
+          (value) => /^[a-zA-Z0-9-]+$/.test(value)
+        )
+      },
+      course: {
+        required: helpers.withMessage(t('class.required_course'), required)
+      },
+      academicYear: {
+        required: helpers.withMessage(t('class.required_academic_year'), required)
+      },
+      semester: {
+        required: helpers.withMessage(t('class.required_semester'), required)
+      },
+      instructor: {
+        required: helpers.withMessage(t('class.required_instructor'), required)
+      },
+      maxCapacity: {
+        required: helpers.withMessage(t('class.max_class_size_required'), required),
+        minValue: helpers.withMessage(t('class.max_class_size_validation'), minValue(1))
+      },
+      schedule: {
+        required: helpers.withMessage(t('class.required_schedule'), required),
+        minLength: helpers.withMessage(t('class.min_length_schedule'), minLength(1))
       }
-    })
-
+    }))
 
     const v$ = useVuelidate(rules, form)
 
-    // Get only active courses for selection
-    const activeCourses = computed(() => {
-      return store.getters['course/getActiveCourses'] || []
-    })
-
+    const activeCourses = computed(() => store.getters['course/getActiveCourses'] || [])
     const loading = computed(() => store.state.class.loading)
 
-    // Add a new schedule item
     const addScheduleItem = () => {
       form.value.schedule.push(defaultScheduleItem())
       scheduleErrors.value.push({})
     }
 
-    // Remove a schedule item
     const removeScheduleItem = (index) => {
       form.value.schedule.splice(index, 1)
       scheduleErrors.value.splice(index, 1)
     }
 
-    // Validate a single schedule item
     const validateScheduleItem = (schedule, index) => {
       const errors = {}
 
@@ -303,25 +288,19 @@ export default {
         errors.endPeriod = t('class.end_period_validation')
       }
 
-      // Check for overlapping schedules with other schedule items in the same form
       if (schedule.dayOfWeek && schedule.startPeriod && schedule.endPeriod && schedule.classroom) {
         for (let i = 0; i < form.value.schedule.length; i++) {
-          if (i === index) continue // Skip comparing with itself
+          if (i === index) continue
 
           const otherSchedule = form.value.schedule[i]
           if (otherSchedule.dayOfWeek === schedule.dayOfWeek &&
             otherSchedule.classroom === schedule.classroom) {
 
             const overlap = (
-              // Case 1: This schedule starts during another schedule
               (schedule.startPeriod <= otherSchedule.endPeriod &&
                 schedule.startPeriod >= otherSchedule.startPeriod) ||
-
-              // Case 2: This schedule ends during another schedule
               (schedule.endPeriod >= otherSchedule.startPeriod &&
                 schedule.endPeriod <= otherSchedule.endPeriod) ||
-
-              // Case 3: This schedule completely surrounds another schedule
               (schedule.startPeriod <= otherSchedule.startPeriod &&
                 schedule.endPeriod >= otherSchedule.endPeriod)
             )
@@ -338,16 +317,12 @@ export default {
       return Object.keys(errors).length === 0
     }
 
-    // Validate all schedule items
     const validateAllSchedules = () => {
-      let isValid = true
-
-      // First check if we have at least one schedule item
       if (form.value.schedule.length === 0) {
         return false
       }
 
-      // Then validate each schedule item
+      let isValid = true
       form.value.schedule.forEach((schedule, index) => {
         if (!validateScheduleItem(schedule, index)) {
           isValid = false
@@ -357,35 +332,26 @@ export default {
       return isValid
     }
 
-    // Handle form submission
     const handleSubmit = async () => {
-      // Validate main form
       const isFormValid = await v$.value.$validate()
-
-      // Validate all schedules
       const areSchedulesValid = validateAllSchedules()
 
       if (!isFormValid || !areSchedulesValid) {
         return
       }
 
-      // Convert form data to the format expected by the backend
       const formData = {
         ...form.value,
-        semester: Number(form.value.semester) // Ensure semester is a number
+        semester: Number(form.value.semester)
       }
 
-      // Emit the submit event with the form data
       emit('submit', formData)
     }
 
-    // Initialize form data from props
     watch(() => props.classData, (newVal) => {
       if (newVal && Object.keys(newVal).length > 0) {
-        // Deep copy to avoid modifying props
         const classData = JSON.parse(JSON.stringify(newVal))
 
-        // Map the form data
         form.value = {
           classCode: classData.classCode || '',
           course: classData.course?._id || classData.course || '',
@@ -396,14 +362,12 @@ export default {
           schedule: classData.schedule || []
         }
 
-        // Initialize schedule errors array
         scheduleErrors.value = Array(form.value.schedule.length).fill({})
       } else {
-        // Reset form for new class
         form.value = {
           classCode: '',
           course: '',
-          academicYear: academicYears.value[1], // Default to current academic year
+          academicYear: academicYears.value[1],
           semester: '',
           instructor: '',
           maxCapacity: 30,
@@ -413,13 +377,11 @@ export default {
       }
     }, { immediate: true, deep: true })
 
-    // Load courses if not already loaded
     onMounted(async () => {
       if (activeCourses.value.length === 0) {
         await store.dispatch('course/fetchCourses')
       }
 
-      // Add a default schedule item for new class
       if (!props.isEditing && form.value.schedule.length === 0) {
         addScheduleItem()
       }

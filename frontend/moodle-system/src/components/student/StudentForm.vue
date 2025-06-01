@@ -242,7 +242,6 @@ export default {
   emits: ['submit'],
   setup(props, { emit }) {
     const { t } = useI18n()
-    console.log(t)
     const store = useStore()
     const currentYear = new Date().getFullYear()
     const currentStatusId = ref(null)
@@ -291,7 +290,6 @@ export default {
       }
     })
     
-    // Handler for address updates from child component
     const onAddressUpdate = (type, newValue) => {
       if (!newValue) return;
       
@@ -309,54 +307,51 @@ export default {
       console.log(`Address updated (${type}):`, form.value[`${type}Address`]);
     }
     
-    // Validation rules
-    const rules = computed(() => {
-      return {
-        studentId: { 
-          required: helpers.withMessage(t('student.validation.required_student_id'), required) 
-        },
-        fullName: { 
-          required: helpers.withMessage(t('student.validation.required_name'), required) 
-        },
-        dateOfBirth: { 
-          required: helpers.withMessage(t('student.validation.required_date_of_birth'), required),
-          notFuture: helpers.withMessage(
-            t('student.validation.dateOfBirth_future'), 
-            (value) => new Date(value) <= new Date()
-          )
-        },
-        nationality: { 
-          required: helpers.withMessage(t('student.validation.required_nationality'), required) 
-        },
-        department: { 
-          required: helpers.withMessage(t('student.validation.required_department'), required) 
-        },
-        schoolYear: { 
-          required: helpers.withMessage(t('student.validation.required_course'), required),
-          notFutureYear: helpers.withMessage(
-            `${t('student.validation.schoolYear_max')} (${currentYear})`,
-            (value) => value <= currentYear
-          )
-        },
-        program: { 
-          required: helpers.withMessage(t('student.validation.required_program'), required) 
-        },
-        email: { 
-          required: helpers.withMessage(t('student.validation.required_email'), required),
-          email: helpers.withMessage(t('student.validation.email_invalid'), email)
-        },
-        phoneNumber: { 
-          required: helpers.withMessage(t('student.validation.required_phone'), required),
-          phoneFormat: helpers.withMessage(
-            t('student.validation.phone_invalid'),
-            (value) => /^(\+84|0)[3|5|7|8|9][0-9]{8}$/.test(value)
-          )
-        },
-        status: { 
-          required: helpers.withMessage(t('student.validation.required_status'), required) 
-        }
+    const rules = computed(() => ({
+      studentId: { 
+        required: helpers.withMessage(t('student.validation.required_student_id'), required) 
+      },
+      fullName: { 
+        required: helpers.withMessage(t('student.validation.required_name'), required) 
+      },
+      dateOfBirth: { 
+        required: helpers.withMessage(t('student.validation.required_date_of_birth'), required),
+        notFuture: helpers.withMessage(
+          t('student.validation.dateOfBirth_future'), 
+          (value) => new Date(value) <= new Date()
+        )
+      },
+      nationality: { 
+        required: helpers.withMessage(t('student.validation.required_nationality'), required) 
+      },
+      department: { 
+        required: helpers.withMessage(t('student.validation.required_department'), required) 
+      },
+      schoolYear: { 
+        required: helpers.withMessage(t('student.validation.required_course'), required),
+        notFutureYear: helpers.withMessage(
+          `${t('student.validation.schoolYear_max')} (${currentYear})`,
+          (value) => value <= currentYear
+        )
+      },
+      program: { 
+        required: helpers.withMessage(t('student.validation.required_program'), required) 
+      },
+      email: { 
+        required: helpers.withMessage(t('student.validation.required_email'), required),
+        email: helpers.withMessage(t('student.validation.email_invalid'), email)
+      },
+      phoneNumber: { 
+        required: helpers.withMessage(t('student.validation.required_phone'), required),
+        phoneFormat: helpers.withMessage(
+          t('student.validation.phone_invalid'),
+          (value) => /^(\+84|0)[3|5|7|8|9][0-9]{8}$/.test(value)
+        )
+      },
+      status: { 
+        required: helpers.withMessage(t('student.validation.required_status'), required) 
       }
-    })
+    }))
     
     const v$ = useVuelidate(rules, form)
     
@@ -389,7 +384,6 @@ export default {
       ])
     }
     
-    // This is the function that will be passed to AddressFields component
     const fetchLocationData = async (geonameId) => {
       try {
         const response = await store.dispatch('status/fetchLocationChildren', geonameId)
@@ -405,7 +399,6 @@ export default {
     }
     
     const handleSubmit = async () => {
-      // Mark all identity document fields as touched for validation
       if (identityDocFields.value && typeof identityDocFields.value.markAllFieldsTouched === 'function') {
         identityDocFields.value.markAllFieldsTouched()
       }
@@ -413,10 +406,8 @@ export default {
       const isValid = await v$.value.$validate()
       if (!isValid) return
       
-      // Create a deep copy of the form data to avoid reference issues
       const studentData = JSON.parse(JSON.stringify(form.value))
       
-      // Process addresses to ensure they're properly included
       if (!studentData.permanentAddress || !studentData.permanentAddress.houseNumberStreet) {
         delete studentData.permanentAddress
       }
@@ -458,7 +449,6 @@ export default {
           })
         }
         
-        // Format date of birth
         if (studentDataCopy.dateOfBirth) {
           form.value.dateOfBirth = new Date(studentDataCopy.dateOfBirth).toISOString().split('T')[0]
         }

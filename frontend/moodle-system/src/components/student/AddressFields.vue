@@ -283,7 +283,7 @@
   
 <script>
 import { ref, toRefs, watch, onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
+// import { useI18n } from 'vue-i18n'
 
 export default {
   name: 'AddressFields',
@@ -320,15 +320,12 @@ export default {
   ],
   setup(props, { emit }) {
     const { mailingAddress, permanentAddress, temporaryAddress } = toRefs(props)
-    const { t } = useI18n()
-    console.log(t)
+    // const { t } = useI18n()
     
-    // Create internal copies of the addresses to avoid direct prop mutation
     const internalMailingAddress = ref({...mailingAddress.value})
     const internalPermanentAddress = ref({...permanentAddress.value})
     const internalTemporaryAddress = ref({...temporaryAddress.value})
     
-    // State for location data
     const mailingProvinces = ref([])
     const mailingDistricts = ref([])
     const mailingWards = ref([])
@@ -341,7 +338,6 @@ export default {
     const temporaryDistricts = ref([])
     const temporaryWards = ref([])
     
-    // State for controlling disabled status of dropdowns
     const mailingProvincesDisabled = ref(true)
     const mailingDistrictsDisabled = ref(true)
     const mailingWardsDisabled = ref(true)
@@ -354,14 +350,12 @@ export default {
     const temporaryDistrictsDisabled = ref(true)
     const temporaryWardsDisabled = ref(true)
     
-    // For existing addresses, initialize dropdowns
     const initializeAddress = async (type) => {
       const addressObj = type === 'mailing' ? internalMailingAddress.value : 
                        type === 'permanent' ? internalPermanentAddress.value :
                        internalTemporaryAddress.value
       
       if (addressObj && addressObj.country) {
-        // Get country ID from the countries array
         const country = props.countries.find(c => 
           c.countryName === addressObj.country || 
           c.countryName.toLowerCase() === addressObj.country.toLowerCase()
@@ -369,18 +363,15 @@ export default {
         
         if (country && country.geonameId) {
           try {
-            // Enable province dropdown
             if (type === 'mailing') mailingProvincesDisabled.value = false
             else if (type === 'permanent') permanentProvincesDisabled.value = false
             else temporaryProvincesDisabled.value = false
             
-            // Fetch and populate provinces
             const result = await props.fetchLocationData(country.geonameId)
             if (result && (result.geonames || Array.isArray(result))) {
               const provinces = result.geonames || result
               setProvincesByType(type, provinces)
               
-              // If provinceCity exists, try to find matching province and fetch districts
               if (addressObj.provinceCity) {
                 const province = provinces.find(p => 
                   p.toponymName === addressObj.provinceCity || 
@@ -388,18 +379,15 @@ export default {
                 )
                 
                 if (province && province.geonameId) {
-                  // Enable district dropdown
                   if (type === 'mailing') mailingDistrictsDisabled.value = false
                   else if (type === 'permanent') permanentDistrictsDisabled.value = false
                   else temporaryDistrictsDisabled.value = false
                   
-                  // Fetch and populate districts
                   const districtsResult = await props.fetchLocationData(province.geonameId)
                   if (districtsResult && (districtsResult.geonames || Array.isArray(districtsResult))) {
                     const districts = districtsResult.geonames || districtsResult
                     setDistrictsByType(type, districts)
                     
-                    // If districtCounty exists, try to find matching district and fetch wards
                     if (addressObj.districtCounty) {
                       const district = districts.find(d => 
                         d.toponymName === addressObj.districtCounty || 
@@ -407,19 +395,16 @@ export default {
                       )
                       
                       if (district && district.geonameId) {
-                        // Enable ward dropdown
                         if (type === 'mailing') mailingWardsDisabled.value = false
                         else if (type === 'permanent') permanentWardsDisabled.value = false
                         else temporaryWardsDisabled.value = false
                         
-                        // Fetch and populate wards
                         const wardsResult = await props.fetchLocationData(district.geonameId)
                         if (wardsResult && (wardsResult.geonames || Array.isArray(wardsResult))) {
                           const wards = wardsResult.geonames || wardsResult
                           setWardsByType(type, wards)
                         }
                       } else {
-                        // If no matching district is found, add existing district as option
                         if (addressObj.districtCounty) {
                           addCustomOption(type, 'district', addressObj.districtCounty)
                         }
@@ -427,7 +412,6 @@ export default {
                     }
                   }
                 } else {
-                  // If no matching province is found, add existing province as option
                   if (addressObj.provinceCity) {
                     addCustomOption(type, 'province', addressObj.provinceCity)
                   }
@@ -438,25 +422,20 @@ export default {
             console.error(`Error initializing ${type} address:`, error)
           }
         } else {
-          // If country not found in the list, add it as a custom option
           if (addressObj.country) {
             addCustomOption(type, 'country', addressObj.country)
           }
         }
       }
       
-      // As a fallback, if we have address values but couldn't initialize the dropdowns properly,
-      // add them as custom options to ensure they're visible
       ensureExistingValuesVisible(type)
     }
     
-    // Ensure existing values are visible in the dropdowns
     const ensureExistingValuesVisible = (type) => {
       const addressObj = type === 'mailing' ? internalMailingAddress.value : 
                        type === 'permanent' ? internalPermanentAddress.value :
                        internalTemporaryAddress.value
       
-      // Add each existing value as a custom option if needed
       if (addressObj.provinceCity) {
         addCustomOption(type, 'province', addressObj.provinceCity)
       }
@@ -469,7 +448,6 @@ export default {
         addCustomOption(type, 'ward', addressObj.wardCommune)
       }
       
-      // Enable dropdowns if we have values for them
       if (addressObj.country) {
         if (type === 'mailing') mailingProvincesDisabled.value = false
         else if (type === 'permanent') permanentProvincesDisabled.value = false
@@ -489,12 +467,10 @@ export default {
       }
     }
     
-    // Add a custom option to a dropdown if value is not in the list
     const addCustomOption = (type, level, value) => {
       if (!value) return
       
       if (level === 'province') {
-        // For province dropdown
         if (type === 'mailing' && !mailingProvinces.value.find(p => p.toponymName === value || p.name === value)) {
           mailingProvinces.value = [...mailingProvinces.value, { toponymName: value, name: value, geonameId: null }]
           mailingProvincesDisabled.value = false
@@ -506,7 +482,6 @@ export default {
           temporaryProvincesDisabled.value = false
         }
       } else if (level === 'district') {
-        // For district dropdown
         if (type === 'mailing' && !mailingDistricts.value.find(d => d.toponymName === value || d.name === value)) {
           mailingDistricts.value = [...mailingDistricts.value, { toponymName: value, name: value, geonameId: null }]
           mailingDistrictsDisabled.value = false
@@ -518,7 +493,6 @@ export default {
           temporaryDistrictsDisabled.value = false
         }
       } else if (level === 'ward') {
-        // For ward dropdown
         if (type === 'mailing' && !mailingWards.value.find(w => w.toponymName === value || w.name === value)) {
           mailingWards.value = [...mailingWards.value, { toponymName: value, name: value, geonameId: null }]
           mailingWardsDisabled.value = false
@@ -532,27 +506,22 @@ export default {
       }
     }
 
-    // Event handlers
     const handleCountryChange = async (type) => {
-      // Get the internal address object for this type
       const addressObj = type === 'mailing' ? internalMailingAddress.value : 
                        type === 'permanent' ? internalPermanentAddress.value :
                        internalTemporaryAddress.value
                        
-      // Find the country name from the address
       const countryName = addressObj.country
       
       if (!countryName) {
         return
       }
       
-      // Find the country object from the countries prop
       const country = props.countries.find(c => 
         c.countryName === countryName || 
         c.countryName.toLowerCase() === countryName.toLowerCase()
       )
       
-      // Get the geonameId from the country object
       const geonameId = country ? country.geonameId : null
       
       if (!geonameId) {
@@ -560,13 +529,11 @@ export default {
         return
       }
       
-      // Reset dependent dropdowns
       resetProvincesByType(type)
       resetDistrictsByType(type)
       resetWardsByType(type)
       
       try {
-        // Use the fetchLocationData prop function to get the data directly
         const result = await props.fetchLocationData(geonameId)
         
         if (result && (result.geonames || Array.isArray(result))) {
@@ -580,12 +547,10 @@ export default {
         console.error(`Error in handleCountryChange for ${type}:`, error)
       }
       
-      // Update parent after all changes
       updateAddressByType(type)
     }
     
     const handleProvinceChange = async (type) => {
-      // Get the selected province element and its geonameId
       const addressObj = type === 'mailing' ? internalMailingAddress.value : 
                        type === 'permanent' ? internalPermanentAddress.value :
                        internalTemporaryAddress.value
@@ -596,7 +561,6 @@ export default {
         return
       }
       
-      // Find the province in the provinces array for this type
       let provinces = []
       if (type === 'mailing') provinces = mailingProvinces.value
       else if (type === 'permanent') provinces = permanentProvinces.value
@@ -613,12 +577,10 @@ export default {
         return
       }
       
-      // Reset dependent dropdowns
       resetDistrictsByType(type)
       resetWardsByType(type)
       
       try {
-        // Use the fetchLocationData prop function to get the data directly
         const result = await props.fetchLocationData(geonameId)
         
         if (result && (result.geonames || Array.isArray(result))) {
@@ -632,12 +594,10 @@ export default {
         console.error(`Error in handleProvinceChange for ${type}:`, error)
       }
       
-      // Update parent after all changes
       updateAddressByType(type)
     }
     
     const handleDistrictChange = async (type) => {
-      // Get the selected district element and its geonameId
       const addressObj = type === 'mailing' ? internalMailingAddress.value : 
                        type === 'permanent' ? internalPermanentAddress.value :
                        internalTemporaryAddress.value
@@ -648,7 +608,6 @@ export default {
         return
       }
       
-      // Find the district in the districts array for this type
       let districts = []
       if (type === 'mailing') districts = mailingDistricts.value
       else if (type === 'permanent') districts = permanentDistricts.value
@@ -665,11 +624,9 @@ export default {
         return
       }
       
-      // Reset ward dropdown
       resetWardsByType(type)
       
       try {
-        // Use the fetchLocationData prop function to get the data directly
         const result = await props.fetchLocationData(geonameId)
         
         if (result && (result.geonames || Array.isArray(result))) {
@@ -683,7 +640,6 @@ export default {
         console.error(`Error in handleDistrictChange for ${type}:`, error)
       }
       
-      // Update parent after all changes
       updateAddressByType(type)
     }
     

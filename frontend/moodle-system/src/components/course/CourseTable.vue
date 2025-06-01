@@ -110,18 +110,16 @@
 <script>
 import { ref, computed } from 'vue'
 import { useStore } from 'vuex'
-import { useI18n } from 'vue-i18n'
+// import { useI18n } from 'vue-i18n'
 
 export default {
     name: 'CourseTable',
     setup(props, { emit }) {
-        const { t } = useI18n()
+        // const { t } = useI18n()
         const store = useStore()
         const searchQuery = ref('')
         const currentPage = ref(1)
         const pageSize = ref(10)
-
-        console.log(t)
 
         const courses = computed(() => {
             const coursesData = store.state.course.courses

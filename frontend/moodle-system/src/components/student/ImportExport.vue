@@ -194,7 +194,6 @@ export default {
           importResultModal.show()
         }
 
-        // Refresh student list if import was successful
         if (importResult.value.success) {
           await store.dispatch('student/fetchStudents', { page: 1 })
         }
@@ -290,7 +289,6 @@ export default {
     }
 
     onMounted(() => {
-      // Initialize Bootstrap modals
       const importResultModalElement = document.getElementById('importResultModal')
       if (importResultModalElement) {
         importResultModal = new Modal(importResultModalElement)

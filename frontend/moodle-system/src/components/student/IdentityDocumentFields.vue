@@ -136,7 +136,7 @@
   
 <script>
 import { toRefs, ref, watch } from 'vue'
-import { useI18n } from 'vue-i18n'
+// import { useI18n } from 'vue-i18n'
 
 export default {
   name: 'IdentityDocumentFields',
@@ -152,13 +152,11 @@ export default {
   },
   emits: ['update:identityDocument'],
   setup(props, { emit }) {
-    const { t } = useI18n()
-    console.log(t)
+    // const { t } = useI18n()
     const { identityDocument } = toRefs(props)
     
     const internalDocument = ref({...identityDocument.value})
     
-    // Track touched state for each field
     const touched = ref({
       type: false,
       number: false,
@@ -170,19 +168,16 @@ export default {
       notes: false
     })
     
-    // Function to mark a field as touched
     const onFieldTouched = (field) => {
       touched.value[field] = true
     }
     
-    // Mark all fields as touched (useful when submitting the form)
     const markAllFieldsTouched = () => {
       Object.keys(touched.value).forEach(field => {
         touched.value[field] = true
       })
     }
     
-    // Validation state
     const isValid = ref({
       type: false,
       number: false,
@@ -214,13 +209,10 @@ export default {
       let isValidNumber = false
       
       if (internalDocument.value.type === 'CMND') {
-        // CMND must be 9 digits
         isValidNumber = /^[0-9]{9}$/.test(number)
       } else if (internalDocument.value.type === 'CCCD') {
-        // CCCD must be 12 digits
         isValidNumber = /^[0-9]{12}$/.test(number)
       } else if (internalDocument.value.type === 'PASSPORT') {
-        // Passport must be 1 uppercase letter followed by 8 digits
         isValidNumber = /^[A-Z][0-9]{8}$/.test(number)
       }
       
@@ -340,7 +332,6 @@ export default {
         const newDocument = {...internalDocument.value}
         delete newDocument.hasChip
         
-        // Set defaults
         newDocument.issuedCountry = newDocument.issuedCountry || 'Vietnam'
         internalDocument.value = newDocument
       } 
@@ -389,16 +380,13 @@ export default {
       emit('update:identityDocument', {...internalDocument.value})
     })
     
-    // Watch for prop changes
     watch(identityDocument, (newValue) => {
       if (JSON.stringify(internalDocument.value) !== JSON.stringify(newValue)) {
         internalDocument.value = {...newValue}
-        // Validate after updating from props, but don't mark as touched
         validateAll()
       }
     }, { deep: true })
     
-    // Initial validation on setup
     validateAll()
     
     return {
