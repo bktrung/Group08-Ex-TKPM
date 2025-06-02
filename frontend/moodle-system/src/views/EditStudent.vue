@@ -14,11 +14,7 @@
 
     <div v-else class="card bg-light">
       <div class="card-body">
-        <StudentForm 
-          :student-data="enhancedStudentData" 
-          :is-editing="true" 
-          @submit="handleSubmit" 
-        />
+        <StudentForm :student-data="enhancedStudentData" :is-editing="true" @submit="handleSubmit" />
       </div>
     </div>
 
@@ -79,7 +75,7 @@ export default {
     const router = useRouter()
     const route = useRoute()
     const studentId = route.params.id
-    
+
     const studentData = ref({})
     const loading = ref(true)
     const error = ref(null)
@@ -88,14 +84,14 @@ export default {
     const errorMessage = ref('Có lỗi xảy ra. Vui lòng thử lại!')
     let successModal = null
     let errorModal = null
-    
+
     const enhancedStudentData = computed(() => {
       if (!studentData.value || Object.keys(studentData.value).length === 0) {
         return {}
       }
-      
+
       const enhancedData = JSON.parse(JSON.stringify(studentData.value))
-      
+
       if (!enhancedData.mailingAddress) {
         enhancedData.mailingAddress = {
           houseNumberStreet: '',
@@ -105,7 +101,7 @@ export default {
           country: ''
         }
       }
-      
+
       if (!enhancedData.permanentAddress) {
         enhancedData.permanentAddress = {
           houseNumberStreet: '',
@@ -115,7 +111,7 @@ export default {
           country: ''
         }
       }
-      
+
       if (!enhancedData.temporaryAddress) {
         enhancedData.temporaryAddress = {
           houseNumberStreet: '',
@@ -125,7 +121,7 @@ export default {
           country: ''
         }
       }
-      
+
       const addressTypes = ['mailingAddress', 'permanentAddress', 'temporaryAddress']
       addressTypes.forEach(type => {
         if (enhancedData[type]) {
@@ -136,11 +132,11 @@ export default {
           enhancedData[type].country = enhancedData[type].country || ''
         }
       })
-      
+
       if (enhancedData.dateOfBirth) {
         enhancedData.dateOfBirth = new Date(enhancedData.dateOfBirth).toISOString().split('T')[0]
       }
-      
+
       if (enhancedData.identityDocument) {
         if (enhancedData.identityDocument.issueDate) {
           enhancedData.identityDocument.issueDate = new Date(enhancedData.identityDocument.issueDate).toISOString().split('T')[0]
@@ -148,21 +144,21 @@ export default {
         if (enhancedData.identityDocument.expiryDate) {
           enhancedData.identityDocument.expiryDate = new Date(enhancedData.identityDocument.expiryDate).toISOString().split('T')[0]
         }
-        
+
         if (enhancedData.identityDocument.type === 'CCCD') {
-          enhancedData.identityDocument.hasChip = 
-            enhancedData.identityDocument.hasChip === true || 
+          enhancedData.identityDocument.hasChip =
+            enhancedData.identityDocument.hasChip === true ||
             enhancedData.identityDocument.hasChip === 'true'
         }
       }
-      
+
       return enhancedData
     })
-    
+
     const fetchStudentData = async () => {
       loading.value = true
       error.value = null
-      
+
       try {
         await Promise.all([
           store.dispatch('department/fetchDepartments'),
@@ -172,16 +168,16 @@ export default {
           store.dispatch('status/fetchCountries'),
           store.dispatch('status/fetchNationalities')
         ])
-        
+
         let student = store.getters['student/getStudentById'](studentId)
-        
+
         if (!student) {
           student = await store.dispatch('student/fetchStudent', studentId)
         }
-        
+
         if (student) {
           studentData.value = student
-          
+
           await preloadAddressData(student)
         } else {
           error.value = t('student.no_exist')
@@ -193,19 +189,19 @@ export default {
         loading.value = false
       }
     }
-    
+
     const preloadAddressData = async (student) => {
       const addressTypes = ['mailingAddress', 'permanentAddress', 'temporaryAddress']
-      
+
       for (const type of addressTypes) {
         if (student[type] && student[type].country) {
           try {
             const countries = store.state.status.countries
-            const country = countries.find(c => 
-              c.countryName === student[type].country || 
+            const country = countries.find(c =>
+              c.countryName === student[type].country ||
               c.countryName.toLowerCase() === student[type].country.toLowerCase()
             )
-            
+
             if (country && country.geonameId) {
               await store.dispatch('status/fetchLocationChildren', country.geonameId)
             }
@@ -215,103 +211,103 @@ export default {
         }
       }
     }
-    
+
     const handleSubmit = async (updatedStudentData) => {
       try {
         console.log('Received updated student data:', JSON.stringify(updatedStudentData, null, 2));
-        
+
         const cleanData = {};
-        
-        const originalStatus = studentData.value && studentData.value.status ? 
-          (typeof studentData.value.status === 'object' ? 
+
+        const originalStatus = studentData.value && studentData.value.status ?
+          (typeof studentData.value.status === 'object' ?
             studentData.value.status._id : studentData.value.status) : null;
-            
-        const updatedStatus = updatedStudentData.status ? 
-          (typeof updatedStudentData.status === 'object' ? 
+
+        const updatedStatus = updatedStudentData.status ?
+          (typeof updatedStudentData.status === 'object' ?
             updatedStudentData.status._id : updatedStudentData.status) : null;
-        
+
         const shouldIncludeStatus = originalStatus !== updatedStatus;
-        
+
         for (const [key, value] of Object.entries(updatedStudentData)) {
           if (key === 'status' && !shouldIncludeStatus) {
             continue;
           }
-          
+
           if (key === 'department' || key === 'program' || key === 'status') {
             cleanData[key] = typeof value === 'object' ? value._id : value;
-          } 
+          }
           else if (key === 'dateOfBirth') {
             cleanData[key] = new Date(value).toISOString();
           }
           else if (key === 'identityDocument') {
-            const docCopy = {...value};
-            
+            const docCopy = { ...value };
+
             if (docCopy.issueDate) {
               docCopy.issueDate = new Date(docCopy.issueDate).toISOString();
             }
-            
+
             if (docCopy.expiryDate) {
               docCopy.expiryDate = new Date(docCopy.expiryDate).toISOString();
             }
-            
+
             if (docCopy.type === 'CCCD') {
               docCopy.hasChip = Boolean(docCopy.hasChip);
             }
-            
+
             cleanData[key] = docCopy;
           }
           else if (key === 'mailingAddress' || key === 'permanentAddress' || key === 'temporaryAddress') {
-            cleanData[key] = {...value};
+            cleanData[key] = { ...value };
           }
           else {
             cleanData[key] = value;
           }
         }
-        
+
         console.log('Prepared data for API:', JSON.stringify(cleanData, null, 2));
-        
+
         await store.dispatch('student/updateStudent', {
           id: studentId,
           student: cleanData
         });
-        
+
         if (successModal) {
           successModal.show();
         }
       } catch (err) {
         console.error('Error updating student:', err);
         errorMessage.value = err.message || t('common.error');
-        
+
         if (errorModal) {
           errorModal.show();
         }
       }
     };
-    
+
     const redirectToList = () => {
       if (successModal) {
         successModal.hide();
       }
-      
+
       setTimeout(() => {
         router.push('/');
       }, 300);
     };
-    
+
     onMounted(async () => {
       await fetchStudentData();
-      
+
       const successModalElement = document.getElementById('successModal');
       if (successModalElement) {
         successModal = new Modal(successModalElement);
       }
-      
+
       const errorModalElement = document.getElementById('errorModal');
       if (errorModalElement) {
         errorModal = new Modal(errorModalElement);
       }
     });
-    
+
     return {
       studentData,
       enhancedStudentData,

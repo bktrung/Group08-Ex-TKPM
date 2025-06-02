@@ -1,21 +1,21 @@
 <template>
     <div class="container-fluid px-5 mt-5">
-      <h2 class="mb-4 text-center">Quản lý Quy tắc Chuyển trạng thái</h2>
+      <h2 class="mb-4 text-center">{{ $t('statusTransitionRule.title') }}</h2>
   
       <div class="row mb-4">
         <div class="col-md-12">
           <div class="card">
             <div class="card-header bg-primary text-white">
-              <h5 class="mb-0">Thêm quy tắc chuyển trạng thái mới</h5>
+              <h5 class="mb-0">{{ $t('statusTransitionRule.addNew') }}</h5>
             </div>
             <div class="card-body">
               <form @submit.prevent="addTransition">
                 <div class="row">
                   <div class="col-md-5">
                     <div class="form-group">
-                      <label for="fromStatus">Từ trạng thái:</label>
+                      <label for="fromStatus">{{ $t('statusTransitionRule.fromStatus') }}:</label>
                       <select class="form-select" id="fromStatus" v-model="fromStatusId" required>
-                        <option value="">-- Chọn trạng thái --</option>
+                        <option value="">-- {{ $t('common.choose') }} {{ $t('student.status.title') }} --</option>
                         <option v-for="status in statusTypes" :key="status._id" :value="status._id">
                           {{ status.type }}
                         </option>
@@ -24,9 +24,9 @@
                   </div>
                   <div class="col-md-5">
                     <div class="form-group">
-                      <label for="toStatus">Đến trạng thái:</label>
+                      <label for="toStatus">{{ $t('statusTransitionRule.toStatus') }}:</label>
                       <select class="form-select" id="toStatus" v-model="toStatusId" required>
-                        <option value="">-- Chọn trạng thái --</option>
+                        <option value="">-- {{ $t('common.choose') }} {{ $t('student.status.title') }} --</option>
                         <option v-for="status in statusTypes" :key="status._id" :value="status._id" 
                                 :disabled="status._id === fromStatusId">
                           {{ status.type }}
@@ -38,7 +38,7 @@
                     <button type="submit" class="btn btn-primary w-100" 
                             :disabled="!fromStatusId || !toStatusId || loading">
                       <span v-if="loading" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                      Thêm quy tắc
+                      {{ $t('statusTransitionRule.addRule') }} 
                     </button>
                   </div>
                 </div>
@@ -50,13 +50,13 @@
   
       <div class="alert alert-info mb-4">
         <i class="bi bi-info-circle-fill me-2"></i>
-        Quy tắc chuyển trạng thái quy định các trạng thái mà một sinh viên có thể chuyển từ trạng thái hiện tại.
+        {{ $t('statusTransitionRule.info') }} 
       </div>
   
       <div class="row" v-if="loading && !statusTransitions.length">
         <div class="col-12 text-center py-5">
           <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
+            <span class="visually-hidden">L{{ $t('common.loading') }}...</span>
           </div>
         </div>
       </div>
@@ -64,7 +64,7 @@
       <div class="row" v-else-if="!statusTransitions.length">
         <div class="col-12">
           <div class="alert alert-warning text-center">
-            Chưa có quy tắc chuyển trạng thái nào được thiết lập.
+            {{ $t('statusTransitionRule.noRules') }} 
           </div>
         </div>
       </div>
@@ -73,10 +73,10 @@
         <div class="col-md-4" v-for="rule in statusTransitions" :key="rule.fromStatusId">
           <div class="card transition-card">
             <div class="card-header bg-info text-white">
-              <h5 class="mb-0">Từ: {{ rule.fromStatus }}</h5>
+              <h5 class="mb-0">{{ $t('common.from') }}: {{ rule.fromStatus }}</h5>
             </div>
             <div class="card-body">
-              <h6>Có thể chuyển đến:</h6>
+              <h6>{{ $t('statusTransitionRule.canTransitionTo') }}:</h6>
               <div class="destinations mt-2">
                 <span v-for="destination in rule.toStatus" :key="destination._id" class="destination-status">
                   {{ destination.type }}
@@ -93,7 +93,7 @@
         <div id="toast" class="toast" :class="toastClass" role="alert" aria-live="assertive" aria-atomic="true" ref="toastRef">
           <div class="toast-header" :class="toastHeaderClass">
             <strong class="me-auto">{{ toastTitle }}</strong>
-            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" :aria-label="$t('common.close')"></button>
           </div>
           <div class="toast-body">
             {{ toastMessage }}
@@ -106,18 +106,18 @@
         <div class="modal-dialog">
           <div class="modal-content">
             <div class="modal-header">
-              <h5 class="modal-title">Xác nhận xóa</h5>
-              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+              <h5 class="modal-title">{{ $t('common.confirm_delete') }}</h5>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('common.close')"></button>
             </div>
             <div class="modal-body">
-              <p>Bạn có chắc chắn muốn xóa quy tắc chuyển trạng thái này?</p>
-              <p>Từ <strong>{{ deleteFromStatus }}</strong> đến <strong>{{ deleteToStatus }}</strong></p>
+              <p>{{ $t('statusTransitionRule.deleteConfirmText') }}</p>
+              <p>{{ $t('common.from') }} <strong>{{ deleteFromStatus }}</strong>  {{ $t('common.to_lowercase') }} <strong>{{ deleteToStatus }}</strong></p>
             </div>
             <div class="modal-footer">
-              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ $t('common.cancel') }}</button>
               <button type="button" class="btn btn-danger" @click="deleteTransition" :disabled="loading">
                 <span v-if="loading" class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
-                Xóa
+                {{ $t('common.delete') }}
               </button>
             </div>
           </div>
@@ -130,10 +130,13 @@
 import { ref, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import { Modal, Toast } from 'bootstrap'
+import { useI18n } from 'vue-i18n'
 
 export default {
   name: 'StatusTransition',
   setup() {
+    const { t } = useI18n()
+    console.log(t)
     const store = useStore()
     const fromStatusId = ref('')
     const toStatusId = ref('')
@@ -149,7 +152,7 @@ export default {
     const deleteFromStatus = ref('')
     const deleteToStatus = ref('')
     
-    const toastTitle = ref('Thông báo')
+    const toastTitle = ref(t('common.notification'))
     const toastMessage = ref('')
     const toastType = ref('info')
 
@@ -181,10 +184,10 @@ export default {
         fromStatusId.value = ''
         toStatusId.value = ''
         
-        showToast('Thành công', 'Thêm quy tắc chuyển trạng thái thành công', 'success')
+        showToast(t('common.success'), t('statusTransitionRule.toast.addSuccess'), 'success')
       } catch (error) {
         console.error('Error adding transition rule:', error)
-        showToast('Lỗi', `Không thể thêm quy tắc: ${error.message}`, 'error')
+        showToast(t('common.error'), t('transitionRule.toast.addError', { error: error.message }), 'error')
       }
     }
     
@@ -207,17 +210,17 @@ export default {
         })
         
         deleteModal.value.hide()
-        showToast('Thành công', 'Xóa quy tắc chuyển trạng thái thành công', 'success')
+        showToast(t('common.success'), t('statusTransitionRule.toast.deleteSuccess'), 'success')
       } catch (error) {
         console.error('Error deleting transition rule:', error)
-        showToast('Lỗi', `Không thể xóa quy tắc: ${error.message}`, 'error')
+        showToast(t('common.error'), t('transitionRule.toast.deleteError', { error: error.message }), 'error')
       }
     }
     
     const showToast = (title, message, type = 'info') => {
       if (!message) return;
       
-      toastTitle.value = title || 'Thông báo';
+      toastTitle.value = title || t('common.notification');
       toastMessage.value = message;
       toastType.value = type;
       

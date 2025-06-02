@@ -2,17 +2,31 @@
     "student": {
         "basic_info": "Thông tin cơ bản",
         "student": "Sinh viên",
+        "student_info": "Thông tin sinh viên",
+        "grade_table": "Bảng điểm",
         "add_student": "Thêm sinh viên",
         "edit_student": "Sửa thông tin sinh viên",
         "add_success": "Thêm sinh viên thành công",
         "update_success": "Cập nhật thông tin sinh viên thành công",
         "management": "Quản lí sinh viên",
-        "grade": "Lớp học",
         "student_id": "Mã số sinh viên",
         "name": "Tên sinh viên",
         "dob": "Ngày sinh",
         "gender": "Giới tính",
+        "subject": "Môn học",
         "nationality": "Quốc tịch",
+        "grade": {
+            "title": "Điểm",
+            "table": "Bảng điểm",
+            "create": "Tạo bảng điểm",
+            "view": "Xem bảng điểm",
+            "summary": {
+                "title": "Summary",
+                "totalCredits": "Total credits",
+                "gpaOutOf10": "GPA (scale 10)",
+                "gpaOutOf4": "GPA (scale 4)"
+            }
+        },
         "gender_types": {
             "male": "Nam",
             "female": "Nữ"
@@ -26,10 +40,10 @@
         "all_deparments": "Tất cả khoa",
         "enter_student_id": "Nhập mã số sinh viên",
         "status": {
-            "title": "Tình trạng",
-            "enter": "Nhập tình trạng",
-            "no_data": "Không có tình trạng nào. Vui lòng thêm tình trạng mới",
-            "error_action": "Lỗi khi %{action} tình trạng: %{message}"
+            "title": "Trạng thái",
+            "enter": "Nhập trạng thái",
+            "no_data": "Không có trạng thái nào. Vui lòng thêm trạng thái mới",
+            "error_action": "Lỗi khi %{action} trạng thái: %{message}"
         },
         "validation": {
             "required_student_id": "Mã số sinh viên là bắt buộc",
@@ -270,11 +284,14 @@
         "register": "Đăng ký",
         "cancel": "Huỷ",
         "page": "Trang",
+        "from": "Từ",
         "search": "Tìm kiếm",
         "reset": "Đặt lại",
         "loading": "Đang tải...",
         "no_data": "Không có dữ liệu",
         "action": "Hành động",
+        "failed": "Thất bại",
+        "success": "Thành công",
         "number": "STT",
         "previous": "Trước",
         "next": "Sau",
@@ -300,7 +317,10 @@
         "yes": "Có",
         "no": "Không",
         "error": "Lỗi",
-        "loading_error": "Đã xảy ra lỗi khi tải dữ liệu"
+        "loading_error": "Đã xảy ra lỗi khi tải dữ liệu",
+        "to": "Đến",
+        "to_lowercase": "đến",
+        "notification": "Thông báo"
     },
     "days": {
         "day_of_week": "Thứ",
@@ -360,5 +380,22 @@
         "name": "Tên Chương trình",
         "no_data": "Không có chương trình nào. Vui lòng thêm chương trình mới",
         "enter": "Nhập chương trình"
+    },
+    "statusTransitionRule": {
+        "title": "Quản lý Quy tắc Chuyển trạng thái",
+        "addNew": "Thêm quy tắc chuyển trạng thái mới",
+        "fromStatus": "Từ trạng thái",
+        "toStatus": "Đến trạng thái",
+        "addRule": "Thêm quy tắc",
+        "info": "Quy tắc chuyển trạng thái quy định các trạng thái mà một sinh viên có thể chuyển từ trạng thái hiện tại.",
+        "noRules": "Chưa có quy tắc chuyển trạng thái nào được thiết lập.",
+        "canTransitionTo": "Có thể chuyển đến",
+        "deleteConfirmText": "Bạn có chắc chắn muốn xóa quy tắc chuyển trạng thái này?",
+        "toast": {
+            "addSuccess": "Thêm quy tắc chuyển trạng thái thành công",
+            "addError": "Không thể thêm quy tắc: %{error}",
+            "deleteSuccess": "Xóa quy tắc chuyển trạng thái thành công",
+            "deleteError": "Không thể xóa quy tắc: %{error}"
+        }
     }
 }

@@ -1,35 +1,35 @@
 <template>
     <div class="transcript-generator">
-        <h2>Bảng điểm</h2>
+        <h2>{{ $t('student.grade.table') }}</h2>
 
         <div class="form-group">
-            <label for="studentId">Nhập MSSV:</label>
-            <input v-model="studentId" type="text" id="studentId" class="form-control" placeholder="Enter student ID" />
+            <label for="studentId">{{ $t('student.enter_student_id') }}:</label>
+            <input v-model="studentId" type="text" id="studentId" class="form-control" :placeholder="$t('student.enter_student_id')" />
         </div>
 
-        <button @click="generateTranscript" class="btn btn-primary">Tạo bảng điểm</button>
-        <button v-if="pdfGenerated" @click="downloadPDF" class="btn btn-success">Download PDF</button>
+        <button @click="generateTranscript" class="btn btn-primary">{{ $t('student.grade.create') }}</button>
+        <button v-if="pdfGenerated" @click="downloadPDF" class="btn btn-success">{{ $t(common.download) }} PDF</button>
 
         <!-- Nội dung để render thành PDF -->
         <div id="pdf-content" style="margin-top: 20px; background: white; padding: 20px;">
             <div v-if="transcriptData">
-                <h3>Thông tin sinh viên</h3>
-                <p>MSSV: {{ transcriptData.metadata.transcript.studentInfo.studentId }}</p>
-                <p>Họ tên: {{ transcriptData.metadata.transcript.studentInfo.fullName }}</p>
-                <p>Ngành: {{ transcriptData.metadata.transcript.studentInfo.department }}</p>
-                <p>Chương trình: {{ transcriptData.metadata.transcript.studentInfo.program }}</p>
+                <h3>{{ $t('stundent.student_info')}}</h3>
+                <p>{{ $t('student.student_id') }}: {{ transcriptData.metadata.transcript.studentInfo.studentId }}</p>
+                <p>{{ $t('student.name') }}: {{ transcriptData.metadata.transcript.studentInfo.fullName }}</p>
+                <p>{{ $t('student.department') }}: {{ transcriptData.metadata.transcript.studentInfo.department }}</p>
+                <p>{{ $t('student.program') }}: {{ transcriptData.metadata.transcript.studentInfo.program }}</p>
 
-                <h4>Môn học</h4>
+                <h4>{{ $t('student.subject')}}</h4>
                 <ul>
                     <li v-for="(course, index) in transcriptData.metadata.transcript.courses" :key="index">
-                        {{ course.name }} - Điểm: {{ course.grade }}
+                        {{ course.name }} - {{ $t('student.grade.title') }}: {{ course.grade }}
                     </li>
                 </ul>
 
-                <h4>Tổng kết</h4>
-                <p>Số tín chỉ: {{ transcriptData.metadata.transcript.summary.totalCredits }}</p>
-                <p>GPA (hệ 10): {{ transcriptData.metadata.transcript.summary.gpaOutOf10 }}</p>
-                <p>GPA (hệ 4): {{ transcriptData.metadata.transcript.summary.gpaOutOf4 }}</p>
+                <h4>{{ $t('student.grade.summary.title') }}</h4>
+                <p>{{ $t('student.grade.summary.totalCredits') }}: {{ transcriptData.metadata.transcript.summary.totalCredits }}</p>
+                <p>{{ $t('student.grade.summary.gpaOutOf10') }}: {{ transcriptData.metadata.transcript.summary.gpaOutOf10 }}</p>
+                <p>{{ $t('student.grade.summary.gpaOutOf4') }}: {{ transcriptData.metadata.transcript.summary.gpaOutOf4 }}</p>
             </div>
         </div>
 
@@ -38,8 +38,8 @@
             <div class="modal-dialog">
                 <div class="modal-content">
                     <div class="modal-header bg-danger text-white">
-                        <h5 class="modal-title" id="errorModalLabel">Đăng ký thất bại</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Đóng"></button>
+                        <h5 class="modal-title" id="errorModalLabel">{{ $t('common.failed') }}</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('common.close')"></button>
                     </div>
                     <div class="modal-body">
                         ❌ {{ errorMessage }}
@@ -59,10 +59,12 @@ import { useStore } from 'vuex'
 import { jsPDF } from 'jspdf'
 import html2canvas from 'html2canvas'
 import { Modal } from 'bootstrap'
+import { useI18n } from 'vue-i18n'
 
 export default {
     name: 'CreateTranscript',
     setup() {
+        const { t } = useI18n()
         const store = useStore()
 
         const studentId = ref('')
@@ -78,7 +80,7 @@ export default {
 
         const generateTranscript = async () => {
             if (!studentId.value) {
-                errorMessage.value = 'Vui lòng nhập MSSV';
+                errorMessage.value = t('student.enter_student_id');
                 showModal('errorModal');
                 return;
             }
