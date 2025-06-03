@@ -67,11 +67,9 @@ export default {
 
     const saveCourse = async (courseData) => {
       try {
-        console.log('CourseManage - Saving course:', courseData);
-
+       
         if (isEditing.value) {
-          console.log(`Updating course with code: ${selectedCourse.value.courseCode}`);
-
+       
           const updateData = {};
 
           if (courseData.name !== selectedCourse.value.name) {
@@ -91,8 +89,6 @@ export default {
           if (Number(courseData.credits) !== selectedCourse.value.credits) {
             updateData.credits = Number(courseData.credits);
           }
-
-          console.log('Only sending changed fields:', updateData);
 
           await store.dispatch('course/updateCourse', {
             courseCode: selectedCourse.value.courseCode,
@@ -114,8 +110,7 @@ export default {
           success.value = '';
         }, 5000);
       } catch (err) {
-        console.error('Error saving course:', err);
-
+     
         let errorMessage = '';
         if (err.response && err.response.data) {
           if (err.response.data.message) {
@@ -131,8 +126,7 @@ export default {
 
     const deleteCourse = async (course) => {
       try {
-        console.log('Attempting to delete course:', course);
-
+        
         const result = await store.dispatch('course/deleteCourse', course.courseCode);
 
         if (result.success) {
@@ -145,8 +139,7 @@ export default {
           success.value = '';
         }, 5000);
       } catch (err) {
-        console.error('Error deleting/deactivating course:', err);
-
+        
         let errorMessage = '';
         if (err.response && err.response.data && err.response.data.message) {
           errorMessage = err.response.data.message;
@@ -158,8 +151,7 @@ export default {
 
     const toggleCourseActiveStatus = async (course) => {
       try {
-        console.log('Toggling course active status:', course);
-
+       
         const newStatus = !course.isActive;
 
         if (newStatus === true) {

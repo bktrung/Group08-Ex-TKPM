@@ -33,7 +33,7 @@
             <td>{{ department.name }}</td>
             <td class="text-center">
               <button class="btn btn-warning btn-sm" @click="openEditDepartmentModal(department)">{{ $t('common.edit')
-                }}</button>
+              }}</button>
             </td>
           </tr>
         </tbody>
@@ -46,9 +46,9 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
-import { useI18n } from 'vue-i18n'
 import { useStore } from 'vuex'
+import { useI18n } from 'vue-i18n'
+import { ref, computed, onMounted } from 'vue'
 import BaseModal from '../components/layout/BaseModal.vue'
 
 export default {
@@ -82,7 +82,9 @@ export default {
     }
 
     const saveDepartment = async (name) => {
+
       if (!name.trim()) return
+
       if (name.trim() === originalDepartmentName.value) {
         isModalOpen.value = false
         return
@@ -99,10 +101,9 @@ export default {
         }
         isModalOpen.value = false
       } catch (error) {
-        console.error('Error saving department:', error)
         alert(t('common.error_action', {
           action: isEditing.value ? t('common.edit') : t('common.add'),
-          target: t('common.department'),
+          target: t('student.department'),
           message: error.message
         }))
       }

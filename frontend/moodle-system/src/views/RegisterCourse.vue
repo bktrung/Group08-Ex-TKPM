@@ -14,41 +14,13 @@
     <!-- Class Table of Selected Course -->
     <ClassTable v-if="selectedCourseId" :courseId="selectedCourseId" @register="register" />
 
-    <!-- Modal Success -->
-    <div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header bg-success text-white">
-            <h5 class="modal-title" id="successModalLabel">{{ $t('enrollment.register.success') }}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('common.close')"></button>
-          </div>
-          <div class="modal-body">
-            ✅ {{ $t('enrollment.register.confirm_success', { registeredClassCode, studentQuery }) }}
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-success" data-bs-dismiss="modal" @click="goBack">OK</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <SuccessModal :showModal="showSuccessModal" :title="$t('enrollment.register.success')" :message="$t('enrollment.register.confirm_success', {
+      registeredClassCode,
+      studentQuery
+    })" @confirm="goBack" @update:showModal="showSuccess = $event" />
 
-    <!-- Modal Failed -->
-    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header bg-danger text-white">
-            <h5 class="modal-title" id="errorModalLabel">{{ $t('enrollment.register.failed') }}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('common.close')"></button>
-          </div>
-          <div class="modal-body">
-            ❌ {{ registerError }}
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-danger" data-bs-dismiss="modal">OK</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <ErrorModal :showModal="showErrorModal" :title="$t('enrollment.register.failed')" :message="registerError"
+      @update:showModal="showErrorModal = $event" />
 
   </div>
 </template>
@@ -57,16 +29,19 @@
 import { ref, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
-import { Modal } from 'bootstrap'
 import CourseTable from '@/components/course/CourseTable.vue'
 import ClassTable from '@/components/class/ClassTable.vue'
 import { useI18n } from 'vue-i18n'
+import SuccessModal from '@/components/layout/SuccessModal.vue'
+import ErrorModal from '@/components/layout/ErrorModal.vue'
 
 export default {
   name: 'RegisterCourse',
   components: {
     CourseTable,
-    ClassTable
+    ClassTable,
+    SuccessModal,
+    ErrorModal
   },
   setup() {
     const { t } = useI18n()
@@ -79,23 +54,22 @@ export default {
     const registerError = ref('')
     const classes = ref([])
 
+    // Modal control flags
+    const showSuccessModal = ref(false)
+    const showErrorModal = ref(false)
+
     const selectCourse = (course) => {
       selectedCourseId.value = course._id
     }
 
-    const showModal = (id) => {
-      const modal = new Modal(document.getElementById(id))
-      modal.show()
-    }
-
     const goBack = () => {
-      router.back()  
+      router.back()
     }
 
     const register = async (classCode) => {
       if (!studentQuery.value.trim()) {
         registerError.value = t('student.validation.required_student_id')
-        showModal('errorModal')
+        showErrorModal.value = true
         return
       }
 
@@ -108,10 +82,10 @@ export default {
 
       if (error) {
         registerError.value = error
-        showModal('errorModal')
+        showErrorModal.value = true
       } else {
         registeredClassCode.value = classCode
-        showModal('successModal')
+        showSuccessModal.value = true
       }
     }
 
@@ -127,7 +101,9 @@ export default {
       selectCourse,
       registeredClassCode,
       registerError,
-      goBack
+      goBack,
+      showSuccessModal,
+      showErrorModal
     }
   }
 }

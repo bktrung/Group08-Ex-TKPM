@@ -4,7 +4,8 @@
 
         <div class="form-group">
             <label for="studentId">{{ $t('student.enter_student_id') }}:</label>
-            <input v-model="studentId" type="text" id="studentId" class="form-control" :placeholder="$t('student.enter_student_id')" />
+            <input v-model="studentId" type="text" id="studentId" class="form-control"
+                :placeholder="$t('student.enter_student_id')" />
         </div>
 
         <button @click="generateTranscript" class="btn btn-primary">{{ $t('student.grade.create') }}</button>
@@ -13,13 +14,13 @@
         <!-- Nội dung để render thành PDF -->
         <div id="pdf-content" style="margin-top: 20px; background: white; padding: 20px;">
             <div v-if="transcriptData">
-                <h3>{{ $t('stundent.student_info')}}</h3>
+                <h3>{{ $t('stundent.student_info') }}</h3>
                 <p>{{ $t('student.student_id') }}: {{ transcriptData.metadata.transcript.studentInfo.studentId }}</p>
                 <p>{{ $t('student.name') }}: {{ transcriptData.metadata.transcript.studentInfo.fullName }}</p>
                 <p>{{ $t('student.department') }}: {{ transcriptData.metadata.transcript.studentInfo.department }}</p>
                 <p>{{ $t('student.program') }}: {{ transcriptData.metadata.transcript.studentInfo.program }}</p>
 
-                <h4>{{ $t('student.subject')}}</h4>
+                <h4>{{ $t('student.subject') }}</h4>
                 <ul>
                     <li v-for="(course, index) in transcriptData.metadata.transcript.courses" :key="index">
                         {{ course.name }} - {{ $t('student.grade.title') }}: {{ course.grade }}
@@ -27,29 +28,18 @@
                 </ul>
 
                 <h4>{{ $t('student.grade.summary.title') }}</h4>
-                <p>{{ $t('student.grade.summary.totalCredits') }}: {{ transcriptData.metadata.transcript.summary.totalCredits }}</p>
-                <p>{{ $t('student.grade.summary.gpaOutOf10') }}: {{ transcriptData.metadata.transcript.summary.gpaOutOf10 }}</p>
-                <p>{{ $t('student.grade.summary.gpaOutOf4') }}: {{ transcriptData.metadata.transcript.summary.gpaOutOf4 }}</p>
+                <p>{{ $t('student.grade.summary.totalCredits') }}: {{
+                    transcriptData.metadata.transcript.summary.totalCredits }}</p>
+                <p>{{ $t('student.grade.summary.gpaOutOf10') }}: {{
+                    transcriptData.metadata.transcript.summary.gpaOutOf10 }}</p>
+                <p>{{ $t('student.grade.summary.gpaOutOf4') }}: {{ transcriptData.metadata.transcript.summary.gpaOutOf4
+                    }}</p>
             </div>
         </div>
 
-        <!-- Modal lỗi -->
-        <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header bg-danger text-white">
-                        <h5 class="modal-title" id="errorModalLabel">{{ $t('common.failed') }}</h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('common.close')"></button>
-                    </div>
-                    <div class="modal-body">
-                        ❌ {{ errorMessage }}
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-danger" data-bs-dismiss="modal">OK</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <ErrorModal :showModal="showErrorModal" :title="$t('common.failed')" :message="errorMessage"
+            @update:showModal="showErrorModal = $event" />
+
     </div>
 </template>
 
@@ -58,11 +48,14 @@ import { ref, nextTick } from 'vue'
 import { useStore } from 'vuex'
 import { jsPDF } from 'jspdf'
 import html2canvas from 'html2canvas'
-import { Modal } from 'bootstrap'
 import { useI18n } from 'vue-i18n'
+import ErrorModal from '@/components/layout/ErrorModal.vue'
 
 export default {
     name: 'CreateTranscript',
+    components: {
+        ErrorModal
+    },
     setup() {
         const { t } = useI18n()
         const store = useStore()
@@ -73,15 +66,13 @@ export default {
         const pdfGenerated = ref(false)
         let errorMessage = ref('')
 
-        const showModal = (id) => {
-            const modal = new Modal(document.getElementById(id))
-            modal.show()
-        }
+        // Modal control flags
+        const showErrorModal = ref(false)
 
         const generateTranscript = async () => {
             if (!studentId.value) {
                 errorMessage.value = t('student.enter_student_id');
-                showModal('errorModal');
+                showErrorModal.value = true;
                 return;
             }
 
@@ -92,10 +83,11 @@ export default {
             if (error) {
                 pdfGenerated.value = false;
                 errorMessage.value = error;
-                showModal('errorModal'); 
+                showErrorModal.value = true;
             }
 
             if (transcriptData.value && !error) {
+                showErrorModal.value = false;
                 await nextTick();
 
                 const element = document.getElementById('pdf-content');
@@ -126,6 +118,7 @@ export default {
             errorMessage,
             generateTranscript,
             downloadPDF,
+            showErrorModal,
         }
     }
 }

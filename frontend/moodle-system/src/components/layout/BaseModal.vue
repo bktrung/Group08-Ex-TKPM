@@ -33,7 +33,7 @@ export default {
   emits: ['save', 'close'],
   setup(props, { emit }) {
     const { t } = useI18n()
-    console.log(t('department.add_department'))
+    t('common.close')
     const modalRef = ref(null)
     let bootstrapModal = null
     const itemNameLocal = ref(props.itemName)
