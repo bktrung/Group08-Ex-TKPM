@@ -26,7 +26,7 @@
       </div>
       <div class="col-md-4 text-end">
         <router-link to="/students/add" class="btn btn-success">+ {{ $t('common.add') }} {{ $t('student.title')
-          }}</router-link>
+        }}</router-link>
       </div>
     </div>
 
@@ -86,8 +86,8 @@
             <td>{{ getStatusName(student.status) }}</td>
             <td class="text-center">
               <div class="d-flex justify-content-center gap-1">
-                <router-link :to="`/students/edit/${student.studentId}`"
-                  class="btn btn-warning btn-sm">{{ $t('common.edit') }}</router-link>
+                <router-link :to="`/students/edit/${student.studentId}`" class="btn btn-warning btn-sm">{{
+                  $t('common.edit') }}</router-link>
                 <button @click="confirmDelete(student)" class="btn btn-danger btn-sm">{{ $t('common.delete') }}</button>
               </div>
             </td>
@@ -97,57 +97,14 @@
     </div>
 
     <!-- Pagination -->
-    <nav>
-      <ul class="pagination justify-content-center">
-        <li class="page-item" :class="{ disabled: currentPage === 1 }">
-          <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">{{ $t('common.previous') }}</a>
-        </li>
-
-        <li v-if="startPage > 1" class="page-item">
-          <a class="page-link" href="#" @click.prevent="changePage(1)">1</a>
-        </li>
-
-        <li v-if="startPage > 2" class="page-item disabled">
-          <span class="page-link">...</span>
-        </li>
-
-        <li v-for="page in paginationPages" :key="page" class="page-item" :class="{ active: page === currentPage }">
-          <a class="page-link" href="#" @click.prevent="changePage(page)">{{ page }}</a>
-        </li>
-
-        <li v-if="endPage < totalPages - 1" class="page-item disabled">
-          <span class="page-link">...</span>
-        </li>
-
-        <li v-if="endPage < totalPages" class="page-item">
-          <a class="page-link" href="#" @click.prevent="changePage(totalPages)">{{ totalPages }}</a>
-        </li>
-
-        <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-          <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">{{ $t('common.next') }}</a>
-        </li>
-      </ul>
-    </nav>
+    <BasePagination :currentPage="currentPage" :totalPages="totalPages" :maxVisible="5" @change="changePage" />
 
     <StudentImportExport />
 
-    <div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-hidden="true" ref="deleteModal">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">{{ $t('common.confirm_delete') }}</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body" v-if="studentToDelete">
-            <p>{{ $t('student.delete.confirm') }} <strong>{{ studentToDelete.fullName }}</strong>?</p>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ $t('common.cancel') }}</button>
-            <button @click="deleteStudent" type="button" class="btn btn-danger">{{ $t('common.delete') }}</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <ConfirmModal :showModal="showConfirmModal" :title="$t('common.confirm_delete')"
+      :message="`${$t('student.delete.confirm')} ${studentToDelete?.fullName}?`"
+      @update:showModal="showConfirmModal = $event" @confirm="deleteStudent" />
+
   </div>
 </template>
 
@@ -156,13 +113,20 @@ import { useStore } from 'vuex'
 import { Modal } from 'bootstrap'
 import { ref, computed, onMounted } from 'vue'
 import StudentImportExport from '@/components/student/ImportExport.vue'
+import ConfirmModal from '@/components/layout/ConfirmModal.vue'
+import BasePagination from '@/components/layout/BasePagination.vue'
+import { useI18n } from 'vue-i18n'
 
 export default {
   name: 'StudentList',
   components: {
-    StudentImportExport
+    StudentImportExport,
+    ConfirmModal,
+    BasePagination
   },
+
   setup() {
+    const { t } = useI18n()
     const initialDataLoaded = ref(false);
     const store = useStore()
     const searchQuery = ref('')
@@ -176,6 +140,10 @@ export default {
     const currentPage = computed(() => store.state.student.currentPage)
     const totalPages = computed(() => store.state.student.totalPages)
     const departments = computed(() => store.state.department.departments)
+
+    console.log("Page" + currentPage.value + " of " + totalPages.value);
+
+    const showConfirmModal = ref(false)
 
     const startPage = computed(() => {
       return Math.max(1, currentPage.value - 2)
@@ -231,14 +199,14 @@ export default {
 
     const confirmDelete = (student) => {
       studentToDelete.value = student
-      deleteModal.value.show()
+      showConfirmModal.value = true
     }
 
     const deleteStudent = async () => {
       if (studentToDelete.value) {
         try {
           await store.dispatch('student/deleteStudent', studentToDelete.value.studentId)
-          deleteModal.value.hide()
+          showConfirmModal.value = false
 
           if (store.state.student.isSearchMode) {
             await search()
@@ -246,8 +214,7 @@ export default {
             await loadData()
           }
         } catch (error) {
-          console.error('Error deleting student:', error)
-          alert('Lỗi khi xóa sinh viên: ' + error.message)
+          alert(`${t('common.error')}: ` + error.message)
         }
       }
     }
@@ -317,7 +284,8 @@ export default {
       getDepartmentName,
       getProgramName,
       getStatusName,
-      initialDataLoaded
+      initialDataLoaded,
+      showConfirmModal,
     }
   }
 }

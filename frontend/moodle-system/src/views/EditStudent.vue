@@ -18,41 +18,13 @@
       </div>
     </div>
 
-    <!-- Success Modal -->
-    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true" ref="modalRef">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header bg-success text-white">
-            <h5 class="modal-title">{{ $t('common.success') }}!</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('common.close')"></button>
-          </div>
-          <div class="modal-body">
-            {{ $t('student.update_success') }}!
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" @click="redirectToList">OK</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <SuccessModal :showModal="showSuccessModal" :title="$t('common.success') + '!'"
+      :message="$t('student.update_success') + '!'" @confirm="redirectToList"
+      @update:showModal="showSuccess = $event" />
 
-    <!-- Error Modal -->
-    <div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true" ref="errorModalRef">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header bg-danger text-white">
-            <h5 class="modal-title">{{ $t('common.error') }}!</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('common.close')"></button>
-          </div>
-          <div class="modal-body">
-            {{ errorMessage }}
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ $t('common.close') }}</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <ErrorModal :showModal="showErrorModal" :title="$t('common.error') + '!'" :message="errorMessage"
+      @update:showModal="showErrorModal = $event" />
+
   </div>
 </template>
 
@@ -60,14 +32,17 @@
 import { ref, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter, useRoute } from 'vue-router'
-import { Modal } from 'bootstrap'
 import StudentForm from '@/components/student/StudentForm.vue'
 import { useI18n } from 'vue-i18n'
+import SuccessModal from '@/components/layout/SuccessModal.vue'
+import ErrorModal from '@/components/layout/ErrorModal.vue'
 
 export default {
   name: 'EditStudent',
   components: {
-    StudentForm
+    StudentForm,
+    SuccessModal,
+    ErrorModal
   },
   setup() {
     const { t } = useI18n()
@@ -80,10 +55,10 @@ export default {
     const loading = ref(true)
     const error = ref(null)
     const modalRef = ref(null)
-    const errorModalRef = ref(null)
     const errorMessage = ref('Có lỗi xảy ra. Vui lòng thử lại!')
-    let successModal = null
-    let errorModal = null
+
+    const showSuccessModal = ref(false)
+    const showErrorModal = ref(false)
 
     const enhancedStudentData = computed(() => {
       if (!studentData.value || Object.keys(studentData.value).length === 0) {
@@ -262,32 +237,30 @@ export default {
           else {
             cleanData[key] = value;
           }
-        }
+        } 
 
         console.log('Prepared data for API:', JSON.stringify(cleanData, null, 2));
+
+        delete cleanData.studentId;
 
         await store.dispatch('student/updateStudent', {
           id: studentId,
           student: cleanData
         });
 
-        if (successModal) {
-          successModal.show();
-        }
+        showSuccessModal.value = true
+
       } catch (err) {
         console.error('Error updating student:', err);
-        errorMessage.value = err.message || t('common.error');
+        errorMessage.value = err.response.data.message || t('common.error');
 
-        if (errorModal) {
-          errorModal.show();
-        }
+        showErrorModal.value = true
+
       }
     };
 
     const redirectToList = () => {
-      if (successModal) {
-        successModal.hide();
-      }
+      showSuccessModal.value = false
 
       setTimeout(() => {
         router.push('/');
@@ -296,16 +269,6 @@ export default {
 
     onMounted(async () => {
       await fetchStudentData();
-
-      const successModalElement = document.getElementById('successModal');
-      if (successModalElement) {
-        successModal = new Modal(successModalElement);
-      }
-
-      const errorModalElement = document.getElementById('errorModal');
-      if (errorModalElement) {
-        errorModal = new Modal(errorModalElement);
-      }
     });
 
     return {
@@ -315,9 +278,10 @@ export default {
       error,
       errorMessage,
       modalRef,
-      errorModalRef,
       handleSubmit,
-      redirectToList
+      redirectToList,
+      showSuccessModal,
+      showErrorModal
     }
   }
 }
