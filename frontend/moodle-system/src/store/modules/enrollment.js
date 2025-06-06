@@ -1,4 +1,4 @@
-import api from '@/services/api'
+import api from '@/services/index.js'
 
 export default {
   namespaced: true,
@@ -10,86 +10,68 @@ export default {
     historyError: null
   },
   mutations: {
+
     SET_ENROLLMENTS(state, enrollments) {
       state.enrollments = enrollments
     },
+
     SET_HISTORY(state, history) {
       state.history = history
     },
+
     SET_LOADING(state, loading) {
       state.loading = loading
     },
+
     SET_ERROR(state, error) {
       state.error = error
     },
+
     SET_HISTORY_ERROR(state, error) {
       state.historyError = error
     },
   },
   actions: {
+
+    //  Enroll a course for a student
     async postEnrollment({ commit }, enrollment) {
       commit('SET_LOADING', true)
       try {
-        const response = await api.enrollCourse(enrollment)
-        return response.data
+        await api.enrollment.enrollCourse(enrollment)
       } catch (error) {
-        let errorMessage = 'Lỗi không xác định'
-
-        if (error.response && error.response.data && error.response.data.message) {
-          errorMessage = error.response.data.message
-        } else if (error.message) {
-          errorMessage = error.message
-        }
-
-        commit('SET_ERROR', errorMessage)
-
+        commit('SET_ERROR', error.response?.data?.message || error.message || 'Enroll course failed')
       } finally {
         commit('SET_LOADING', false)
       }
     },
 
+    // Drop an enrollment for a student
     async dropEnrollment({ commit }, enrollment) {
       commit('SET_LOADING', true)
       try {
-        const response = await api.dropCourse(enrollment)
-        return response.data
+        await api.enrollment.dropCourse(enrollment)
       } catch (error) {
-        let errorMessage = 'Lỗi không xác định'
-
-        if (error.response && error.response.data && error.response.data.message) {
-          errorMessage = error.response.data.message
-        } else if (error.message) {
-          errorMessage = error.message
-        }
-
-        commit('SET_ERROR', errorMessage)
+        commit('SET_ERROR', error.response?.data?.message || error.message || 'Drop course failed')
       } finally {
         commit('SET_LOADING', false)
       }
     },
+
+    // Fetch drop history for a student
     async getDropHistory({ commit }, studentId) {
       commit('SET_LOADING', true)
       try {
-        const response = await api.getDropCourseHistory(studentId)
+        const response = await api.enrollment.getDropCourseHistory(studentId)
         commit('SET_HISTORY', response.data.metadata.dropHistory)
         commit('SET_HISTORY_ERROR', null)
-      
       } catch (error) {
-        let errorMessage = 'Lỗi không xác định'
-
-        if (error.response && error.response.data && error.response.data.message) {
-          errorMessage = error.response.data.message
-        } else if (error.message) {
-          errorMessage = error.message
-        }
-
-        commit('SET_HISTORY_ERROR', errorMessage)
+        commit('SET_HISTORY_ERROR', error.response?.data?.message || error.message || 'Fetching drop history failed')
       } finally {
         commit('SET_LOADING', false)
       }
     }
   },
-  getters: {
 
-  }
+  getters: {}
+
 }

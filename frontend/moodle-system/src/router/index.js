@@ -69,7 +69,7 @@ const routes = [
   },
   {
     path: '/register-course',
-    name: 'registerCourse',
+    name: 'RegisterCourse',
     component: RegisterCourse,
   },
   {
@@ -79,7 +79,7 @@ const routes = [
   },
   {
     path: '/grade-table',
-    name: 'grade-table',
+    name: 'GradeTable',
     component: GradeTable
   }
 ]

@@ -1,4 +1,4 @@
-import api from '@/services/api'
+import api from '@/services/index.js'
 
 export default {
   namespaced: true,
@@ -12,79 +12,87 @@ export default {
     error: null
   },
   mutations: {
+
     SET_STATUS_TYPES(state, statusTypes) {
       state.statusTypes = statusTypes
     },
+
     SET_STATUS_TRANSITIONS(state, transitions) {
       state.statusTransitions = transitions
     },
+
     SET_COUNTRIES(state, countries) {
       state.countries = countries
     },
+
     SET_NATIONALITIES(state, nationalities) {
       state.nationalities = nationalities
     },
+
     SET_LOCATION_DATA(state, { geonameId, data }) {
       state.locationCache[geonameId] = data
     },
+
     SET_LOADING(state, loading) {
       state.loading = loading
     },
+
     SET_ERROR(state, error) {
       state.error = error
     }
   },
   actions: {
-    // Status types
+
+    // Fetch status types
     async fetchStatusTypes({ commit }) {
       commit('SET_LOADING', true)
       try {
-        const response = await api.getStatusTypes()
+        const response = await api.statusType.getStatusTypes()
         const statusTypes = response.data.metadata || []
         commit('SET_STATUS_TYPES', statusTypes)
       } catch (error) {
-        commit('SET_ERROR', error.message)
+        commit('SET_ERROR', error.response?.data?.message || error.message || 'Fetching status types failed')
       } finally {
         commit('SET_LOADING', false)
       }
     },
     
+    // Create new status type
     async createStatusType({ commit, dispatch }, statusType) {
       commit('SET_LOADING', true)
       try {
-        const response = await api.createStatusType(statusType)
+        await api.statusType.createStatusType(statusType)
         await dispatch('fetchStatusTypes')
-        return response.data
       } catch (error) {
-        commit('SET_ERROR', error.message)
+        commit('SET_ERROR', error.response?.data?.message || error.message || 'Creating status type failed')
         throw error
       } finally {
         commit('SET_LOADING', false)
       }
     },
     
+    // Update existing status type
     async updateStatusType({ commit, dispatch }, { id, statusType }) {
       commit('SET_LOADING', true)
       try {
-        const response = await api.updateStatusType(id, statusType)
+        await api.statusType.updateStatusType(id, statusType)
         await dispatch('fetchStatusTypes')
-        return response.data
       } catch (error) {
-        commit('SET_ERROR', error.message)
+        commit('SET_ERROR', error.response?.data?.message || error.message || 'Updating status type failed')
         throw error
       } finally {
         commit('SET_LOADING', false)
       }
     },
     
+    // Delete status type
     async deleteStatusType({ commit, dispatch }, id) {
       commit('SET_LOADING', true)
       try {
-        const response = await api.deleteStatusType(id)
+        await api.deleteStatusType(id)
         await dispatch('fetchStatusTypes')
-        return response.data
       } catch (error) {
-        commit('SET_ERROR', error.message)
+        commit('SET_ERROR', error.response?.data?.message || error.message || 'Deleting status type failed')
         throw error
       } finally {
         commit('SET_LOADING', false)
@@ -95,37 +103,37 @@ export default {
     async fetchStatusTransitions({ commit }) {
       commit('SET_LOADING', true)
       try {
-        const response = await api.getStatusTransitions()
+        const response = await api.statusTransition.getStatusTransitions()
         commit('SET_STATUS_TRANSITIONS', response.data.metadata || [])
       } catch (error) {
-        commit('SET_ERROR', error.message)
+        commit('SET_ERROR', error.response?.data?.message || error.message || 'Fetching status transitions failed')
       } finally {
         commit('SET_LOADING', false)
       }
     },
     
+    // Create new status transition
     async createStatusTransition({ commit, dispatch }, transition) {
       commit('SET_LOADING', true)
       try {
-        const response = await api.createStatusTransition(transition)
+        await api.statusTransition.createStatusTransition(transition)
         await dispatch('fetchStatusTransitions')
-        return response.data
       } catch (error) {
-        commit('SET_ERROR', error.message)
+        commit('SET_ERROR', error.response?.data?.message || error.message || 'Creating status transition failed')
         throw error
       } finally {
         commit('SET_LOADING', false)
       }
     },
     
+    // Delete status transition
     async deleteStatusTransition({ commit, dispatch }, transition) {
       commit('SET_LOADING', true)
       try {
-        const response = await api.deleteStatusTransition(transition)
+        await api.statusTransition.deleteStatusTransition(transition)
         await dispatch('fetchStatusTransitions')
-        return response.data
       } catch (error) {
-        commit('SET_ERROR', error.message)
+        commit('SET_ERROR', error.response?.data?.message || error.message || 'Deleting status transition failed')
         throw error
       } finally {
         commit('SET_LOADING', false)
@@ -136,7 +144,7 @@ export default {
     async fetchCountries({ commit }) {
       commit('SET_LOADING', true)
       try {
-        const response = await api.getCountries()
+        const response = await api.geography.getCountries()
         const countries = response.data.metadata.countries || []
         
         // Ensure Vietnam is always available
@@ -155,7 +163,7 @@ export default {
         
         commit('SET_COUNTRIES', countries)
       } catch (error) {
-        commit('SET_ERROR', error.message)
+        commit('SET_ERROR', error.response?.data?.message || error.message || 'Fetching countries failed')
         
         // Fallback to default countries if API fails
         const defaultCountries = [
@@ -175,10 +183,10 @@ export default {
     async fetchNationalities({ commit }) {
       commit('SET_LOADING', true)
       try {
-        const response = await api.getNationalities()
+        const response = await api.geography.getNationalities()
         commit('SET_NATIONALITIES', response.data.metadata.nationalities || [])
       } catch (error) {
-        commit('SET_ERROR', error.message)
+        commit('SET_ERROR', error.response?.data?.message || error.message || 'Fetching nationalities failed')
         
         // Fallback to default nationalities if API fails
         const defaultNationalities = [
@@ -203,10 +211,9 @@ export default {
       
       commit('SET_LOADING', true)
       try {
-        const response = await api.getLocationChildren(geonameId)
+        const response = await api.geography.getLocationChildren(geonameId)
         
         if (!response.data || !response.data.metadata || !response.data.metadata.children) {
-          console.error('Invalid response format:', response.data)
           return { geonames: [] }
         }
         
@@ -222,7 +229,6 @@ export default {
             geonames: response.data.metadata.children 
           }
         } else {
-          console.error('Unexpected response structure:', response.data.metadata.children)
           locationData = { geonames: [] }
         }
         
@@ -234,8 +240,7 @@ export default {
         
         return locationData
       } catch (error) {
-        console.error('Error fetching location children:', error)
-        commit('SET_ERROR', error.message)
+        commit('SET_ERROR', error.response?.data?.message || error.message || 'Fetching location children failed')
         return { geonames: [] }
       } finally {
         commit('SET_LOADING', false)

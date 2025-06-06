@@ -51,8 +51,8 @@
       <div class="col-md-4">
         <label class="form-label">{{ $t('student.gender') }}</label>
         <select id="student-gender" v-model="form.gender" class="form-select" required>
-          <option :value="Nam">{{ $t('student.gender_types.male') }}</option>
-          <option :value="Nữ">{{ $t('student.gender_types.female') }}</option>
+          <option value="Nam">{{ $t('student.gender_types.male') }}</option>
+          <option value="Nữ">{{ $t('student.gender_types.female') }}</option>
         </select>
       </div>
       <div class="col-md-4">

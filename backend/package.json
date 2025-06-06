@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "ts-node src/index.ts",
     "build": "tsc && npm run copy-config",
-    "copy-config": "cp rule_config.json dist/rule_config.json",
+    "copy-config": "cmd /c copy rule_config.json dist\\rule_config.json",
     "start": "node dist/src/index.js",
     "test": "jest",
     "test:watch": "jest --watch"
