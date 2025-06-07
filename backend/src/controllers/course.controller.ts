@@ -1,11 +1,18 @@
+import { injectable, inject } from "inversify";
 import { CREATED, OK } from '../responses/success.responses';
 import { Request, Response, NextFunction } from 'express';
-import CourseService from '../services/course.service';
+import { ICourseService } from '../interfaces/services/course.service.interface';
+import { TYPES } from '../configs/di.types';
 
-class CourseController {
+@injectable()
+export class CourseController {
+	constructor(
+		@inject(TYPES.CourseService) private courseService: ICourseService
+	) {}
+
 	addCourse = async (req: Request, res: Response, next: NextFunction) => {
 		const courseData = req.body;
-		const newCourse = await CourseService.addCourse(courseData);
+		const newCourse = await this.courseService.addCourse(courseData);
 		return new CREATED({
 			message: 'Course added successfully',
 			metadata: { newCourse },
@@ -15,7 +22,7 @@ class CourseController {
 	updateCourse = async (req: Request, res: Response, next: NextFunction) => {
 		const courseCode = req.params.courseCode;
 		const courseData = req.body;
-		const updatedCourse = await CourseService.updateCourse(courseCode, courseData);
+		const updatedCourse = await this.courseService.updateCourse(courseCode, courseData);
 		return new OK({
 			message: 'Course updated successfully',
 			metadata: { updatedCourse },
@@ -24,7 +31,7 @@ class CourseController {
 
 	deleteCourse = async (req: Request, res: Response, next: NextFunction) => {
 		const courseCode = req.params.courseCode;
-		const deletedCourse = await CourseService.deleteCourse(courseCode);
+		const deletedCourse = await this.courseService.deleteCourse(courseCode);
 		return new OK({
 			message: 'Course deleted successfully',
 			metadata: { deletedCourse },
@@ -32,12 +39,10 @@ class CourseController {
 	};
 
 	getCourses = async (req: Request, res: Response, next: NextFunction) => {
-		const courses = await CourseService.getCourses(req.query);
+		const courses = await this.courseService.getCourses(req.query);
 		return new OK({
 			message: 'Courses retrieved successfully',
 			metadata: { courses },
 		}).send(res);
 	}; 
 }
-
-export default new CourseController();

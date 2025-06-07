@@ -1,22 +1,25 @@
 // backend/tests/unit/services/course.service.spec.ts
 import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
-import * as courseRepo from "../../../src/models/repositories/course.repo";
-import * as departmentRepo from "../../../src/models/repositories/department.repo";
-import * as classRepo from "../../../src/models/repositories/class.repo";
-import * as enrollmentRepo from "../../../src/models/repositories/enrollment.repo";
-import CourseService from "../../../src/services/course.service";
+import { Container } from "inversify";
+import { CourseService } from "../../../src/services/course.service";
 import { BadRequestError, NotFoundError } from "../../../src/responses/error.responses";
 import { ICourse } from "../../../src/models/interfaces/course.interface";
 import { UpdateCourseDto, CreateCourseDto } from "../../../src/dto/course";
-
-// Mocking repositories
-jest.mock("../../../src/models/repositories/course.repo");
-jest.mock("../../../src/models/repositories/department.repo");
-jest.mock("../../../src/models/repositories/class.repo");
-jest.mock("../../../src/models/repositories/enrollment.repo");
+import { ICourseRepository } from "../../../src/interfaces/repositories/course.repository.interface";
+import { IDepartmentRepository } from "../../../src/interfaces/repositories/department.repository.interface";
+import { IClassRepository } from "../../../src/interfaces/repositories/class.repository.interface";
+import { IEnrollmentRepository } from "../../../src/interfaces/repositories/enrollment.repository.interface";
+import { TYPES } from "../../../src/configs/di.types";
 
 describe("Course Service", () => {
+  let container: Container;
+  let courseService: CourseService;
+  let mockCourseRepository: jest.Mocked<ICourseRepository>;
+  let mockDepartmentRepository: jest.Mocked<IDepartmentRepository>;
+  let mockClassRepository: jest.Mocked<IClassRepository>;
+  let mockEnrollmentRepository: jest.Mocked<IEnrollmentRepository>;
+
   const mockDepartmentId = new mongoose.Types.ObjectId().toString();
   const mockPrereqId1 = new mongoose.Types.ObjectId().toString();
   const mockPrereqId2 = new mongoose.Types.ObjectId().toString();
@@ -44,50 +47,92 @@ describe("Course Service", () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    // Create test container
+    container = new Container();
+    
+    // Create mocked repositories
+    mockCourseRepository = {
+      findCourseById: jest.fn(),
+      findCourseByCode: jest.fn(),
+      createCourse: jest.fn(),
+      findCoursesByIds: jest.fn(),
+      updateCourse: jest.fn(),
+      deactivateCourse: jest.fn(),
+      deleteCourse: jest.fn(),
+      getAllCourses: jest.fn(),
+    } as jest.Mocked<ICourseRepository>;
+    
+    mockDepartmentRepository = {
+      findDepartmentById: jest.fn(),
+    } as jest.Mocked<IDepartmentRepository>;
+    
+    mockClassRepository = {
+      createClass: jest.fn(),
+      findClassByCode: jest.fn(),
+      findClassByCourse: jest.fn(),
+      findClassesWithOverlappingSchedule: jest.fn(),
+      getAllClasses: jest.fn(),
+    } as jest.Mocked<IClassRepository>;
+    
+    mockEnrollmentRepository = {
+      findEnrollmentsByClass: jest.fn(),
+    } as jest.Mocked<IEnrollmentRepository>;
+    
+    // Bind mocked repositories
+    container.bind<ICourseRepository>(TYPES.CourseRepository).toConstantValue(mockCourseRepository);
+    container.bind<IDepartmentRepository>(TYPES.DepartmentRepository).toConstantValue(mockDepartmentRepository);
+    container.bind<IClassRepository>(TYPES.ClassRepository).toConstantValue(mockClassRepository);
+    container.bind<IEnrollmentRepository>(TYPES.EnrollmentRepository).toConstantValue(mockEnrollmentRepository);
+    container.bind<CourseService>(TYPES.CourseService).to(CourseService);
+    
+    // Get service instance
+    courseService = container.get<CourseService>(TYPES.CourseService);
   });
 
   // Test 1: Adding a course successfully
   it("should add a course successfully", async () => {
     // Mock implementations
-    (courseRepo.findCourseByCode as jest.Mock).mockResolvedValue(null);
-    (departmentRepo.findDepartmentById as jest.Mock).mockResolvedValue({ _id: mockDepartmentId, name: "Computer Science" });
-    (courseRepo.createCourse as jest.Mock).mockResolvedValue(mockCourse);
+    mockCourseRepository.findCourseByCode.mockResolvedValue(null);
+    mockDepartmentRepository.findDepartmentById.mockResolvedValue({ 
+      _id: mockDepartmentId, 
+      name: "Computer Science" 
+    } as any);
+    mockCourseRepository.createCourse.mockResolvedValue(mockCourse as ICourse);
 
     // Execute
-    const result = await CourseService.addCourse(mockCourseData);
+    const result = await courseService.addCourse(mockCourseData);
 
     // Verify
-    expect(courseRepo.findCourseByCode).toHaveBeenCalledWith("CS101");
-    expect(departmentRepo.findDepartmentById).toHaveBeenCalledWith(mockDepartmentId);
-    expect(courseRepo.createCourse).toHaveBeenCalledWith(mockCourseData);
+    expect(mockCourseRepository.findCourseByCode).toHaveBeenCalledWith("CS101");
+    expect(mockDepartmentRepository.findDepartmentById).toHaveBeenCalledWith(mockDepartmentId);
+    expect(mockCourseRepository.createCourse).toHaveBeenCalledWith(mockCourseData);
     expect(result).toEqual(mockCourse);
   });
 
   // Test 2: Prevent adding a course with an existing code
   it("should throw an error when adding a course with an existing code", async () => {
-    (courseRepo.findCourseByCode as jest.Mock).mockResolvedValue(mockCourse);
+    mockCourseRepository.findCourseByCode.mockResolvedValue(mockCourse as ICourse);
 
-    await expect(CourseService.addCourse(mockCourseData))
+    await expect(courseService.addCourse(mockCourseData))
       .rejects
       .toThrow(BadRequestError);
       
-    expect(courseRepo.findCourseByCode).toHaveBeenCalledWith("CS101");
-    expect(courseRepo.createCourse).not.toHaveBeenCalled();
+    expect(mockCourseRepository.findCourseByCode).toHaveBeenCalledWith("CS101");
+    expect(mockCourseRepository.createCourse).not.toHaveBeenCalled();
   });
 
   // Test 3: Prevent adding a course with non-existent department
   it("should throw an error when adding a course with a non-existent department", async () => {
-    (courseRepo.findCourseByCode as jest.Mock).mockResolvedValue(null);
-    (departmentRepo.findDepartmentById as jest.Mock).mockResolvedValue(null);
+    mockCourseRepository.findCourseByCode.mockResolvedValue(null);
+    mockDepartmentRepository.findDepartmentById.mockResolvedValue(null);
 
-    await expect(CourseService.addCourse(mockCourseData))
+    await expect(courseService.addCourse(mockCourseData))
       .rejects
       .toThrow(NotFoundError);
       
-    expect(courseRepo.findCourseByCode).toHaveBeenCalledWith("CS101");
-    expect(departmentRepo.findDepartmentById).toHaveBeenCalledWith(mockDepartmentId);
-    expect(courseRepo.createCourse).not.toHaveBeenCalled();
+    expect(mockCourseRepository.findCourseByCode).toHaveBeenCalledWith("CS101");
+    expect(mockDepartmentRepository.findDepartmentById).toHaveBeenCalledWith(mockDepartmentId);
+    expect(mockCourseRepository.createCourse).not.toHaveBeenCalled();
   });
 
   // Test 4: Prevent adding a course with non-existent prerequisites
@@ -97,18 +142,21 @@ describe("Course Service", () => {
       prerequisites: [mockPrereqId1, mockPrereqId2]
     };
     
-    (courseRepo.findCourseByCode as jest.Mock).mockResolvedValue(null);
-    (departmentRepo.findDepartmentById as jest.Mock).mockResolvedValue({ _id: mockDepartmentId, name: "Computer Science" });
-    (courseRepo.findCoursesByIds as jest.Mock).mockResolvedValue([{ _id: mockPrereqId1 }]); // Only one prerequisite found
+    mockCourseRepository.findCourseByCode.mockResolvedValue(null);
+    mockDepartmentRepository.findDepartmentById.mockResolvedValue({ 
+      _id: mockDepartmentId, 
+      name: "Computer Science" 
+    } as any);
+    mockCourseRepository.findCoursesByIds.mockResolvedValue([{ _id: mockPrereqId1 } as ICourse]); // Only one prerequisite found
 
-    await expect(CourseService.addCourse(courseWithPrereqs))
+    await expect(courseService.addCourse(courseWithPrereqs))
       .rejects
       .toThrow(NotFoundError);
       
-    expect(courseRepo.findCourseByCode).toHaveBeenCalledWith("CS101");
-    expect(departmentRepo.findDepartmentById).toHaveBeenCalledWith(mockDepartmentId);
-    expect(courseRepo.findCoursesByIds).toHaveBeenCalledWith([mockPrereqId1, mockPrereqId2]);
-    expect(courseRepo.createCourse).not.toHaveBeenCalled();
+    expect(mockCourseRepository.findCourseByCode).toHaveBeenCalledWith("CS101");
+    expect(mockDepartmentRepository.findDepartmentById).toHaveBeenCalledWith(mockDepartmentId);
+    expect(mockCourseRepository.findCoursesByIds).toHaveBeenCalledWith([mockPrereqId1, mockPrereqId2]);
+    expect(mockCourseRepository.createCourse).not.toHaveBeenCalled();
   });
 
   // Test 5: Updating a course successfully
@@ -118,17 +166,17 @@ describe("Course Service", () => {
       credits: 4
     };
     
-    (courseRepo.findCourseByCode as jest.Mock).mockResolvedValue(mockCourse);
-    (classRepo.findClassByCourse as jest.Mock).mockResolvedValue([]);
-    (courseRepo.updateCourse as jest.Mock).mockResolvedValue({
+    mockCourseRepository.findCourseByCode.mockResolvedValue(mockCourse as ICourse);
+    mockClassRepository.findClassByCourse.mockResolvedValue([]);
+    mockCourseRepository.updateCourse.mockResolvedValue({
       ...mockCourse,
       ...updateData
-    });
+    } as ICourse);
 
-    const result = await CourseService.updateCourse("CS101", updateData);
+    const result = await courseService.updateCourse("CS101", updateData);
 
-    expect(courseRepo.findCourseByCode).toHaveBeenCalledWith("CS101");
-    expect(courseRepo.updateCourse).toHaveBeenCalledWith("CS101", updateData);
+    expect(mockCourseRepository.findCourseByCode).toHaveBeenCalledWith("CS101");
+    expect(mockCourseRepository.updateCourse).toHaveBeenCalledWith("CS101", updateData);
     expect(result).toBeDefined();
     if (result) {
       expect(result.name).toBe("Advanced Computer Science");
@@ -138,14 +186,14 @@ describe("Course Service", () => {
 
   // Test 6: Prevent updating a non-existent course
   it("should throw an error when updating a non-existent course", async () => {
-    (courseRepo.findCourseByCode as jest.Mock).mockResolvedValue(null);
+    mockCourseRepository.findCourseByCode.mockResolvedValue(null);
 
-    await expect(CourseService.updateCourse("NONEXISTENT", { name: "New Name" }))
+    await expect(courseService.updateCourse("NONEXISTENT", { name: "New Name" }))
       .rejects
       .toThrow(NotFoundError);
       
-    expect(courseRepo.findCourseByCode).toHaveBeenCalledWith("NONEXISTENT");
-    expect(courseRepo.updateCourse).not.toHaveBeenCalled();
+    expect(mockCourseRepository.findCourseByCode).toHaveBeenCalledWith("NONEXISTENT");
+    expect(mockCourseRepository.updateCourse).not.toHaveBeenCalled();
   });
 
   // Test 7: Prevent changing credits when students are enrolled
@@ -157,18 +205,18 @@ describe("Course Service", () => {
     const mockClass = { _id: new mongoose.Types.ObjectId() };
     const mockEnrollment = { _id: new mongoose.Types.ObjectId() };
     
-    (courseRepo.findCourseByCode as jest.Mock).mockResolvedValue(mockCourse);
-    (classRepo.findClassByCourse as jest.Mock).mockResolvedValue([mockClass]);
-    (enrollmentRepo.findEnrollmentsByClass as jest.Mock).mockResolvedValue([mockEnrollment]);
+    mockCourseRepository.findCourseByCode.mockResolvedValue(mockCourse as ICourse);
+    mockClassRepository.findClassByCourse.mockResolvedValue([mockClass as any]);
+    mockEnrollmentRepository.findEnrollmentsByClass.mockResolvedValue([mockEnrollment as any]);
 
-    await expect(CourseService.updateCourse("CS101", updateData))
+    await expect(courseService.updateCourse("CS101", updateData))
       .rejects
       .toThrow(BadRequestError);
       
-    expect(courseRepo.findCourseByCode).toHaveBeenCalledWith("CS101");
-    expect(classRepo.findClassByCourse).toHaveBeenCalledWith(mockCourse._id);
-    expect(enrollmentRepo.findEnrollmentsByClass).toHaveBeenCalledWith(mockClass._id);
-    expect(courseRepo.updateCourse).not.toHaveBeenCalled();
+    expect(mockCourseRepository.findCourseByCode).toHaveBeenCalledWith("CS101");
+    expect(mockClassRepository.findClassByCourse).toHaveBeenCalledWith(mockCourse._id);
+    expect(mockEnrollmentRepository.findEnrollmentsByClass).toHaveBeenCalledWith(mockClass._id);
+    expect(mockCourseRepository.updateCourse).not.toHaveBeenCalled();
   });
 
   // Test 8: Deleting a course successfully
@@ -181,15 +229,15 @@ describe("Course Service", () => {
       createdAt: mockDate
     };
     
-    (courseRepo.findCourseByCode as jest.Mock).mockResolvedValue(recentCourse);
-    (classRepo.findClassByCourse as jest.Mock).mockResolvedValue([]);
-    (courseRepo.deleteCourse as jest.Mock).mockResolvedValue(recentCourse);
+    mockCourseRepository.findCourseByCode.mockResolvedValue(recentCourse as ICourse);
+    mockClassRepository.findClassByCourse.mockResolvedValue([]);
+    mockCourseRepository.deleteCourse.mockResolvedValue(recentCourse as ICourse);
 
-    const result = await CourseService.deleteCourse("CS101");
+    const result = await courseService.deleteCourse("CS101");
 
-    expect(courseRepo.findCourseByCode).toHaveBeenCalledWith("CS101");
-    expect(classRepo.findClassByCourse).toHaveBeenCalledWith(recentCourse._id);
-    expect(courseRepo.deleteCourse).toHaveBeenCalledWith("CS101");
+    expect(mockCourseRepository.findCourseByCode).toHaveBeenCalledWith("CS101");
+    expect(mockClassRepository.findClassByCourse).toHaveBeenCalledWith(recentCourse._id);
+    expect(mockCourseRepository.deleteCourse).toHaveBeenCalledWith("CS101");
     expect(result).toBeDefined();
     if (result) {
       expect(result).toEqual(recentCourse);
@@ -206,14 +254,14 @@ describe("Course Service", () => {
       createdAt: oldDate
     };
     
-    (courseRepo.findCourseByCode as jest.Mock).mockResolvedValue(oldCourse);
+    mockCourseRepository.findCourseByCode.mockResolvedValue(oldCourse as ICourse);
 
-    await expect(CourseService.deleteCourse("CS101"))
+    await expect(courseService.deleteCourse("CS101"))
       .rejects
       .toThrow(BadRequestError);
       
-    expect(courseRepo.findCourseByCode).toHaveBeenCalledWith("CS101");
-    expect(courseRepo.deleteCourse).not.toHaveBeenCalled();
+    expect(mockCourseRepository.findCourseByCode).toHaveBeenCalledWith("CS101");
+    expect(mockCourseRepository.deleteCourse).not.toHaveBeenCalled();
   });
 
   // Test 10: Deactivate instead of delete when classes exist
@@ -229,16 +277,16 @@ describe("Course Service", () => {
     const mockClass = { _id: new mongoose.Types.ObjectId() };
     const deactivatedCourse = { ...recentCourse, isActive: false };
     
-    (courseRepo.findCourseByCode as jest.Mock).mockResolvedValue(recentCourse);
-    (classRepo.findClassByCourse as jest.Mock).mockResolvedValue([mockClass]);
-    (courseRepo.deactivateCourse as jest.Mock).mockResolvedValue(deactivatedCourse);
+    mockCourseRepository.findCourseByCode.mockResolvedValue(recentCourse as ICourse);
+    mockClassRepository.findClassByCourse.mockResolvedValue([mockClass as any]);
+    mockCourseRepository.deactivateCourse.mockResolvedValue(deactivatedCourse as ICourse);
 
-    const result = await CourseService.deleteCourse("CS101");
+    const result = await courseService.deleteCourse("CS101");
 
-    expect(courseRepo.findCourseByCode).toHaveBeenCalledWith("CS101");
-    expect(classRepo.findClassByCourse).toHaveBeenCalledWith(recentCourse._id);
-    expect(courseRepo.deactivateCourse).toHaveBeenCalledWith("CS101");
-    expect(courseRepo.deleteCourse).not.toHaveBeenCalled();
+    expect(mockCourseRepository.findCourseByCode).toHaveBeenCalledWith("CS101");
+    expect(mockClassRepository.findClassByCourse).toHaveBeenCalledWith(recentCourse._id);
+    expect(mockCourseRepository.deactivateCourse).toHaveBeenCalledWith("CS101");
+    expect(mockCourseRepository.deleteCourse).not.toHaveBeenCalled();
     expect(result).toBeDefined();
     if (result) {
       expect(result).toEqual(deactivatedCourse);
@@ -257,11 +305,11 @@ describe("Course Service", () => {
       }
     };
     
-    (courseRepo.getAllCourses as jest.Mock).mockResolvedValue(mockCoursesData);
+    mockCourseRepository.getAllCourses.mockResolvedValue(mockCoursesData as any);
 
-    const result = await CourseService.getCourses({});
+    const result = await courseService.getCourses({});
 
-    expect(courseRepo.getAllCourses).toHaveBeenCalledWith(1, 10, {});
+    expect(mockCourseRepository.getAllCourses).toHaveBeenCalledWith(1, 10, {});
     expect(result).toEqual(mockCoursesData);
   });
 
@@ -277,14 +325,14 @@ describe("Course Service", () => {
       }
     };
     
-    (courseRepo.getAllCourses as jest.Mock).mockResolvedValue(mockCoursesData);
+    mockCourseRepository.getAllCourses.mockResolvedValue(mockCoursesData as any);
 
-    const result = await CourseService.getCourses({
+    const result = await courseService.getCourses({
       page: "2",
       limit: "1"
     });
 
-    expect(courseRepo.getAllCourses).toHaveBeenCalledWith(2, 1, {});
+    expect(mockCourseRepository.getAllCourses).toHaveBeenCalledWith(2, 1, {});
     expect(result).toEqual(mockCoursesData);
   });
 
@@ -300,14 +348,14 @@ describe("Course Service", () => {
       }
     };
     
-    (courseRepo.getAllCourses as jest.Mock).mockResolvedValue(mockCoursesData);
+    mockCourseRepository.getAllCourses.mockResolvedValue(mockCoursesData as any);
 
     const departmentId = new mongoose.Types.ObjectId().toString();
-    const result = await CourseService.getCourses({
+    const result = await courseService.getCourses({
       departmentId: departmentId
     });
 
-    expect(courseRepo.getAllCourses).toHaveBeenCalledWith(1, 10, {
+    expect(mockCourseRepository.getAllCourses).toHaveBeenCalledWith(1, 10, {
       department: expect.any(mongoose.Types.ObjectId)
     });
     expect(result).toEqual(mockCoursesData);
@@ -321,25 +369,28 @@ describe("Course Service", () => {
     };
     
     // Even though we're mocking, we'll simulate validation error
-    (courseRepo.createCourse as jest.Mock).mockRejectedValue(
+    mockCourseRepository.createCourse.mockRejectedValue(
       new Error("Credits must be an integer greater than or equal to 2")
     );
-    (courseRepo.findCourseByCode as jest.Mock).mockResolvedValue(null);
-    (departmentRepo.findDepartmentById as jest.Mock).mockResolvedValue({ _id: mockDepartmentId, name: "Computer Science" });
+    mockCourseRepository.findCourseByCode.mockResolvedValue(null);
+    mockDepartmentRepository.findDepartmentById.mockResolvedValue({ 
+      _id: mockDepartmentId, 
+      name: "Computer Science" 
+    } as any);
 
-    await expect(CourseService.addCourse(invalidCourseData))
+    await expect(courseService.addCourse(invalidCourseData))
       .rejects
       .toThrow();
   });
 
   // Test 15: Handling invalid department ID format
   it("should handle invalid department ID format when filtering courses", async () => {
-    await expect(CourseService.getCourses({
+    await expect(courseService.getCourses({
       departmentId: "invalid-id"
     }))
       .rejects
       .toThrow(BadRequestError);
     
-    expect(courseRepo.getAllCourses).not.toHaveBeenCalled();
+    expect(mockCourseRepository.getAllCourses).not.toHaveBeenCalled();
   });
 });

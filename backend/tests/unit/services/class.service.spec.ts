@@ -65,13 +65,21 @@ describe("Class Service", () => {
     mockClassRepository = {
       findClassByCode: jest.fn(),
       createClass: jest.fn(),
+      findClassByCourse: jest.fn(),
       findClassesWithOverlappingSchedule: jest.fn(),
       getAllClasses: jest.fn(),
-    };
+    } as jest.Mocked<IClassRepository>;
     
     mockCourseRepository = {
       findCourseById: jest.fn(),
-    };
+      findCourseByCode: jest.fn(),
+      createCourse: jest.fn(),
+      findCoursesByIds: jest.fn(),
+      updateCourse: jest.fn(),
+      deactivateCourse: jest.fn(),
+      deleteCourse: jest.fn(),
+      getAllCourses: jest.fn(),
+    } as jest.Mocked<ICourseRepository>;
     
     // Bind mocked repositories
     container.bind<IClassRepository>(TYPES.ClassRepository).toConstantValue(mockClassRepository);
