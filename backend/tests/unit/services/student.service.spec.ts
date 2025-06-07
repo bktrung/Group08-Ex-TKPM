@@ -172,7 +172,7 @@ describe("Student Service - DI Implementation", () => {
 
       await expect(studentService.addStudent(mockCreateStudentDto))
         .rejects
-        .toThrow(new BadRequestError('Mã số sinh viên đã tồn tại'));
+        .toThrow(new BadRequestError('Student ID already exists'));
       
       expect(mockStudentRepository.addStudent).not.toHaveBeenCalled();
     });
@@ -183,7 +183,7 @@ describe("Student Service - DI Implementation", () => {
 
       await expect(studentService.addStudent(mockCreateStudentDto))
         .rejects
-        .toThrow(new BadRequestError('Trạng thái sinh viên không tồn tại'));
+        .toThrow(new BadRequestError('Student status does not exist'));
       
       expect(mockStudentRepository.addStudent).not.toHaveBeenCalled();
     });
@@ -212,7 +212,7 @@ describe("Student Service - DI Implementation", () => {
 
       await expect(studentService.updateStudent("STU001", updateStudentDto))
         .rejects
-        .toThrow(new NotFoundError('Không tìm thấy sinh viên'));
+        .toThrow(new NotFoundError('Student not found'));
       
       expect(mockStudentRepository.updateStudent).not.toHaveBeenCalled();
     });
@@ -233,7 +233,7 @@ describe("Student Service - DI Implementation", () => {
 
       await expect(studentService.deleteStudent("STU001"))
         .rejects
-        .toThrow(new NotFoundError('Không tìm thấy sinh viên'));
+        .toThrow(new NotFoundError('Student not found'));
       
       expect(mockStudentRepository.deleteStudent).toHaveBeenCalledWith("STU001");
     });
@@ -276,7 +276,7 @@ describe("Student Service - DI Implementation", () => {
 
       await expect(studentService.searchStudents(emptyQueryOptions))
         .rejects
-        .toThrow(new BadRequestError('Truy vấn tìm kiếm không được để trống'));
+        .toThrow(new BadRequestError('Search query cannot be empty'));
       
       expect(mockStudentRepository.searchStudents).not.toHaveBeenCalled();
     });
@@ -317,7 +317,7 @@ describe("Student Service - DI Implementation", () => {
 
       await expect(studentService.getStudentById("STU001"))
         .rejects
-        .toThrow(new NotFoundError('Không tìm thấy sinh viên'));
+        .toThrow(new NotFoundError('Student not found'));
       
       expect(mockStudentRepository.findStudent).toHaveBeenCalledWith({ studentId: "STU001" });
     });

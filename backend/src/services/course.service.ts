@@ -24,13 +24,13 @@ export class CourseService implements ICourseService {
 		// Check if course with same ID already exists
 		const existingCourse = await this.courseRepository.findCourseByCode(courseData.courseCode);
 		if (existingCourse) {
-			throw new BadRequestError("Mã môn học đã tồn tại");
+			throw new BadRequestError("Course code already exists");
 		}
 
 		// Check if department exists
 		const existingDepartment = await this.departmentRepository.findDepartmentById(courseData.department);
 		if (!existingDepartment) {
-			throw new NotFoundError("Khoa không tồn tại");
+			throw new NotFoundError("Department does not exist");
 		}
 
 		// Check if prerequisites exist
@@ -45,7 +45,7 @@ export class CourseService implements ICourseService {
 				);
 
 				throw new NotFoundError(
-					`Môn học tiên quyết không tồn tại: ${missingIds.join(', ')}`
+					`Prerequisites do not exist: ${missingIds.join(', ')}`
 				);
 			}
 		}
@@ -57,7 +57,7 @@ export class CourseService implements ICourseService {
 	async updateCourse(courseCode: string, courseData: UpdateCourseDto): Promise<ICourse | null> {
 		const existingCourse = await this.courseRepository.findCourseByCode(courseCode);
 		if (!existingCourse) {
-			throw new NotFoundError("Mã môn học không tồn tại");
+			throw new NotFoundError("Course code does not exist");
 		}
 
 		// can not change credits if some students are enrolled in classes in this course
@@ -73,7 +73,7 @@ export class CourseService implements ICourseService {
 			}
 			
 			if (hasEnrollments) {
-				throw new BadRequestError("Không thể thay đổi số tín chỉ khi đã có sinh viên đăng ký");
+				throw new BadRequestError("Cannot change credits when students are already enrolled");
 			}
 		}
 
@@ -84,7 +84,7 @@ export class CourseService implements ICourseService {
 	async deleteCourse(courseCode: string): Promise<ICourse | null> {
 		const existingCourse = await this.courseRepository.findCourseByCode(courseCode);
 		if (!existingCourse) {
-			throw new NotFoundError("Mã môn học không tồn tại");
+			throw new NotFoundError("Course code does not exist");
 		}
 
 		// Check if the course was created less than 30 minutes ago
@@ -94,8 +94,8 @@ export class CourseService implements ICourseService {
 
 		if (diffInMinutes > 30) {
 			throw new BadRequestError(
-				"Không thể xóa khóa học sau 30 phút kể từ khi tạo. " +
-				"Khóa học đã tạo từ " + diffInMinutes + " phút trước."
+				"Cannot delete course after 30 minutes from creation. " +
+				"Course was created " + diffInMinutes + " minutes ago."
 			);
 		}
 

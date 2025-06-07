@@ -1,4 +1,4 @@
-import Joi from "joi";
+import Joi, { CustomHelpers } from 'joi';
 import { Gender, IdentityDocumentType } from "../../models/interfaces/student.interface";
 import { validateRequest } from "../../middlewares/validation.middleware";
 import configService from "../../configs/init.config";
@@ -9,9 +9,12 @@ const getPhoneFormats = () => configService.get<Record<string, string>>("phoneFo
 
 // Create email validation helper
 export const isAllowedEmailDomain = (value: string, helpers: Joi.CustomHelpers) => {
-	const domain = value.split('@')[1];
-	const allowedDomains = getAllowedEmailDomains(); // Get latest config
+	const allowedDomains = getAllowedEmailDomains();
+	if (!allowedDomains || allowedDomains.length === 0) {
+		return value;  // If no domains configured, allow all
+	}
 
+	const domain = value.split('@')[1];
 	if (!allowedDomains.includes(domain)) {
 		return helpers.error('string.emailDomain', { domains: allowedDomains.join(', ') });
 	}
@@ -20,46 +23,33 @@ export const isAllowedEmailDomain = (value: string, helpers: Joi.CustomHelpers) 
 
 // Create phone validation helper that checks against all configured formats
 export const isValidPhoneNumber = (value: string, helpers: Joi.CustomHelpers) => {
-	const phoneFormats = getPhoneFormats(); // Get latest config
+	const phoneFormats = getPhoneFormats();
+	const formats = Object.keys(phoneFormats);
 
-	// If no phone formats are configured, use a default pattern for VN
-	if (!phoneFormats || Object.keys(phoneFormats).length === 0) {
-		const defaultVNPattern = new RegExp(/^(\+84|84|0)[3|5|7|8|9][0-9]{8}$/);
-		if (!defaultVNPattern.test(value)) {
-			return helpers.error('string.phoneFormat', { formats: 'VN (default)' });
-		}
-		return value;
-	}
-
-	// Try to match with any of the configured phone formats
-	for (const [country, pattern] of Object.entries(phoneFormats)) {
-		const regex = new RegExp(pattern);
+	for (const format of formats) {
+		const regex = new RegExp(phoneFormats[format]);
 		if (regex.test(value)) {
-			// console.log(`[VALIDATION] Phone number matches ${country} format`);
-			return value; // Valid for this country format
+			return value;
 		}
 	}
 
-	// If we get here, the phone number didn't match any configured format
-	return helpers.error('string.phoneFormat', {
-		formats: Object.keys(phoneFormats).join(', ')
-	});
+	return helpers.error('string.phoneFormat', { formats: formats.join(', ') });
 };
 
 const baseIdentityDocumentSchema = {
 	issueDate: Joi.date().required().max('now').messages({
-		'date.base': 'Ngày cấp phải là một ngày hợp lệ',
-		'date.max': 'Ngày cấp không thể trong tương lai',
-		'any.required': 'Ngày cấp là trường bắt buộc'
+		'date.base': 'Issue date must be a valid date',
+		'date.max': 'Issue date cannot be in the future',
+		'any.required': 'Issue date is required'
 	}),
 	issuedBy: Joi.string().required().messages({
-		'string.empty': 'Nơi cấp không được để trống',
-		'any.required': 'Nơi cấp là trường bắt buộc'
+		'string.empty': 'Issuing authority cannot be empty',
+		'any.required': 'Issuing authority is required'
 	}),
 	expiryDate: Joi.date().required().min('now').messages({
-		'date.base': 'Ngày hết hạn phải là một ngày hợp lệ',
-		'date.min': 'Ngày hết hạn phải sau ngày hiện tại',
-		'any.required': 'Ngày hết hạn là trường bắt buộc'
+		'date.base': 'Expiry date must be a valid date',
+		'date.min': 'Expiry date must be after current date',
+		'any.required': 'Expiry date is required'
 	})
 };
 
@@ -70,9 +60,9 @@ const cmndSchema = Joi.object({
 		.pattern(/^[0-9]{9}$/)
 		.required()
 		.messages({
-			'string.empty': 'Số CMND không được để trống',
-			'string.pattern.base': 'Số CMND phải có đúng 9 chữ số',
-			'any.required': 'Số CMND là trường bắt buộc'
+			'string.empty': 'CMND number cannot be empty',
+			'string.pattern.base': 'CMND number must have exactly 9 digits',
+			'any.required': 'CMND number is required'
 		}),
 	...baseIdentityDocumentSchema
 });
@@ -84,13 +74,13 @@ const cccdSchema = Joi.object({
 		.pattern(/^[0-9]{12}$/)
 		.required()
 		.messages({
-			'string.empty': 'Số CCCD không được để trống',
-			'string.pattern.base': 'Số CCCD phải có đúng 12 chữ số',
-			'any.required': 'Số CCCD là trường bắt buộc'
+			'string.empty': 'CCCD number cannot be empty',
+			'string.pattern.base': 'CCCD number must have exactly 12 digits',
+			'any.required': 'CCCD number is required'
 		}),
 	...baseIdentityDocumentSchema,
 	hasChip: Joi.boolean().required().messages({
-		'any.required': 'Thông tin về chip là trường bắt buộc'
+		'any.required': 'Chip information is required'
 	})
 });
 
@@ -101,17 +91,17 @@ const passportSchema = Joi.object({
 		.pattern(/^[A-Z][0-9]{8}$/)
 		.required()
 		.messages({
-			'string.empty': 'Số hộ chiếu không được để trống',
-			'string.pattern.base': 'Số hộ chiếu phải có 1 chữ cái viết hoa và 8 chữ số',
-			'any.required': 'Số hộ chiếu là trường bắt buộc'
+			'string.empty': 'Passport number cannot be empty',
+			'string.pattern.base': 'Passport number must have 1 uppercase letter and 8 digits',
+			'any.required': 'Passport number is required'
 		}),
 	...baseIdentityDocumentSchema,
 	issuingCountry: Joi.string().required().messages({
-		'string.empty': 'Quốc gia cấp không được để trống',
-		'any.required': 'Quốc gia cấp là trường bắt buộc'
+		'string.empty': 'Issuing country cannot be empty',
+		'any.required': 'Issuing country is required'
 	}),
 	notes: Joi.string().optional().allow('').messages({
-		'string.base': 'Ghi chú phải là chuỗi'
+		'string.base': 'Notes must be a string'
 	})
 });
 
@@ -121,30 +111,30 @@ const identityDocumentSchema = Joi.alternatives().try(
 	cccdSchema,
 	passportSchema
 ).required().messages({
-	'any.required': 'Giấy tờ tùy thân là trường bắt buộc',
-	'alternatives.match': 'Giấy tờ tùy thân không hợp lệ'
+	'any.required': 'Identity document is required',
+	'alternatives.match': 'Identity document is invalid'
 });
 
 export const addressSchema = Joi.object({
 	houseNumberStreet: Joi.string().required().messages({
-		'string.empty': 'Số nhà, đường không được để trống',
-		'any.required': 'Số nhà, đường là trường bắt buộc'
+		'string.empty': 'House number/street cannot be empty',
+		'any.required': 'House number/street is required'
 	}),
 	wardCommune: Joi.string().required().messages({
-		'string.empty': 'Phường/Xã không được để trống',
-		'any.required': 'Phường/Xã là trường bắt buộc'
+		'string.empty': 'Ward/commune cannot be empty',
+		'any.required': 'Ward/commune is required'
 	}),
 	districtCounty: Joi.string().required().messages({
-		'string.empty': 'Quận/Huyện không được để trống',
-		'any.required': 'Quận/Huyện là trường bắt buộc'
+		'string.empty': 'District/county cannot be empty',
+		'any.required': 'District/county is required'
 	}),
 	provinceCity: Joi.string().required().messages({
-		'string.empty': 'Tỉnh/Thành phố không được để trống',
-		'any.required': 'Tỉnh/Thành phố là trường bắt buộc'
+		'string.empty': 'Province/city cannot be empty',
+		'any.required': 'Province/city is required'
 	}),
 	country: Joi.string().required().messages({
-		'string.empty': 'Quốc gia không được để trống',
-		'any.required': 'Quốc gia là trường bắt buộc'
+		'string.empty': 'Country cannot be empty',
+		'any.required': 'Country is required'
 	})
 });
 
@@ -153,9 +143,9 @@ export const addStudentSchema = Joi.object({
 		.pattern(/^[0-9]{8}$/)
 		.required()
 		.messages({
-			'string.empty': 'Mã số sinh viên không được để trống',
-			'string.pattern.base': 'Mã số sinh viên phải có đúng 8 chữ số',
-			'any.required': 'Mã số sinh viên là trường bắt buộc'
+			'string.empty': 'Student ID cannot be empty',
+			'string.pattern.base': 'Student ID must have exactly 8 digits',
+			'any.required': 'Student ID is required'
 		}),
 	fullName: Joi.string()
 		.pattern(/^[A-Za-zÀ-ỹ]+( [A-Za-zÀ-ỹ]+)*$/)
@@ -163,28 +153,28 @@ export const addStudentSchema = Joi.object({
 		.min(2)
 		.max(100)
 		.messages({
-			'string.empty': 'Họ tên không được để trống',
-			'string.min': 'Họ tên phải có ít nhất {#limit} ký tự',
-			'string.max': 'Họ tên không được vượt quá {#limit} ký tự',
-			'string.pattern.base': 'Họ tên không được chứa ký tự đặc biệt',
-			'any.required': 'Họ tên là trường bắt buộc'
+			'string.empty': 'Full name cannot be empty',
+			'string.min': 'Full name must be at least 2 characters',
+			'string.max': 'Full name cannot exceed 100 characters',
+			'string.pattern.base': 'Full name cannot contain special characters',
+			'any.required': 'Full name is required'
 		}),
 	dateOfBirth: Joi.date().required().max('now').messages({
-		'date.base': 'Ngày sinh phải là một ngày hợp lệ',
-		'date.max': 'Ngày sinh không thể trong tương lai',
-		'any.required': 'Ngày sinh là trường bắt buộc'
+		'date.base': 'Date of birth must be a valid date',
+		'date.max': 'Date of birth cannot be in the future',
+		'any.required': 'Date of birth is required'
 	}),
 	gender: Joi.string().valid(...Object.values(Gender)).required().messages({
-		'any.only': `Giới tính phải là một trong các giá trị: ${Object.values(Gender).join(', ')}`,
-		'any.required': 'Giới tính là trường bắt buộc'
+		'any.only': `Gender must be one of: ${Object.values(Gender).join(', ')}`,
+		'any.required': 'Gender is required'
 	}),
 	department: Joi.string()
 		.pattern(/^[0-9a-fA-F]{24}$/)
 		.required()
 		.messages({
-			'string.empty': 'ID khoa không được để trống',
-			'string.pattern.base': 'ID khoa không hợp lệ (phải là ObjectId MongoDB)',
-			'any.required': 'Khoa là trường bắt buộc'
+			'string.empty': 'Department ID cannot be empty',
+			'string.pattern.base': 'Department ID is invalid (must be MongoDB ObjectId)',
+			'any.required': 'Department is required'
 		}),
 	schoolYear: Joi.number()
 		.integer()
@@ -192,55 +182,55 @@ export const addStudentSchema = Joi.object({
 		.max(new Date().getFullYear())
 		.required()
 		.messages({
-			'number.base': 'Khóa học phải là một số',
-			'number.integer': 'Khóa học phải là số nguyên',
-			'number.min': 'Khóa học phải từ năm 1990 trở đi',
-			'number.max': `Khóa học không thể vượt quá năm hiện tại (${new Date().getFullYear()})`,
-			'any.required': 'Khóa học là trường bắt buộc'
+			'number.base': 'School year must be a number',
+			'number.integer': 'School year must be an integer',
+			'number.min': 'School year must be from 1990 onwards',
+			'number.max': `School year cannot exceed current year (${new Date().getFullYear()})`,
+			'any.required': 'School year is required'
 		}),
 	program: Joi.string()
 		.pattern(/^[0-9a-fA-F]{24}$/)
 		.required()
 		.messages({
-			'string.empty': 'ID chương trình học không được để trống',
-			'string.pattern.base': 'ID chương trình học không hợp lệ (phải là ObjectId MongoDB)',
-			'any.required': 'Chương trình học là trường bắt buộc'
+			'string.empty': 'Program ID cannot be empty',
+			'string.pattern.base': 'Program ID is invalid (must be MongoDB ObjectId)',
+			'any.required': 'Program is required'
 		}),
 	permanentAddress: addressSchema.optional(),
 	temporaryAddress: addressSchema.optional(),
 	mailingAddress: addressSchema.required().messages({
-		'any.required': 'Địa chỉ nhận thư là trường bắt buộc'
+		'any.required': 'Mailing address is required'
 	}),
 	email: Joi.string()
 		.email()
 		.required()
 		.custom(isAllowedEmailDomain)
 		.messages({
-			'string.email': 'Email không hợp lệ',
-			'string.empty': 'Email không được để trống',
-			'any.required': 'Email là trường bắt buộc',
-			'string.emailDomain': `Email phải thuộc một trong các tên miền được chấp nhận: {#domains}`
+			'string.email': 'Email is invalid',
+			'string.empty': 'Email cannot be empty',
+			'any.required': 'Email is required',
+			'string.emailDomain': `Email must belong to one of the accepted domains: {#domains}`
 		}),
 	phoneNumber: Joi.string()
 		.required()
 		.custom(isValidPhoneNumber)
 		.messages({
-			'string.empty': 'Số điện thoại không được để trống',
-			'any.required': 'Số điện thoại là trường bắt buộc',
-			'string.phoneFormat': 'Số điện thoại không hợp lệ (được hỗ trợ: {#formats})'
+			'string.empty': 'Phone number cannot be empty',
+			'any.required': 'Phone number is required',
+			'string.phoneFormat': 'Phone number is invalid (supported formats: {#formats})'
 		}),
 	status: Joi.string()
 		.pattern(/^[0-9a-fA-F]{24}$/)
 		.required()
 		.messages({
-			'string.empty': 'ID trạng thái không được để trống',
-			'string.pattern.base': 'ID trạng thái không hợp lệ (phải là ObjectId MongoDB)',
-			'any.required': 'Trạng thái là trường bắt buộc'
+			'string.empty': 'Status ID cannot be empty',
+			'string.pattern.base': 'Status ID is invalid (must be MongoDB ObjectId)',
+			'any.required': 'Status is required'
 		}),
 	identityDocument: identityDocumentSchema,
 	nationality: Joi.string().required().messages({
-		'string.empty': 'Quốc tịch không được để trống',
-		'any.required': 'Quốc tịch là trường bắt buộc'
+		'string.empty': 'Nationality cannot be empty',
+		'any.required': 'Nationality is required'
 	})
 });
 

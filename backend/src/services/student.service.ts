@@ -31,32 +31,32 @@ export class StudentService implements IStudentService {
 
 		if (existingStudent) {
 			if (existingStudent.studentId === studentData.studentId) {
-				throw new BadRequestError('Mã số sinh viên đã tồn tại');
+				throw new BadRequestError('Student ID already exists');
 			}
 			if (existingStudent.email === studentData.email) {
-				throw new BadRequestError('Email đã được sử dụng bởi sinh viên khác');
+				throw new BadRequestError('Email already used by another student');
 			}
 			if (existingStudent.phoneNumber === studentData.phoneNumber) {
-				throw new BadRequestError('Số điện thoại đã được sử dụng bởi sinh viên khác');
+				throw new BadRequestError('Phone number already used by another student');
 			}
 			if (existingStudent.identityDocument.number === studentData.identityDocument.number) {
-				throw new BadRequestError('Số CMND/CCCD/Passport đã được sử dụng bởi sinh viên khác');
+				throw new BadRequestError('Identity document number already used by another student');
 			}
 		}
 
 		const status = await this.studentRepository.findStudentStatusById(studentData.status);
 		if (!status) {
-			throw new BadRequestError('Trạng thái sinh viên không tồn tại');
+			throw new BadRequestError('Student status does not exist');
 		}
 
 		const department = await this.departmentRepository.findDepartmentById(studentData.department);
 		if (!department) {
-			throw new BadRequestError('Khoa không tồn tại');
+			throw new BadRequestError('Department does not exist');
 		}
 
 		const program = await this.programRepository.findProgramById(studentData.program);
 		if (!program) {
-			throw new BadRequestError('Chương trình học không tồn tại');
+			throw new BadRequestError('Program does not exist');
 		}
 
 		// add new student
@@ -67,7 +67,7 @@ export class StudentService implements IStudentService {
 	async updateStudent(studentId: string, studentData: UpdateStudentDto): Promise<IStudent> {
 		const existingStudent = await this.studentRepository.findStudent({ studentId });
 		if (!existingStudent) {
-			throw new NotFoundError('Không tìm thấy sinh viên');
+			throw new NotFoundError('Student not found');
 		}
 
 		// Validate status transition rule
@@ -76,7 +76,7 @@ export class StudentService implements IStudentService {
 			const toStatus = studentData.status;
 			const transition = await this.studentRepository.findStudentStatusTransition(fromStatus, toStatus);
 			if (!transition) {
-				throw new BadRequestError('Không thể chuyển từ trạng thái hiện tại sang trạng thái mong muốn');
+				throw new BadRequestError('Cannot transition from current status to desired status');
 			}
 		}
 
@@ -84,7 +84,7 @@ export class StudentService implements IStudentService {
 		if (studentData.email) {
 			const existingEmailStudent = await this.studentRepository.findStudent({ email: studentData.email });
 			if (existingEmailStudent && existingEmailStudent.studentId !== studentId) {
-				throw new BadRequestError('Email đã được sử dụng bởi sinh viên khác');
+				throw new BadRequestError('Email already used by another student');
 			}
 		}
 
@@ -92,7 +92,7 @@ export class StudentService implements IStudentService {
 		if (studentData.phoneNumber) {
 			const existingPhoneStudent = await this.studentRepository.findStudent({ phoneNumber: studentData.phoneNumber });
 			if (existingPhoneStudent && existingPhoneStudent.studentId !== studentId) {
-				throw new BadRequestError('Số điện thoại đã được sử dụng bởi sinh viên khác');
+				throw new BadRequestError('Phone number already used by another student');
 			}
 		}
 
@@ -102,7 +102,7 @@ export class StudentService implements IStudentService {
 				'identityDocument.number': studentData.identityDocument.number
 			});
 			if (existingIdentityDocumentStudent && existingIdentityDocumentStudent.studentId !== studentId) {
-				throw new BadRequestError('Số CMND/CCCD/Passport đã được sử dụng bởi sinh viên khác');
+				throw new BadRequestError('Identity document number already used by another student');
 			}
 		}
 
@@ -110,7 +110,7 @@ export class StudentService implements IStudentService {
 		if (studentData.status) {
 			const status = await this.studentRepository.findStudentStatusById(studentData.status);
 			if (!status) {
-				throw new BadRequestError('Trạng thái sinh viên không tồn tại');
+				throw new BadRequestError('Student status does not exist');
 			}
 		}
 
@@ -118,7 +118,7 @@ export class StudentService implements IStudentService {
 		if (studentData.department) {
 			const department = await this.departmentRepository.findDepartmentById(studentData.department);
 			if (!department) {
-				throw new BadRequestError('Khoa không tồn tại');
+				throw new BadRequestError('Department does not exist');
 			}
 		}
 
@@ -126,14 +126,14 @@ export class StudentService implements IStudentService {
 		if (studentData.program) {
 			const program = await this.programRepository.findProgramById(studentData.program);
 			if (!program) {
-				throw new BadRequestError('Chương trình học không tồn tại');
+				throw new BadRequestError('Program does not exist');
 			}
 		}
 
 		// 4. Perform the update after all validations pass
 		const updatedStudent = await this.studentRepository.updateStudent(studentId, studentData);
 		if (!updatedStudent) {
-			throw new NotFoundError('Không tìm thấy sinh viên');
+			throw new NotFoundError('Student not found');
 		}
 
 		return updatedStudent;
@@ -142,7 +142,7 @@ export class StudentService implements IStudentService {
 	async deleteStudent(studentId: string): Promise<IStudent> {
 		const deletedStudent = await this.studentRepository.deleteStudent(studentId);
 		if (!deletedStudent) {
-			throw new NotFoundError('Không tìm thấy sinh viên');
+			throw new NotFoundError('Student not found');
 		}
 
 		return deletedStudent;
@@ -151,7 +151,7 @@ export class StudentService implements IStudentService {
 	async searchStudents(options: SearchOptions): Promise<PaginationResult<IStudent>> {
 		// Validate query
 		if (!options.query || options.query.trim() === '') {
-			throw new BadRequestError('Truy vấn tìm kiếm không được để trống');
+			throw new BadRequestError('Search query cannot be empty');
 		}
 
 		// Normalize options
@@ -169,7 +169,7 @@ export class StudentService implements IStudentService {
 	async getStudentById(studentId: string): Promise<IStudent> {
 		const student = await this.studentRepository.findStudent({ studentId });
 		if (!student) {
-			throw new NotFoundError('Không tìm thấy sinh viên');
+			throw new NotFoundError('Student not found');
 		}
 
 		return student;
@@ -182,7 +182,7 @@ export class StudentService implements IStudentService {
 	async addStudentStatus(statusType: string): Promise<any> {
 		const existingStatus = await this.studentRepository.findStudentStatus(statusType);
 		if (existingStatus) {
-			throw new BadRequestError('Trạng thái sinh viên đã tồn tại');
+			throw new BadRequestError('Student status already exists');
 		}
 
 		return await this.studentRepository.addStudentStatus(statusType);
@@ -191,12 +191,12 @@ export class StudentService implements IStudentService {
 	async modifyStudentStatus(statusId: string, statusType: string): Promise<any> {
 		const existingStatus = await this.studentRepository.findStudentStatus(statusType);
 		if (existingStatus) {
-			throw new BadRequestError('Trạng thái sinh viên đã tồn tại');
+			throw new BadRequestError('Student status already exists');
 		}
 
 		const updatedStatus = await this.studentRepository.updateStudentStatus(statusId, statusType);
 		if (!updatedStatus) {
-			throw new NotFoundError('Không tìm thấy trạng thái sinh viên');
+			throw new NotFoundError('Student status not found');
 		}
 
 		return updatedStatus;
@@ -213,21 +213,21 @@ export class StudentService implements IStudentService {
 	async addStudentStatusTransition(fromStatus: string, toStatus: string): Promise<any> {
 		const from = await this.studentRepository.findStudentStatusById(fromStatus);
 		if (!from) {
-			throw new BadRequestError('Trạng thái gốc không tồn tại');
+			throw new BadRequestError('Source status does not exist');
 		}
 
 		const to = await this.studentRepository.findStudentStatusById(toStatus);
 		if (!to) {
-			throw new BadRequestError('Trạng thái đích không tồn tại');
+			throw new BadRequestError('Target status does not exist');
 		}
 
 		if (from._id === to._id) {
-			throw new BadRequestError('Trạng thái gốc và trạng thái đích không thể giống nhau');
+			throw new BadRequestError('Source status and target status cannot be the same');
 		}
 
 		const existingTransition = await this.studentRepository.findStudentStatusTransition(fromStatus, toStatus);
 		if (existingTransition) {
-			throw new BadRequestError('Quy tắc đã tồn tại');
+			throw new BadRequestError('Transition rule already exists');
 		}
 
 		return await this.studentRepository.addStudentStatusTransition(fromStatus, toStatus);
@@ -240,7 +240,7 @@ export class StudentService implements IStudentService {
 	async deleteStudentStatusTransition(fromStatus: string, toStatus: string): Promise<any> {
 		const transition = await this.studentRepository.deleteStudentStatusTransition(fromStatus, toStatus);
 		if (!transition) {
-			throw new NotFoundError('Không tìm thấy quy tắc chuyển trạng thái sinh viên');
+			throw new NotFoundError('Student status transition rule not found');
 		}
 		return transition;
 	}

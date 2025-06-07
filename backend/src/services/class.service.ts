@@ -20,22 +20,22 @@ export class ClassService implements IClassService {
 		// Check if class with same ID already exists
 		const existingClass = await this.classRepository.findClassByCode(classData.classCode);
 		if (existingClass) {
-			throw new BadRequestError("Mã lớp học đã tồn tại");
+			throw new BadRequestError("Class code already exists");
 		}
 
 		// Check if course exists and is active
 		const existingCourse = await this.courseRepository.findCourseById(classData.course);
 		if (!existingCourse) {
-			throw new BadRequestError("Môn học không tồn tại");
+			throw new BadRequestError("Course does not exist");
 		}
 
 		if (!existingCourse.isActive) {
-			throw new BadRequestError("Môn học này đã ngừng mở lớp");
+			throw new BadRequestError("This course has stopped opening classes");
 		}
 
 		// Validate schedule
 		if (!classData.schedule || classData.schedule.length === 0) {
-			throw new BadRequestError("Lớp học phải có ít nhất một lịch học");
+			throw new BadRequestError("Class must have at least one schedule");
 		}
 
 		// Check for internal schedule conflicts
@@ -45,7 +45,7 @@ export class ClassService implements IClassService {
 			// Validate each schedule item
 			if (scheduleA.startPeriod > scheduleA.endPeriod) {
 				throw new BadRequestError(
-					`Tiết kết thúc (${scheduleA.endPeriod}) phải lớn hơn hoặc bằng tiết bắt đầu (${scheduleA.startPeriod})`
+					`End period (${scheduleA.endPeriod}) must be greater than or equal to start period (${scheduleA.startPeriod})`
 				);
 			}
 
@@ -61,7 +61,7 @@ export class ClassService implements IClassService {
 
 					if (overlap) {
 						throw new BadRequestError(
-							`Lịch học bị trùng vào ngày ${scheduleA.dayOfWeek} giữa tiết ${scheduleA.startPeriod}-${scheduleA.endPeriod} và tiết ${scheduleB.startPeriod}-${scheduleB.endPeriod}`
+							`Schedule conflicts on day ${scheduleA.dayOfWeek} between period ${scheduleA.startPeriod}-${scheduleA.endPeriod} and period ${scheduleB.startPeriod}-${scheduleB.endPeriod}`
 						);
 					}
 				}
@@ -86,7 +86,7 @@ export class ClassService implements IClassService {
 
 							if (overlap) {
 								throw new BadRequestError(
-									`Phòng ${newSchedule.classroom} đã được sử dụng vào thứ ${newSchedule.dayOfWeek} tiết ${existingSchedule.startPeriod}-${existingSchedule.endPeriod} bởi lớp ${existingClass.classCode}`
+									`Room ${newSchedule.classroom} is already used on day ${newSchedule.dayOfWeek} period ${existingSchedule.startPeriod}-${existingSchedule.endPeriod} by class ${existingClass.classCode}`
 								);
 							}
 						}

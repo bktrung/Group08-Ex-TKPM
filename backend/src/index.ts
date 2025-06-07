@@ -7,6 +7,8 @@ import { NotFoundError } from "./responses/error.responses";
 import routes from "./routes";
 import cors from "cors";
 import { errorLogger } from "./middlewares/error-logger.middleware";
+import i18n from "./configs/i18n.config";
+import middleware from "i18next-http-middleware";
 
 config();
 
@@ -24,6 +26,9 @@ app.use(express.urlencoded({ limit: '100mb', extended: true }));
 
 // allow cross-origin requests from any origin only for development
 app.use(cors());
+
+// Setup i18n middleware
+app.use(middleware.handle(i18n));
 
 // init db
 import "./dbs/init.mongodb";
@@ -45,10 +50,16 @@ app.use(errorLogger);
 const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
     const statusCode = err.status || 500;
 
+    // Get the translation function from the request
+    const t = req.t || ((key: string) => key);
+    
+    // Translate the error message
+    const translatedMessage = t(err.message || "Internal Server Error");
+
     res.status(statusCode).json({
         status: "error",
         code: statusCode,
-        message: err.message || "Internal Server Error",
+        message: translatedMessage,
         // Include stack trace only in development for debugging
         ...(process.env.NODE_ENV === "dev" && { stack: err.stack }),
     });

@@ -14,7 +14,7 @@ export class DepartmentService implements IDepartmentService {
 	async addDepartment(departmentName: string): Promise<IDepartment> {
 		const existingDepartment = await this.departmentRepository.findDepartmentByName(departmentName);
 		if (existingDepartment) {
-			throw new BadRequestError('Khoa đã tồn tại');
+			throw new BadRequestError('Department already exists');
 		}
 
 		return await this.departmentRepository.addDepartment(departmentName);
@@ -23,15 +23,15 @@ export class DepartmentService implements IDepartmentService {
 	async updateDepartment(departmentId: string, departmentName: string): Promise<IDepartment> {
 		const existingDepartment = await this.departmentRepository.findDepartmentByName(departmentName);
 		if (existingDepartment) {
-			throw new BadRequestError('Khoa đã tồn tại');
+			throw new BadRequestError('Department already exists');
 		}
 
-		const updatedDepartment = await this.departmentRepository.updateDepartment(departmentId, departmentName);
-		if (!updatedDepartment) {
-			throw new NotFoundError('Không tìm thấy khoa');
+		const department = await this.departmentRepository.updateDepartment(departmentId, departmentName);
+		if (!department) {
+			throw new NotFoundError('Department not found');
 		}
 
-		return updatedDepartment;
+		return department;
 	}
 
 	async getDepartments(): Promise<IDepartment[]> {

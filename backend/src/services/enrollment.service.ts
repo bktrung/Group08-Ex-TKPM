@@ -26,23 +26,23 @@ export class EnrollmentService implements IEnrollmentService {
 		// Check if student exists
 		const existingStudent = await this.studentRepository.findStudent({ studentId });
 		if (!existingStudent) {
-			throw new NotFoundError("Sinh viên không tồn tại");
+			throw new NotFoundError("Student does not exist");
 		}
 
 		// Check if class exists
 		const existingClass = await this.classRepository.findClassByCode(classCode);
 		if (!existingClass) {
-			throw new NotFoundError("Lớp học không tồn tại");
+			throw new NotFoundError("Class does not exist");
 		}
 
 		// Check if class is active
 		if (!existingClass.isActive) {
-			throw new BadRequestError("Lớp học không hoạt động");
+			throw new BadRequestError("Class is not active");
 		}
 
 		// Check if class is full
 		if (existingClass.enrolledStudents >= existingClass.maxCapacity) {
-			throw new BadRequestError("Lớp học đã đầy");
+			throw new BadRequestError("Class is full");
 		}
 
 		// Check if enrollment already exists
@@ -51,16 +51,16 @@ export class EnrollmentService implements IEnrollmentService {
 			getDocumentId(existingClass)
 		);
 		if (existingEnrollment) {
-			throw new BadRequestError("Sinh viên đã đăng ký lớp học này");
+			throw new BadRequestError("Student already enrolled in this class");
 		}
 
 		const classCourse = await this.courseRepository.findCourseById(existingClass.course);
 		if (!classCourse) {
-			throw new NotFoundError("Môn học không tồn tại");
+			throw new NotFoundError("Course does not exist");
 		}
 
 		if (!classCourse.isActive) {
-			throw new BadRequestError("Môn học không hoạt động");
+			throw new BadRequestError("Course is not active");
 		}
 
 		// Check if student has prerequisites for the course
@@ -86,7 +86,7 @@ export class EnrollmentService implements IEnrollmentService {
 				const missingCourseNames = missingCourses.map(course => course.courseCode).join(', ');
 
 				throw new BadRequestError(
-					`Sinh viên chưa hoàn thành các môn học tiên quyết: ${missingCourseNames}`
+					`Student has not completed required prerequisites: ${missingCourseNames}`
 				);
 			}
 		}
@@ -98,7 +98,7 @@ export class EnrollmentService implements IEnrollmentService {
 		});
 
 		if (!newEnrollment) {
-			throw new BadRequestError("Đăng ký lớp học không thành công");
+			throw new BadRequestError("Class enrollment was not successful");
 		}
 
 		return newEnrollment;
@@ -108,13 +108,13 @@ export class EnrollmentService implements IEnrollmentService {
 		// Check if student exists
 		const existingStudent = await this.studentRepository.findStudent({ studentId });
 		if (!existingStudent) {
-			throw new NotFoundError("Sinh viên không tồn tại");
+			throw new NotFoundError("Student does not exist");
 		}
 
 		// Check if class exists
 		const existingClass = await this.classRepository.findClassByCode(classCode);
 		if (!existingClass) {
-			throw new NotFoundError("Lớp học không tồn tại");
+			throw new NotFoundError("Class does not exist");
 		}
 
 		// Check if enrollment exists
@@ -123,7 +123,7 @@ export class EnrollmentService implements IEnrollmentService {
 			getDocumentId(existingClass)
 		);
 		if (!existingEnrollment) {
-			throw new NotFoundError("Sinh viên chưa đăng ký lớp học này");
+			throw new NotFoundError("Student has not enrolled in this class");
 		}
 		///
 
@@ -134,13 +134,13 @@ export class EnrollmentService implements IEnrollmentService {
 		);
 
 		if (!semester) {
-			throw new NotFoundError("Học kỳ không tồn tại");
+			throw new NotFoundError("Semester does not exist");
 		}
 
 		const currentDate = new Date();
 		const dropDeadline = new Date(semester.dropDeadline);
 		if (currentDate > dropDeadline) {
-			throw new BadRequestError("Đã quá hạn huỷ lớp học");
+			throw new BadRequestError("Past deadline to drop class");
 		}
 
 		const droppedEnrollment = await this.enrollmentRepository.dropEnrollment(
@@ -150,7 +150,7 @@ export class EnrollmentService implements IEnrollmentService {
 		);
 
 		if (!droppedEnrollment) {
-			throw new BadRequestError("Sinh viên chưa đăng ký lớp học này");
+			throw new BadRequestError("Student has not enrolled in this class");
 		}
 
 		return droppedEnrollment;
@@ -160,12 +160,12 @@ export class EnrollmentService implements IEnrollmentService {
 		// Check if student exists
 		const existingStudent = await this.studentRepository.findStudent({ studentId });
 		if (!existingStudent) {
-			throw new NotFoundError("Sinh viên không tồn tại");
+			throw new NotFoundError("Student does not exist");
 		}
 
 		const dropHistory = await this.enrollmentRepository.findDropHistoryByStudent(getDocumentId(existingStudent));
 		if (!dropHistory || dropHistory.length === 0) {
-			throw new NotFoundError("Không tìm thấy lịch sử huỷ lớp học");
+			throw new NotFoundError("Drop history not found");
 		}
 
 		return dropHistory;

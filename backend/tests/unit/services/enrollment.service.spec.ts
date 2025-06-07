@@ -129,7 +129,7 @@ describe('EnrollmentService - DI Implementation', () => {
 
             await expect(enrollmentService.enrollStudent(enrollmentData))
                 .rejects
-                .toThrow(new NotFoundError("Sinh viên không tồn tại"));
+                .toThrow(new NotFoundError("Student does not exist"));
 
             expect(mockStudentRepository.findStudent).toHaveBeenCalledWith({ studentId: "STU001" });
         });
@@ -140,7 +140,7 @@ describe('EnrollmentService - DI Implementation', () => {
 
             await expect(enrollmentService.enrollStudent(enrollmentData))
                 .rejects
-                .toThrow(new NotFoundError("Lớp học không tồn tại"));
+                .toThrow(new NotFoundError("Class does not exist"));
 
             expect(mockClassRepository.findClassByCode).toHaveBeenCalledWith("CS101-01");
         });
@@ -151,7 +151,7 @@ describe('EnrollmentService - DI Implementation', () => {
 
             await expect(enrollmentService.enrollStudent(enrollmentData))
                 .rejects
-                .toThrow(new BadRequestError("Lớp học không hoạt động"));
+                .toThrow(new BadRequestError("Class is not active"));
         });
 
         it('should throw BadRequestError when class is full', async () => {
@@ -164,7 +164,7 @@ describe('EnrollmentService - DI Implementation', () => {
 
             await expect(enrollmentService.enrollStudent(enrollmentData))
                 .rejects
-                .toThrow(new BadRequestError("Lớp học đã đầy"));
+                .toThrow(new BadRequestError("Class is full"));
         });
 
         it('should throw BadRequestError when student is already enrolled', async () => {
@@ -174,7 +174,7 @@ describe('EnrollmentService - DI Implementation', () => {
 
             await expect(enrollmentService.enrollStudent(enrollmentData))
                 .rejects
-                .toThrow(new BadRequestError("Sinh viên đã đăng ký lớp học này"));
+                .toThrow(new BadRequestError("Student already enrolled in this class"));
         });
 
         it('should enroll student successfully', async () => {
@@ -203,7 +203,7 @@ describe('EnrollmentService - DI Implementation', () => {
 
             await expect(enrollmentService.dropStudent('STU001', 'CS101-01', 'Personal reason'))
                 .rejects
-                .toThrow(new NotFoundError("Sinh viên không tồn tại"));
+                .toThrow(new NotFoundError("Student does not exist"));
         });
 
         it('should throw NotFoundError when enrollment does not exist', async () => {
@@ -213,7 +213,7 @@ describe('EnrollmentService - DI Implementation', () => {
 
             await expect(enrollmentService.dropStudent('STU001', 'CS101-01', 'Personal reason'))
                 .rejects
-                .toThrow(new NotFoundError("Sinh viên chưa đăng ký lớp học này"));
+                .toThrow(new NotFoundError("Student has not enrolled in this class"));
         });
     });
 
@@ -223,7 +223,7 @@ describe('EnrollmentService - DI Implementation', () => {
 
             await expect(enrollmentService.getDropHistory('STU001'))
                 .rejects
-                .toThrow(new NotFoundError("Sinh viên không tồn tại"));
+                .toThrow(new NotFoundError("Student does not exist"));
         });
 
         it('should return drop history successfully', async () => {

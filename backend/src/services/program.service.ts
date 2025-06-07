@@ -14,7 +14,7 @@ export class ProgramService implements IProgramService {
 	async addProgram(programName: string): Promise<IProgram> {
 		const existingProgram = await this.programRepository.findProgramByName(programName);
 		if (existingProgram) {
-			throw new BadRequestError('Chương trình đào tạo đã tồn tại');
+			throw new BadRequestError('Training program already exists');
 		}
 
 		return await this.programRepository.addProgram(programName);
@@ -23,12 +23,12 @@ export class ProgramService implements IProgramService {
 	async updateProgram(programId: string, programName: string): Promise<IProgram> {
 		const existingProgram = await this.programRepository.findProgramByName(programName);
 		if (existingProgram) {
-			throw new BadRequestError('Chương trình đào tạo đã tồn tại');
+			throw new BadRequestError('Training program already exists');
 		}
 
 		const updatedProgram = await this.programRepository.updateProgram(programId, programName);
 		if (!updatedProgram) {
-			throw new NotFoundError('Không tìm thấy chương trình đào tạo');
+			throw new NotFoundError('Training program not found');
 		}
 
 		return updatedProgram;
