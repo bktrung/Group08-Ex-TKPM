@@ -1,17 +1,20 @@
 import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
-import * as classRepo from "../../../src/models/repositories/class.repo";
-import * as courseRepo from "../../../src/models/repositories/course.repo";
-import ClassService from "../../../src/services/class.service";
+import { Container } from "inversify";
+import { ClassService } from "../../../src/services/class.service";
 import { BadRequestError, NotFoundError } from "../../../src/responses/error.responses";
 import { IClass, ISchedule } from "../../../src/models/interfaces/class.interface";
 import { CreateClassDto } from "../../../src/dto/class";
-
-// Mocking repositories
-jest.mock("../../../src/models/repositories/class.repo");
-jest.mock("../../../src/models/repositories/course.repo");
+import { IClassRepository } from "../../../src/interfaces/repositories/class.repository.interface";
+import { ICourseRepository } from "../../../src/interfaces/repositories/course.repository.interface";
+import { TYPES } from "../../../src/configs/di.types";
 
 describe("Class Service", () => {
+  let container: Container;
+  let classService: ClassService;
+  let mockClassRepository: jest.Mocked<IClassRepository>;
+  let mockCourseRepository: jest.Mocked<ICourseRepository>;
+
   const mockCourseId = new mongoose.Types.ObjectId().toString();
   
   const mockSchedule: ISchedule[] = [
@@ -55,74 +58,95 @@ describe("Class Service", () => {
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    // Create test container
+    container = new Container();
+    
+    // Create mocked repositories
+    mockClassRepository = {
+      findClassByCode: jest.fn(),
+      createClass: jest.fn(),
+      findClassesWithOverlappingSchedule: jest.fn(),
+      getAllClasses: jest.fn(),
+    };
+    
+    mockCourseRepository = {
+      findCourseById: jest.fn(),
+    };
+    
+    // Bind mocked repositories
+    container.bind<IClassRepository>(TYPES.ClassRepository).toConstantValue(mockClassRepository);
+    container.bind<ICourseRepository>(TYPES.CourseRepository).toConstantValue(mockCourseRepository);
+    container.bind<ClassService>(TYPES.ClassService).to(ClassService);
+    
+    // Get service instance
+    classService = container.get<ClassService>(TYPES.ClassService);
   });
 
   // Test 1: Adding a class successfully
   it("should add a class successfully", async () => {
     // Mock implementations
-    (classRepo.findClassByCode as jest.Mock).mockResolvedValue(null);
-    (courseRepo.findCourseById as jest.Mock).mockResolvedValue({ 
+    mockClassRepository.findClassByCode.mockResolvedValue(null);
+    mockCourseRepository.findCourseById.mockResolvedValue({ 
       _id: mockCourseId, 
       name: "Introduction to CS",
       isActive: true 
-    });
-    (classRepo.findClassesWithOverlappingSchedule as jest.Mock).mockResolvedValue([]);
-    (classRepo.createClass as jest.Mock).mockResolvedValue(mockClass);
+    } as any);
+    mockClassRepository.findClassesWithOverlappingSchedule.mockResolvedValue([]);
+    mockClassRepository.createClass.mockResolvedValue(mockClass as IClass);
 
     // Execute
-    const result = await ClassService.addClass(mockClassData);
+    const result = await classService.addClass(mockClassData);
 
     // Verify
-    expect(classRepo.findClassByCode).toHaveBeenCalledWith("CS101.01");
-    expect(courseRepo.findCourseById).toHaveBeenCalledWith(mockCourseId);
-    expect(classRepo.findClassesWithOverlappingSchedule).toHaveBeenCalledWith(mockSchedule);
-    expect(classRepo.createClass).toHaveBeenCalledWith(mockClassData);
+    expect(mockClassRepository.findClassByCode).toHaveBeenCalledWith("CS101.01");
+    expect(mockCourseRepository.findCourseById).toHaveBeenCalledWith(mockCourseId);
+    expect(mockClassRepository.findClassesWithOverlappingSchedule).toHaveBeenCalledWith(mockSchedule);
+    expect(mockClassRepository.createClass).toHaveBeenCalledWith(mockClassData);
     expect(result).toEqual(mockClass);
   });
 
   // Test 2: Prevent adding a class with an existing code
   it("should throw an error when adding a class with an existing code", async () => {
-    (classRepo.findClassByCode as jest.Mock).mockResolvedValue(mockClass);
+    mockClassRepository.findClassByCode.mockResolvedValue(mockClass as IClass);
 
-    await expect(ClassService.addClass(mockClassData))
+    await expect(classService.addClass(mockClassData))
       .rejects
       .toThrow(BadRequestError);
       
-    expect(classRepo.findClassByCode).toHaveBeenCalledWith("CS101.01");
-    expect(classRepo.createClass).not.toHaveBeenCalled();
+    expect(mockClassRepository.findClassByCode).toHaveBeenCalledWith("CS101.01");
+    expect(mockClassRepository.createClass).not.toHaveBeenCalled();
   });
 
   // Test 3: Prevent adding a class for a non-existent course
   it("should throw an error when adding a class for a non-existent course", async () => {
-    (classRepo.findClassByCode as jest.Mock).mockResolvedValue(null);
-    (courseRepo.findCourseById as jest.Mock).mockResolvedValue(null);
+    mockClassRepository.findClassByCode.mockResolvedValue(null);
+    mockCourseRepository.findCourseById.mockResolvedValue(null);
 
-    await expect(ClassService.addClass(mockClassData))
+    await expect(classService.addClass(mockClassData))
       .rejects
       .toThrow(BadRequestError);
       
-    expect(classRepo.findClassByCode).toHaveBeenCalledWith("CS101.01");
-    expect(courseRepo.findCourseById).toHaveBeenCalledWith(mockCourseId);
-    expect(classRepo.createClass).not.toHaveBeenCalled();
+    expect(mockClassRepository.findClassByCode).toHaveBeenCalledWith("CS101.01");
+    expect(mockCourseRepository.findCourseById).toHaveBeenCalledWith(mockCourseId);
+    expect(mockClassRepository.createClass).not.toHaveBeenCalled();
   });
 
   // Test 4: Prevent adding a class for an inactive course
   it("should throw an error when adding a class for an inactive course", async () => {
-    (classRepo.findClassByCode as jest.Mock).mockResolvedValue(null);
-    (courseRepo.findCourseById as jest.Mock).mockResolvedValue({ 
+    mockClassRepository.findClassByCode.mockResolvedValue(null);
+    mockCourseRepository.findCourseById.mockResolvedValue({ 
       _id: mockCourseId, 
       name: "Introduction to CS",
       isActive: false 
-    });
+    } as any);
 
-    await expect(ClassService.addClass(mockClassData))
+    await expect(classService.addClass(mockClassData))
       .rejects
       .toThrow(BadRequestError);
       
-    expect(classRepo.findClassByCode).toHaveBeenCalledWith("CS101.01");
-    expect(courseRepo.findCourseById).toHaveBeenCalledWith(mockCourseId);
-    expect(classRepo.createClass).not.toHaveBeenCalled();
+    expect(mockClassRepository.findClassByCode).toHaveBeenCalledWith("CS101.01");
+    expect(mockCourseRepository.findCourseById).toHaveBeenCalledWith(mockCourseId);
+    expect(mockClassRepository.createClass).not.toHaveBeenCalled();
   });
 
   // Test 5: Prevent adding a class with overlapping schedules
@@ -132,22 +156,22 @@ describe("Class Service", () => {
       schedule: [{ dayOfWeek: 2, startPeriod: 2, endPeriod: 4, classroom: "A101" }] 
     };
     
-    (classRepo.findClassByCode as jest.Mock).mockResolvedValue(null);
-    (courseRepo.findCourseById as jest.Mock).mockResolvedValue({ 
+    mockClassRepository.findClassByCode.mockResolvedValue(null);
+    mockCourseRepository.findCourseById.mockResolvedValue({ 
       _id: mockCourseId, 
       name: "Introduction to CS",
       isActive: true 
-    });
-    (classRepo.findClassesWithOverlappingSchedule as jest.Mock).mockResolvedValue([existingClass]);
+    } as any);
+    mockClassRepository.findClassesWithOverlappingSchedule.mockResolvedValue([existingClass as IClass]);
 
-    await expect(ClassService.addClass(mockClassData))
+    await expect(classService.addClass(mockClassData))
       .rejects
       .toThrow(BadRequestError);
       
-    expect(classRepo.findClassByCode).toHaveBeenCalledWith("CS101.01");
-    expect(courseRepo.findCourseById).toHaveBeenCalledWith(mockCourseId);
-    expect(classRepo.findClassesWithOverlappingSchedule).toHaveBeenCalledWith(mockSchedule);
-    expect(classRepo.createClass).not.toHaveBeenCalled();
+    expect(mockClassRepository.findClassByCode).toHaveBeenCalledWith("CS101.01");
+    expect(mockCourseRepository.findCourseById).toHaveBeenCalledWith(mockCourseId);
+    expect(mockClassRepository.findClassesWithOverlappingSchedule).toHaveBeenCalledWith(mockSchedule);
+    expect(mockClassRepository.createClass).not.toHaveBeenCalled();
   });
 
   // Test 6: Validate schedule - start period greater than end period
@@ -166,18 +190,18 @@ describe("Class Service", () => {
       schedule: invalidSchedule
     };
     
-    (classRepo.findClassByCode as jest.Mock).mockResolvedValue(null);
-    (courseRepo.findCourseById as jest.Mock).mockResolvedValue({ 
+    mockClassRepository.findClassByCode.mockResolvedValue(null);
+    mockCourseRepository.findCourseById.mockResolvedValue({ 
       _id: mockCourseId, 
       name: "Introduction to CS",
       isActive: true 
-    });
+    } as any);
 
-    await expect(ClassService.addClass(invalidClassData))
+    await expect(classService.addClass(invalidClassData))
       .rejects
       .toThrow(BadRequestError);
       
-    expect(classRepo.createClass).not.toHaveBeenCalled();
+    expect(mockClassRepository.createClass).not.toHaveBeenCalled();
   });
 
   // Test 7: Validate schedule - internal conflicts
@@ -202,21 +226,42 @@ describe("Class Service", () => {
       schedule: conflictingSchedule
     };
     
-    (classRepo.findClassByCode as jest.Mock).mockResolvedValue(null);
-    (courseRepo.findCourseById as jest.Mock).mockResolvedValue({ 
+    mockClassRepository.findClassByCode.mockResolvedValue(null);
+    mockCourseRepository.findCourseById.mockResolvedValue({ 
       _id: mockCourseId, 
       name: "Introduction to CS",
       isActive: true 
-    });
+    } as any);
 
-    await expect(ClassService.addClass(conflictingClassData))
+    await expect(classService.addClass(conflictingClassData))
       .rejects
       .toThrow(BadRequestError);
       
-    expect(classRepo.createClass).not.toHaveBeenCalled();
+    expect(mockClassRepository.createClass).not.toHaveBeenCalled();
   });
 
-  // Test 8: Getting classes without filters
+  // Test 8: Validate schedule - empty schedule
+  it("should throw an error when adding a class with empty schedule", async () => {
+    const emptyScheduleData = {
+      ...mockClassData,
+      schedule: []
+    };
+    
+    mockClassRepository.findClassByCode.mockResolvedValue(null);
+    mockCourseRepository.findCourseById.mockResolvedValue({ 
+      _id: mockCourseId, 
+      name: "Introduction to CS",
+      isActive: true 
+    } as any);
+
+    await expect(classService.addClass(emptyScheduleData))
+      .rejects
+      .toThrow(BadRequestError);
+      
+    expect(mockClassRepository.createClass).not.toHaveBeenCalled();
+  });
+
+  // Test 9: Getting classes without filters
   it("should get classes without filters", async () => {
     const mockClassesData = {
       classes: [mockClass],
@@ -228,15 +273,15 @@ describe("Class Service", () => {
       }
     };
     
-    (classRepo.getAllClasses as jest.Mock).mockResolvedValue(mockClassesData);
+    mockClassRepository.getAllClasses.mockResolvedValue(mockClassesData);
 
-    const result = await ClassService.getClasses({});
+    const result = await classService.getClasses({});
 
-    expect(classRepo.getAllClasses).toHaveBeenCalledWith(1, 10, {});
+    expect(mockClassRepository.getAllClasses).toHaveBeenCalledWith(1, 10, {});
     expect(result).toEqual(mockClassesData);
   });
 
-  // Test 9: Getting classes with course filter
+  // Test 10: Getting classes with course filter
   it("should get classes with course filter", async () => {
     const mockClassesData = {
       classes: [mockClass],
@@ -248,19 +293,19 @@ describe("Class Service", () => {
       }
     };
     
-    (classRepo.getAllClasses as jest.Mock).mockResolvedValue(mockClassesData);
+    mockClassRepository.getAllClasses.mockResolvedValue(mockClassesData);
 
-    const result = await ClassService.getClasses({
+    const result = await classService.getClasses({
       courseId: mockCourseId
     });
 
-    expect(classRepo.getAllClasses).toHaveBeenCalledWith(1, 10, {
+    expect(mockClassRepository.getAllClasses).toHaveBeenCalledWith(1, 10, {
       course: expect.any(mongoose.Types.ObjectId)
     });
     expect(result).toEqual(mockClassesData);
   });
 
-  // Test 10: Getting classes with academic year filter
+  // Test 11: Getting classes with academic year filter
   it("should get classes with academic year filter", async () => {
     const mockClassesData = {
       classes: [mockClass],
@@ -272,19 +317,19 @@ describe("Class Service", () => {
       }
     };
     
-    (classRepo.getAllClasses as jest.Mock).mockResolvedValue(mockClassesData);
+    mockClassRepository.getAllClasses.mockResolvedValue(mockClassesData);
 
-    const result = await ClassService.getClasses({
+    const result = await classService.getClasses({
       academicYear: "2023-2024"
     });
 
-    expect(classRepo.getAllClasses).toHaveBeenCalledWith(1, 10, {
+    expect(mockClassRepository.getAllClasses).toHaveBeenCalledWith(1, 10, {
       academicYear: "2023-2024"
     });
     expect(result).toEqual(mockClassesData);
   });
 
-  // Test 11: Getting classes with semester filter
+  // Test 12: Getting classes with semester filter
   it("should get classes with semester filter", async () => {
     const mockClassesData = {
       classes: [mockClass],
@@ -296,19 +341,19 @@ describe("Class Service", () => {
       }
     };
     
-    (classRepo.getAllClasses as jest.Mock).mockResolvedValue(mockClassesData);
+    mockClassRepository.getAllClasses.mockResolvedValue(mockClassesData);
 
-    const result = await ClassService.getClasses({
+    const result = await classService.getClasses({
       semester: "1"
     });
 
-    expect(classRepo.getAllClasses).toHaveBeenCalledWith(1, 10, {
+    expect(mockClassRepository.getAllClasses).toHaveBeenCalledWith(1, 10, {
       semester: 1
     });
     expect(result).toEqual(mockClassesData);
   });
 
-  // Test 12: Getting classes with pagination
+  // Test 13: Getting classes with pagination
   it("should get classes with pagination", async () => {
     const mockClassesData = {
       classes: [mockClass],
@@ -320,36 +365,15 @@ describe("Class Service", () => {
       }
     };
     
-    (classRepo.getAllClasses as jest.Mock).mockResolvedValue(mockClassesData);
+    mockClassRepository.getAllClasses.mockResolvedValue(mockClassesData);
 
-    const result = await ClassService.getClasses({
+    const result = await classService.getClasses({
       page: "2",
       limit: "5"
     });
 
-    expect(classRepo.getAllClasses).toHaveBeenCalledWith(2, 5, {});
+    expect(mockClassRepository.getAllClasses).toHaveBeenCalledWith(2, 5, {});
     expect(result).toEqual(mockClassesData);
-  });
-
-  // Test 13: Throw error when adding a class with empty schedule
-  it("should throw error when adding a class with empty schedule", async () => {
-    const invalidClassData = {
-      ...mockClassData,
-      schedule: []
-    };
-    
-    (classRepo.findClassByCode as jest.Mock).mockResolvedValue(null);
-    (courseRepo.findCourseById as jest.Mock).mockResolvedValue({ 
-      _id: mockCourseId, 
-      name: "Introduction to CS",
-      isActive: true 
-    });
-
-    await expect(ClassService.addClass(invalidClassData))
-      .rejects
-      .toThrow(BadRequestError);
-      
-    expect(classRepo.createClass).not.toHaveBeenCalled();
   });
 
   // Test 14: Throw error when adding a class with invalid semester
@@ -359,31 +383,31 @@ describe("Class Service", () => {
       semester: 4 // Invalid semester, should be 1, 2, or 3
     };
     
-    (classRepo.findClassByCode as jest.Mock).mockResolvedValue(null);
-    (courseRepo.findCourseById as jest.Mock).mockResolvedValue({ 
+    mockClassRepository.findClassByCode.mockResolvedValue(null);
+    mockCourseRepository.findCourseById.mockResolvedValue({ 
       _id: mockCourseId, 
       name: "Introduction to CS",
       isActive: true 
-    });
+    } as any);
     
     // Mock validation error
-    (classRepo.createClass as jest.Mock).mockRejectedValue(
+    mockClassRepository.createClass.mockRejectedValue(
       new Error("Semester must be between 1 and 3")
     );
 
-    await expect(ClassService.addClass(invalidClassData))
+    await expect(classService.addClass(invalidClassData))
       .rejects
       .toThrow();
   });
 
   // Test 15: Handle invalid course ID format
   it("should handle invalid course ID format", async () => {
-    await expect(ClassService.getClasses({
+    await expect(classService.getClasses({
       courseId: "invalid-id"
     }))
       .rejects
       .toThrow(BadRequestError);
     
-    expect(classRepo.getAllClasses).not.toHaveBeenCalled();
+    expect(mockClassRepository.getAllClasses).not.toHaveBeenCalled();
   });
 });

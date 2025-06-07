@@ -1,11 +1,18 @@
-import ClassService from "../services/class.service";
+import { injectable, inject } from "inversify";
 import { CREATED, OK } from "../responses/success.responses";
 import { Request, Response, NextFunction } from "express";
+import { IClassService } from "../interfaces/services/class.service.interface";
+import { TYPES } from "../configs/di.types";
 
-class classController {
+@injectable()
+export class ClassController {
+	constructor(
+		@inject(TYPES.ClassService) private classService: IClassService
+	) {}
+
 	addClass = async (req: Request, res: Response, next: NextFunction) => {
 		const classData = req.body;
-		const newClass = await ClassService.addClass(classData);
+		const newClass = await this.classService.addClass(classData);
 		return new CREATED({
 			message: "Added class successfully",
 			metadata: { newClass },
@@ -15,7 +22,7 @@ class classController {
 	getClasses = async (req: Request, res: Response, next: NextFunction) => {
 		const { courseId, academicYear, semester, page, limit } = req.query;
 
-		const classesData = await ClassService.getClasses({
+		const classesData = await this.classService.getClasses({
 			courseId: courseId as string,
 			academicYear: academicYear as string,
 			semester: semester as string,
@@ -29,5 +36,3 @@ class classController {
 		}).send(res);
 	};
 }
-
-export default new classController();

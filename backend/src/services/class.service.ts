@@ -1,21 +1,30 @@
-import { createClass, findClassesWithOverlappingSchedule, getAllClasses } from "../models/repositories/class.repo";
+import { injectable, inject } from "inversify";
 import { CreateClassDto } from "../dto/class";
-import { findClassByCode } from "../models/repositories/class.repo";
 import { BadRequestError } from "../responses/error.responses";
-import { findCourseById } from "../models/repositories/course.repo";
 import { IClass } from "../models/interfaces/class.interface";
 import { Types } from "mongoose";
+import { IClassService } from "../interfaces/services/class.service.interface";
+import { IClassRepository } from "../interfaces/repositories/class.repository.interface";
+import { ICourseRepository } from "../interfaces/repositories/course.repository.interface";
+import { TYPES } from "../configs/di.types";
+import { PaginationResult } from "../utils";
 
-class ClassService {
-	static async addClass(classData: CreateClassDto): Promise<IClass> {
+@injectable()
+export class ClassService implements IClassService {
+	constructor(
+		@inject(TYPES.ClassRepository) private classRepository: IClassRepository,
+		@inject(TYPES.CourseRepository) private courseRepository: ICourseRepository
+	) {}
+
+	async addClass(classData: CreateClassDto): Promise<IClass> {
 		// Check if class with same ID already exists
-		const existingClass = await findClassByCode(classData.classCode);
+		const existingClass = await this.classRepository.findClassByCode(classData.classCode);
 		if (existingClass) {
 			throw new BadRequestError("Mã lớp học đã tồn tại");
 		}
 
 		// Check if course exists and is active
-		const existingCourse = await findCourseById(classData.course);
+		const existingCourse = await this.courseRepository.findCourseById(classData.course);
 		if (!existingCourse) {
 			throw new BadRequestError("Môn học không tồn tại");
 		}
@@ -60,7 +69,7 @@ class ClassService {
 		}
 
 		// Check for classroom conflicts with other classes
-		const overlappingClasses = await findClassesWithOverlappingSchedule(classData.schedule);
+		const overlappingClasses = await this.classRepository.findClassesWithOverlappingSchedule(classData.schedule);
 		if (overlappingClasses && overlappingClasses.length > 0) {
 			// Find the specific conflict
 			for (const existingClass of overlappingClasses) {
@@ -87,17 +96,17 @@ class ClassService {
 		}
 
 		// Create the new class
-		const newClass = await createClass(classData);
+		const newClass = await this.classRepository.createClass(classData);
 		return newClass;
 	}
 
-	static async getClasses(query: {
+	async getClasses(query: {
 		courseId?: string;
 		academicYear?: string;
 		semester?: string;
 		page?: string;
 		limit?: string;
-	}) {
+	}): Promise<PaginationResult<IClass>> {
 		// Parse pagination parameters
 		const page = query.page ? parseInt(query.page) : 1;
 		const limit = query.limit ? parseInt(query.limit) : 10;
@@ -131,8 +140,6 @@ class ClassService {
 		}
 
 		// Query classes with pagination and filters
-		return await getAllClasses(page, limit, filter);
+		return await this.classRepository.getAllClasses(page, limit, filter);
 	}
 }
-
-export default ClassService;

@@ -28,6 +28,10 @@ app.use(cors());
 // init db
 import "./dbs/init.mongodb";
 
+// Initialize DI container after all modules are loaded
+import { configureDI } from "./configs/di.config";
+configureDI();
+
 // init routes
 app.use(routes);
 
