@@ -1,9 +1,17 @@
 import { Router } from 'express';
-import semesterController from '../../controllers/semester.controller';
 import { asyncHandler } from "../../helpers/asyncHandler";
 import { createSemesterValidator } from '../../validators/semester/create-semester.validator';
+import { container } from '../../configs/di.config';
+import { TYPES } from '../../configs/di.types';
+import { SemesterController } from '../../controllers/semester.controller';
+
 const router = Router();
 
-router.post('', createSemesterValidator, asyncHandler(semesterController.createSemester));
+// Lazy resolution of controller
+const getSemesterController = () => container.get<SemesterController>(TYPES.SemesterController);
+
+router.post('', createSemesterValidator, asyncHandler((req, res, next) => 
+	getSemesterController().createSemester(req, res, next)
+));
 
 export default router;

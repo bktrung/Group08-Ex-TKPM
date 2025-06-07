@@ -1,3 +1,4 @@
+import { injectable } from "inversify";
 import axios, { AxiosResponse } from 'axios';
 import NodeCache from 'node-cache';
 import { 
@@ -7,14 +8,16 @@ import {
 	Child,
 	CountryDemonym
 } from '../dto/address';
+import { IAddressService } from "../interfaces/services/address.service.interface";
 
 const cache = new NodeCache({
 	stdTTL: 600, // 10 minutes time to live
 	checkperiod: 120 // Check every 2 minutes
 });
 
-class AddressService {
-	static async getCountries() {
+@injectable()
+export class AddressService implements IAddressService {
+	async getCountries() {
 		const cachedCountries = cache.get<Country[]>('address_countries');
 		if (cachedCountries) {
 			return cachedCountries;
@@ -36,7 +39,7 @@ class AddressService {
 		return countries;
 	}
 
-	static async getChildren(geonameId: string) {
+	async getChildren(geonameId: string) {
 		const cachedChildren = cache.get<Child[]>(`address_children_${geonameId}`);
 		if (cachedChildren) {
 			return cachedChildren;
@@ -74,7 +77,7 @@ class AddressService {
 		return result;
 	}
 
-	static async getNationalities() {
+	async getNationalities() {
 		const cachedNationalities = cache.get<any[]>('address_nationalities');
 		if (cachedNationalities) {
 			return cachedNationalities;
@@ -96,5 +99,3 @@ class AddressService {
 		return nationalities;
 	}
 }
-
-export default AddressService;

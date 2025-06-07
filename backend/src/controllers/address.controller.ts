@@ -1,10 +1,17 @@
+import { injectable, inject } from "inversify";
 import { Request, Response, NextFunction } from 'express';
-import AddressService from '../services/address.service';
+import { IAddressService } from '../interfaces/services/address.service.interface';
 import { CREATED, OK } from '../responses/success.responses';
+import { TYPES } from '../configs/di.types';
 
-class AddressController {
+@injectable()
+export class AddressController {
+	constructor(
+		@inject(TYPES.AddressService) private addressService: IAddressService
+	) {}
+
 	getCountries = async (req: Request, res: Response, next: NextFunction) => {
-		const countries = await AddressService.getCountries();
+		const countries = await this.addressService.getCountries();
 		return new OK({
 			message: 'Countries retrieved successfully',
 			metadata: { countries }
@@ -13,7 +20,7 @@ class AddressController {
 
 	getChildren = async (req: Request, res: Response, next: NextFunction) => {
 		const geonameId = req.params.geonameId;
-		const children = await AddressService.getChildren(geonameId);
+		const children = await this.addressService.getChildren(geonameId);
 		return new OK({
 			message: 'Children retrieved successfully',
 			metadata: { children }
@@ -21,12 +28,10 @@ class AddressController {
 	}
 
 	getNationalities = async (req: Request, res: Response, next: NextFunction) => {
-		const nationalities = await AddressService.getNationalities();
+		const nationalities = await this.addressService.getNationalities();
 		return new OK({
 			message: 'Nationalities retrieved successfully',
 			metadata: { nationalities }
 		}).send(res);
 	}
 }
-
-export default new AddressController();
