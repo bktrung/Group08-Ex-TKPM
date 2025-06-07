@@ -1,11 +1,18 @@
+import { injectable, inject } from "inversify";
 import { Request, Response, NextFunction } from 'express';
-import ProgramService from "../services/program.service";
+import { IProgramService } from '../interfaces/services/program.service.interface';
 import { CREATED, OK } from "../responses/success.responses";
+import { TYPES } from '../configs/di.types';
 
-class ProgramController {
+@injectable()
+export class ProgramController {
+	constructor(
+		@inject(TYPES.ProgramService) private programService: IProgramService
+	) {}
+
 	addProgram = async (req: Request, res: Response, next: NextFunction) => {
 		const programName = req.body.name;
-		const newProgram = await ProgramService.addProgram(programName);
+		const newProgram = await this.programService.addProgram(programName);
 		return new CREATED({
 			message: 'Program added successfully',
 			metadata: { newProgram }
@@ -15,7 +22,7 @@ class ProgramController {
 	updateProgram = async (req: Request, res: Response, next: NextFunction) => {
 		const programName = req.body.name;
 		const programId = req.params.id;
-		const updatedProgram = await ProgramService.updateProgram(programId, programName);
+		const updatedProgram = await this.programService.updateProgram(programId, programName);
 		return new OK({
 			message: 'Program updated successfully',
 			metadata: { updatedProgram }
@@ -23,12 +30,10 @@ class ProgramController {
 	}
 
 	getPrograms = async (req: Request, res: Response, next: NextFunction) => {
-		const programs = await ProgramService.getPrograms();
+		const programs = await this.programService.getPrograms();
 		return new OK({
 			message: 'Programs retrieved successfully',
 			metadata: { programs }
 		}).send(res);
 	}
 }
-
-export default new ProgramController();

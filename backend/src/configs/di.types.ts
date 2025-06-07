@@ -5,14 +5,17 @@ export const TYPES = {
 	CourseRepository: Symbol.for("CourseRepository"),
 	DepartmentRepository: Symbol.for("DepartmentRepository"),
 	EnrollmentRepository: Symbol.for("EnrollmentRepository"),
+	ProgramRepository: Symbol.for("ProgramRepository"),
 	
 	// Services
 	ClassService: Symbol.for("ClassService"),
 	CourseService: Symbol.for("CourseService"),
 	DepartmentService: Symbol.for("DepartmentService"),
+	ProgramService: Symbol.for("ProgramService"),
 	
 	// Controllers
 	ClassController: Symbol.for("ClassController"),
 	CourseController: Symbol.for("CourseController"),
 	DepartmentController: Symbol.for("DepartmentController"),
+	ProgramController: Symbol.for("ProgramController"),
 }; 

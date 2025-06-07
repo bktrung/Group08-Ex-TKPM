@@ -1,23 +1,32 @@
-import { findProgramByName, updateProgram, getPrograms, addProgram } from "../models/repositories/program.repo";
+import { injectable, inject } from "inversify";
 import { BadRequestError, NotFoundError } from "../responses/error.responses";
+import { IProgramService } from "../interfaces/services/program.service.interface";
+import { IProgramRepository } from "../interfaces/repositories/program.repository.interface";
+import { IProgram } from "../models/interfaces/program.interface";
+import { TYPES } from "../configs/di.types";
 
-class ProgramService {
-	static async addProgram(programName: string): Promise<any> {
-		const existingProgram = await findProgramByName(programName);
+@injectable()
+export class ProgramService implements IProgramService {
+	constructor(
+		@inject(TYPES.ProgramRepository) private programRepository: IProgramRepository
+	) {}
+
+	async addProgram(programName: string): Promise<IProgram> {
+		const existingProgram = await this.programRepository.findProgramByName(programName);
 		if (existingProgram) {
 			throw new BadRequestError('Chương trình đào tạo đã tồn tại');
 		}
 
-		return await addProgram(programName);
+		return await this.programRepository.addProgram(programName);
 	}
 
-	static async updateProgram(programId: string, programName: string): Promise<any> {
-		const existingProgram = await findProgramByName(programName);
+	async updateProgram(programId: string, programName: string): Promise<IProgram> {
+		const existingProgram = await this.programRepository.findProgramByName(programName);
 		if (existingProgram) {
 			throw new BadRequestError('Chương trình đào tạo đã tồn tại');
 		}
 
-		const updatedProgram = await updateProgram(programId, programName);
+		const updatedProgram = await this.programRepository.updateProgram(programId, programName);
 		if (!updatedProgram) {
 			throw new NotFoundError('Không tìm thấy chương trình đào tạo');
 		}
@@ -25,9 +34,7 @@ class ProgramService {
 		return updatedProgram;
 	}
 
-	static async getPrograms(): Promise<any> {
-		return await getPrograms();
+	async getPrograms(): Promise<IProgram[]> {
+		return await this.programRepository.getPrograms();
 	}
 }
-
-export default ProgramService;
