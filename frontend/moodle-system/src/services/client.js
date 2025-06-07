@@ -7,5 +7,22 @@ const apiClient = axios.create({
   }
 })
 
+apiClient.interceptors.request.use(
+  (config) => {
+    const lang = localStorage.getItem('language') || 'vi'
+    
+    if (config.params) {
+      config.params.lang = lang
+    } else {
+      config.params = { lang }
+    }
+    
+    return config
+  },
+  (error) => {
+    return Promise.reject(error)
+  }
+)
+
 export default apiClient
 

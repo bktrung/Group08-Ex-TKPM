@@ -37,22 +37,13 @@
     </div>
 
     <!-- Error Modal -->
-    <div class="modal fade" id="errorModal" tabindex="-1" aria-hidden="true" ref="errorModalRef">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header bg-danger text-white">
-            <h5 class="modal-title">{{ $t('common.error') }}!</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('common.close')"></button>
-          </div>
-          <div class="modal-body">
-            {{ errorMessage }}
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ $t('common.close') }}</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <ErrorModal 
+      :showModal="showErrorModal" 
+      :title="$t('common.error')" 
+      :message="errorMessage"
+      :isTranslated="isErrorTranslated"
+      @update:showModal="showErrorModal = $event" 
+    />
   </div>
 </template>
 
@@ -62,24 +53,27 @@ import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import { Modal } from 'bootstrap'
 import StudentForm from '@/components/student/StudentForm.vue'
+import ErrorModal from '@/components/layout/ErrorModal.vue'
 import { useI18n } from 'vue-i18n'
+import { useErrorHandler } from '@/composables/useErrorHandler'
 
 export default {
   name: 'AddStudent',
   components: {
-    StudentForm
+    StudentForm,
+    ErrorModal
   },
   setup() {
     const { t } = useI18n()
     const store = useStore()
     const router = useRouter()
     const modalRef = ref(null)
-    const errorModalRef = ref(null)
-    const errorMessage = ref('Có lỗi xảy ra. Vui lòng thử lại!')
     const loading = ref(true)
     const error = ref(null)
     let successModal = null
-    let errorModal = null
+    
+    // Use error handler composable
+    const { errorMessage, isErrorTranslated, showErrorModal, handleError } = useErrorHandler()
     
     const loadReferenceData = async () => {
       loading.value = true
@@ -151,11 +145,7 @@ export default {
         }
       } catch (error) {
         console.error('Error adding student:', error)
-        errorMessage.value = error.response?.data?.message || error.message || 'Có lỗi xảy ra. Vui lòng thử lại!'
-        
-        if (errorModal) {
-          errorModal.show()
-        }
+        handleError(error, 'student.add_error')
       }
     }
     
@@ -176,21 +166,18 @@ export default {
       if (successModalElement) {
         successModal = new Modal(successModalElement)
       }
-      
-      const errorModalElement = document.getElementById('errorModal')
-      if (errorModalElement) {
-        errorModal = new Modal(errorModalElement)
-      }
     })
     
     return {
       loading,
       error,
       errorMessage,
+      isErrorTranslated,
+      showErrorModal,
       modalRef,
-      errorModalRef,
       handleSubmit,
-      redirectToList
+      redirectToList,
+      t
     }
   }
 }

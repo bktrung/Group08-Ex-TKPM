@@ -19,4 +19,3 @@ export default {
     enrollment: enrollmentApi,
     geography: geographyApi
 };
-// Note: The above import paths assume that the files are located in the same directory as this index.js file.

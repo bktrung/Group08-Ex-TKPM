@@ -8,7 +8,7 @@
                         @click="closeModal"></button>
                 </div>
                 <div class="modal-body">
-                    ❌ {{ message }}
+                    ❌ {{ displayMessage }}
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-danger" data-bs-dismiss="modal" @click="closeModal">
@@ -21,13 +21,12 @@
 </template>
 
 <script>
-import { ref, watch, onMounted, nextTick } from 'vue'
+import { ref, watch, onMounted, nextTick, computed } from 'vue'
 import { Modal } from 'bootstrap'
 import { useI18n } from 'vue-i18n'
 
 export default {
     name: 'ErrorModal',
-
     props: {
         showModal: {
             type: Boolean,
@@ -41,8 +40,11 @@ export default {
             type: String,
             required: true,
         },
+        isTranslated: {
+            type: Boolean,
+            default: false
+        }
     },
-
     emits: ['update:showModal', 'close'],
 
     setup(props, { emit }) {
@@ -50,23 +52,28 @@ export default {
         let bootstrapModal = null
         const { t } = useI18n()
 
+        const displayMessage = computed(() => {
+            if (props.isTranslated) {
+                return props.message
+            }
+            try {
+                const translated = t(props.message)
+                return translated !== props.message ? translated : props.message
+            } catch {
+                return props.message
+            }
+        })
+
         onMounted(async () => {
             await nextTick()
-
             if (modalRef.value) {
-                try {
-                    bootstrapModal = Modal.getOrCreateInstance(modalRef.value)
-                } catch (e) {
-                    console.error('Failed to initialize Bootstrap modal:', e)
-                }
-
+                bootstrapModal = new Modal(modalRef.value)
                 modalRef.value.addEventListener('hidden.bs.modal', () => {
                     emit('update:showModal', false)
                     emit('close')
                 })
             }
         })
-
 
         watch(
             () => props.showModal,
@@ -81,12 +88,15 @@ export default {
             if (bootstrapModal) {
                 bootstrapModal.hide()
             }
+            emit('update:showModal', false)
+            emit('close')
         }
 
         return {
             modalRef,
             closeModal,
-            t,
+            displayMessage,
+            t
         }
     },
 }
