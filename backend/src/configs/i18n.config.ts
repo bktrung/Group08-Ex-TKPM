@@ -53,7 +53,7 @@ i18n
     },
 
     // Additional configuration
-    debug: process.env.NODE_ENV === 'development',
+    debug: process.env.NODE_ENV === 'dev',
     
     // Interpolation configuration
     interpolation: {

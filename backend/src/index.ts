@@ -33,10 +33,6 @@ app.use(middleware.handle(i18n));
 // init db
 import "./dbs/init.mongodb";
 
-// Initialize DI container after all modules are loaded
-import { configureDI } from "./configs/di.config";
-configureDI();
-
 // init routes
 app.use(routes);
 
@@ -67,8 +63,20 @@ const errorHandler: ErrorRequestHandler = (err, req, res, next) => {
 
 app.use(errorHandler);
 
-
 // start server
 app.listen(PORT, () => {
 	console.log(`Server is running on Port: ${PORT}`);
+	
+	// Initialize DI container asynchronously after server starts
+	setTimeout(() => {
+		try {
+			console.log("Configuring DI container...");
+			const { configureDI } = require("./configs/di.config");
+			configureDI();
+			console.log("DI container configured successfully");
+		} catch (error) {
+			console.error("Failed to configure DI container:", error);
+			console.log("Continuing without DI container - some features may not work");
+		}
+	}, 1000); // Give server time to start and DB time to connect
 });

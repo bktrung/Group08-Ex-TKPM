@@ -22,6 +22,9 @@ class Database {
 
 		const options: ConnectOptions = {
 			maxPoolSize: 5,
+			serverSelectionTimeoutMS: 5000, // 5 second timeout
+			socketTimeoutMS: 45000, // 45 second socket timeout
+			connectTimeoutMS: 10000, // 10 second connection timeout
 		};
 
 		// Log connection attempt
@@ -34,7 +37,12 @@ class Database {
 			})
 			.catch((err: Error) => {
 				console.error("Database connection error:", err);
-				throw new Error("Database connection error: " + err.message);
+				Logger.error(`[DATABASE] Failed to connect to MongoDB: ${err.message}`);
+				
+				// Don't exit process in dev mode, just log the error
+				if (process.env.NODE_ENV !== "dev") {
+					process.exit(1);
+				}
 			});
 	}
 

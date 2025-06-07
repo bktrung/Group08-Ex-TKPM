@@ -28,8 +28,23 @@ const pro = {
 	},
 }
 
-const config: Config = {dev, pro};
-const env: string = (process.env.NODE_ENV || "dev")
+const config: Config = {dev, pro, development: dev, production: pro};
+
+// Normalize environment name to handle different variations
+const normalizeEnv = (env: string): string => {
+	const normalized = env.toLowerCase();
+	if (normalized === 'development' || normalized === 'dev') {
+		return 'dev';
+	}
+	if (normalized === 'production' || normalized === 'prod') {
+		return 'pro';
+	}
+	return 'dev'; // default to dev
+};
+
+const env: string = normalizeEnv(process.env.NODE_ENV || "dev");
+
+console.log(`Using environment: ${env} (from NODE_ENV: ${process.env.NODE_ENV})`);
 
 if (!config[env]) {
 	throw new Error(`Environment ${env} is not supported`);
