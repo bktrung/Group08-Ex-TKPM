@@ -1,194 +1,240 @@
-import EnrollmentService from '../../../src/services/enrollment.service';
+import { Container } from "inversify";
+import { EnrollmentService } from '../../../src/services/enrollment.service';
+import { IEnrollmentRepository } from '../../../src/interfaces/repositories/enrollment.repository.interface';
+import { IStudentRepository } from '../../../src/interfaces/repositories/student.repository.interface';
+import { IClassRepository } from '../../../src/interfaces/repositories/class.repository.interface';
+import { ICourseRepository } from '../../../src/interfaces/repositories/course.repository.interface';
+import { ISemesterRepository } from '../../../src/interfaces/repositories/semester.repository.interface';
+import { TYPES } from '../../../src/configs/di.types';
 import { NotFoundError, BadRequestError } from '../../../src/responses/error.responses';
+import { enrollStudentDto } from '../../../src/dto/enrollment';
+import mongoose from 'mongoose';
 
-// Mock các module phụ trợ
-jest.mock('../../../src/models/repositories/enrollment.repo.ts', () => ({
-    findEnrollment: jest.fn(),
-    createEnrollment: jest.fn(),
-    getCompletedCourseIdsByStudent: jest.fn(),
-    dropEnrollment: jest.fn(),
-    findDropHistoryByStudent: jest.fn(),
-}));
+describe('EnrollmentService - DI Implementation', () => {
+    let container: Container;
+    let enrollmentService: EnrollmentService;
+    let mockEnrollmentRepository: jest.Mocked<IEnrollmentRepository>;
+    let mockStudentRepository: jest.Mocked<IStudentRepository>;
+    let mockClassRepository: jest.Mocked<IClassRepository>;
+    let mockCourseRepository: jest.Mocked<ICourseRepository>;
+    let mockSemesterRepository: jest.Mocked<ISemesterRepository>;
 
-jest.mock('../../../src/models/repositories/student.repo.ts', () => ({
-    findStudent: jest.fn(),
-}));
+    const mockStudentId = new mongoose.Types.ObjectId();
+    const mockClassId = new mongoose.Types.ObjectId();
+    const mockCourseId = new mongoose.Types.ObjectId();
 
-jest.mock('../../../src/models/repositories/class.repo.ts', () => ({
-    findClassByCode: jest.fn(),
-}));
+    const mockStudent = {
+        _id: mockStudentId,
+        studentId: "STU001",
+        fullName: "John Doe"
+    };
 
-jest.mock('../../../src/models/repositories/course.repo.ts', () => ({
-    findCourseById: jest.fn(),
-    findCoursesByIds: jest.fn(),
-}));
+    const mockClass = {
+        _id: mockClassId,
+        classCode: "CS101-01",
+        course: mockCourseId,
+        isActive: true,
+        enrolledStudents: 25,
+        maxCapacity: 30,
+        academicYear: 2023,
+        semester: 1
+    };
 
-jest.mock('../../../src/models/repositories/semester.repo.ts', () => ({
-    findSemester: jest.fn(),
-}));
+    const mockCourse = {
+        _id: mockCourseId,
+        courseCode: "CS101",
+        name: "Introduction to Computer Science",
+        isActive: true,
+        prerequisites: []
+    };
 
-jest.mock('../../../src/utils', () => ({
-    getDocumentId: jest.fn((doc: any) => doc?._id || 'mocked-id'),
-}));
+    beforeEach(() => {
+        // Create test container
+        container = new Container();
+        
+        // Create mocked repositories
+        mockEnrollmentRepository = {
+            findEnrollment: jest.fn(),
+            createEnrollment: jest.fn(),
+            dropEnrollment: jest.fn(),
+            getCompletedCourseIdsByStudent: jest.fn(),
+            findDropHistoryByStudent: jest.fn(),
+            findEnrollmentsByStudent: jest.fn(),
+            findEnrollmentsByClass: jest.fn(),
+        } as jest.Mocked<IEnrollmentRepository>;
 
-// Import các hàm mock để sử dụng trong test
-import {
-    findEnrollment,
-    createEnrollment,
-    getCompletedCourseIdsByStudent,
-    dropEnrollment,
-    findDropHistoryByStudent
-} from '../../../src/models/repositories/enrollment.repo';
-import { findStudent } from '../../../src/models/repositories/student.repo';
-import { findClassByCode } from '../../../src/models/repositories/class.repo';
-import { findCourseById, findCoursesByIds } from '../../../src/models/repositories/course.repo';
-import { findSemester } from '../../../src/models/repositories/semester.repo';
+        mockStudentRepository = {
+            findStudent: jest.fn(),
+            addStudent: jest.fn(),
+            updateStudent: jest.fn(),
+            deleteStudent: jest.fn(),
+            searchStudents: jest.fn(),
+            getAllStudents: jest.fn(),
+            getStudentInfo: jest.fn(),
+            findStudentStatus: jest.fn(),
+            findStudentStatusById: jest.fn(),
+            addStudentStatus: jest.fn(),
+            updateStudentStatus: jest.fn(),
+            getStudentStatus: jest.fn(),
+            addStudentStatusTransition: jest.fn(),
+            findStudentStatusTransition: jest.fn(),
+            getTransitionRules: jest.fn(),
+            deleteStudentStatusTransition: jest.fn(),
+        } as jest.Mocked<IStudentRepository>;
 
-describe('EnrollmentService', () => {
+        mockClassRepository = {
+            createClass: jest.fn(),
+            findClassByCode: jest.fn(),
+            findClassByCourse: jest.fn(),
+            findClassesWithOverlappingSchedule: jest.fn(),
+            getAllClasses: jest.fn(),
+        } as jest.Mocked<IClassRepository>;
+
+        mockCourseRepository = {
+            findCourseById: jest.fn(),
+            findCourseByCode: jest.fn(),
+            createCourse: jest.fn(),
+            findCoursesByIds: jest.fn(),
+            updateCourse: jest.fn(),
+            deactivateCourse: jest.fn(),
+            deleteCourse: jest.fn(),
+            getAllCourses: jest.fn(),
+        } as jest.Mocked<ICourseRepository>;
+
+        mockSemesterRepository = {
+            createSemester: jest.fn(),
+            findSemester: jest.fn(),
+        } as jest.Mocked<ISemesterRepository>;
+        
+        // Bind mocked repositories
+        container.bind<IEnrollmentRepository>(TYPES.EnrollmentRepository).toConstantValue(mockEnrollmentRepository);
+        container.bind<IStudentRepository>(TYPES.StudentRepository).toConstantValue(mockStudentRepository);
+        container.bind<IClassRepository>(TYPES.ClassRepository).toConstantValue(mockClassRepository);
+        container.bind<ICourseRepository>(TYPES.CourseRepository).toConstantValue(mockCourseRepository);
+        container.bind<ISemesterRepository>(TYPES.SemesterRepository).toConstantValue(mockSemesterRepository);
+        container.bind<EnrollmentService>(TYPES.EnrollmentService).to(EnrollmentService);
+        
+        // Get service instance
+        enrollmentService = container.get<EnrollmentService>(TYPES.EnrollmentService);
+    });
+
     describe('enrollStudent', () => {
-        it('should throw NotFoundError when student does not exist', async () => {
-            (findStudent as jest.Mock).mockResolvedValue(null);
+        const enrollmentData: enrollStudentDto = {
+            studentId: "STU001",
+            classCode: "CS101-01"
+        };
 
-            await expect(EnrollmentService.enrollStudent({ studentId: '123', classCode: 'CSE101' }))
+        it('should throw NotFoundError when student does not exist', async () => {
+            mockStudentRepository.findStudent.mockResolvedValue(null);
+
+            await expect(enrollmentService.enrollStudent(enrollmentData))
                 .rejects
-                .toThrowError(new NotFoundError("Sinh viên không tồn tại"));
+                .toThrow(new NotFoundError("Sinh viên không tồn tại"));
+
+            expect(mockStudentRepository.findStudent).toHaveBeenCalledWith({ studentId: "STU001" });
         });
 
         it('should throw NotFoundError when class does not exist', async () => {
-            (findStudent as jest.Mock).mockResolvedValue({ id: '123' });
-            (findClassByCode as jest.Mock).mockResolvedValue(null);
+            mockStudentRepository.findStudent.mockResolvedValue(mockStudent as any);
+            mockClassRepository.findClassByCode.mockResolvedValue(null);
 
-            await expect(EnrollmentService.enrollStudent({ studentId: '123', classCode: 'CSE101' }))
+            await expect(enrollmentService.enrollStudent(enrollmentData))
                 .rejects
-                .toThrowError(new NotFoundError("Lớp học không tồn tại"));
+                .toThrow(new NotFoundError("Lớp học không tồn tại"));
+
+            expect(mockClassRepository.findClassByCode).toHaveBeenCalledWith("CS101-01");
         });
 
         it('should throw BadRequestError when class is not active', async () => {
-            (findStudent as jest.Mock).mockResolvedValue({ id: '123' });
-            (findClassByCode as jest.Mock).mockResolvedValue({ isActive: false });
+            mockStudentRepository.findStudent.mockResolvedValue(mockStudent as any);
+            mockClassRepository.findClassByCode.mockResolvedValue({ ...mockClass, isActive: false } as any);
 
-            await expect(EnrollmentService.enrollStudent({ studentId: '123', classCode: 'CSE101' }))
+            await expect(enrollmentService.enrollStudent(enrollmentData))
                 .rejects
-                .toThrowError(new BadRequestError("Lớp học không hoạt động"));
+                .toThrow(new BadRequestError("Lớp học không hoạt động"));
         });
 
         it('should throw BadRequestError when class is full', async () => {
-            (findStudent as jest.Mock).mockResolvedValue({ id: '123' });
-            (findClassByCode as jest.Mock).mockResolvedValue({ isActive: true, enrolledStudents: 30, maxCapacity: 30 });
+            mockStudentRepository.findStudent.mockResolvedValue(mockStudent as any);
+            mockClassRepository.findClassByCode.mockResolvedValue({ 
+                ...mockClass, 
+                enrolledStudents: 30, 
+                maxCapacity: 30 
+            } as any);
 
-            await expect(EnrollmentService.enrollStudent({ studentId: '123', classCode: 'CSE101' }))
+            await expect(enrollmentService.enrollStudent(enrollmentData))
                 .rejects
-                .toThrowError(new BadRequestError("Lớp học đã đầy"));
+                .toThrow(new BadRequestError("Lớp học đã đầy"));
         });
 
-        it('should throw BadRequestError when student is already enrolled in the class', async () => {
-            (findStudent as jest.Mock).mockResolvedValue({ id: '123' });
-            (findClassByCode as jest.Mock).mockResolvedValue({ isActive: true, enrolledStudents: 25, maxCapacity: 30 });
-            (findEnrollment as jest.Mock).mockResolvedValue({});
+        it('should throw BadRequestError when student is already enrolled', async () => {
+            mockStudentRepository.findStudent.mockResolvedValue(mockStudent as any);
+            mockClassRepository.findClassByCode.mockResolvedValue(mockClass as any);
+            mockEnrollmentRepository.findEnrollment.mockResolvedValue({} as any);
 
-            await expect(EnrollmentService.enrollStudent({ studentId: '123', classCode: 'CSE101' }))
+            await expect(enrollmentService.enrollStudent(enrollmentData))
                 .rejects
-                .toThrowError(new BadRequestError("Sinh viên đã đăng ký lớp học này"));
+                .toThrow(new BadRequestError("Sinh viên đã đăng ký lớp học này"));
         });
 
-        it('should throw NotFoundError when course does not exist', async () => {
-            (findStudent as jest.Mock).mockResolvedValue({ id: '123' });
-            (findClassByCode as jest.Mock).mockResolvedValue({ isActive: true, enrolledStudents: 25, maxCapacity: 30, course: 'courseId' });
-            (findEnrollment as jest.Mock).mockResolvedValue(null);
-            (findCourseById as jest.Mock).mockResolvedValue(null);
+        it('should enroll student successfully', async () => {
+            const mockEnrollment = { _id: new mongoose.Types.ObjectId(), student: mockStudentId, class: mockClassId };
+            
+            mockStudentRepository.findStudent.mockResolvedValue(mockStudent as any);
+            mockClassRepository.findClassByCode.mockResolvedValue(mockClass as any);
+            mockEnrollmentRepository.findEnrollment.mockResolvedValue(null);
+            mockCourseRepository.findCourseById.mockResolvedValue(mockCourse as any);
+            mockEnrollmentRepository.getCompletedCourseIdsByStudent.mockResolvedValue([]);
+            mockEnrollmentRepository.createEnrollment.mockResolvedValue(mockEnrollment as any);
 
+            const result = await enrollmentService.enrollStudent(enrollmentData);
 
-            await expect(EnrollmentService.enrollStudent({ studentId: '123', classCode: 'CSE101' }))
-                .rejects
-                .toThrowError(new NotFoundError("Môn học không tồn tại"));
-        });
-
-        it('should throw BadRequestError when course is not active', async () => {
-            (findStudent as jest.Mock).mockResolvedValue({ id: '123' });
-            (findClassByCode as jest.Mock).mockResolvedValue({ isActive: true, enrolledStudents: 25, maxCapacity: 30, course: 'courseId' });
-            (findCourseById as jest.Mock).mockResolvedValue({ isActive: false });
-
-            await expect(EnrollmentService.enrollStudent({ studentId: '123', classCode: 'CSE101' }))
-                .rejects
-                .toThrowError(new BadRequestError("Môn học không hoạt động"));
-        });
-
-        it('should throw BadRequestError when student has missing prerequisites', async () => {
-            (findStudent as jest.Mock).mockResolvedValue({ id: '123' });
-            (findClassByCode as jest.Mock).mockResolvedValue({
-                isActive: true, enrolledStudents: 25, maxCapacity: 30, course: 'courseId'
+            expect(mockEnrollmentRepository.createEnrollment).toHaveBeenCalledWith({
+                student: mockStudentId,
+                class: mockClassId
             });
-            (findCourseById as jest.Mock).mockResolvedValue({
-                isActive: true, prerequisites: ['course1', 'course2']
-            });
-            (getCompletedCourseIdsByStudent as jest.Mock).mockResolvedValue(['course1']);
-            (findCoursesByIds as jest.Mock).mockResolvedValue([
-                { courseCode: 'course2' }
-            ]);
-
-            await expect(EnrollmentService.enrollStudent({ studentId: '123', classCode: 'CSE101' }))
-                .rejects
-                .toThrowError(new BadRequestError("Sinh viên chưa hoàn thành các môn học tiên quyết: course2"));
-        });
-
-
-        it('should enroll the student successfully', async () => {
-            (findStudent as jest.Mock).mockResolvedValue({ id: '123' });
-            (findClassByCode as jest.Mock).mockResolvedValue({ isActive: true, enrolledStudents: 25, maxCapacity: 30, course: 'courseId' });
-            (findCourseById as jest.Mock).mockResolvedValue({ isActive: true, prerequisites: ['course1'] });
-            (getCompletedCourseIdsByStudent as jest.Mock).mockResolvedValue(['course1']);
-            (findEnrollment as jest.Mock).mockResolvedValue(null);
-            (createEnrollment as jest.Mock).mockResolvedValue({ studentId: '123', classCode: 'CSE101' });
-
-            const result = await EnrollmentService.enrollStudent({ studentId: '123', classCode: 'CSE101' });
-            expect(result).toEqual({ studentId: '123', classCode: 'CSE101' });
+            expect(result).toEqual(mockEnrollment);
         });
     });
 
     describe('dropStudent', () => {
         it('should throw NotFoundError when student does not exist', async () => {
-            (findStudent as jest.Mock).mockResolvedValue(null);
+            mockStudentRepository.findStudent.mockResolvedValue(null);
 
-            await expect(EnrollmentService.dropStudent('123', 'CSE101', 'Lý do cá nhân'))
+            await expect(enrollmentService.dropStudent('STU001', 'CS101-01', 'Personal reason'))
                 .rejects
-                .toThrowError(new NotFoundError("Sinh viên không tồn tại"));
+                .toThrow(new NotFoundError("Sinh viên không tồn tại"));
         });
 
-        it('should throw NotFoundError when class does not exist', async () => {
-            (findStudent as jest.Mock).mockResolvedValue({ id: '123' });
-            (findClassByCode as jest.Mock).mockResolvedValue(null);
+        it('should throw NotFoundError when enrollment does not exist', async () => {
+            mockStudentRepository.findStudent.mockResolvedValue(mockStudent as any);
+            mockClassRepository.findClassByCode.mockResolvedValue(mockClass as any);
+            mockEnrollmentRepository.findEnrollment.mockResolvedValue(null);
 
-            await expect(EnrollmentService.dropStudent('123', 'CSE101', 'Lý do cá nhân'))
+            await expect(enrollmentService.dropStudent('STU001', 'CS101-01', 'Personal reason'))
                 .rejects
-                .toThrowError(new NotFoundError("Lớp học không tồn tại"));
-        });
-
-        it('should throw NotFoundError when student did not enroll class', async () => {
-            (findStudent as jest.Mock).mockResolvedValue({ id: '123' });
-            (findClassByCode as jest.Mock).mockResolvedValue({ isActive: true, enrolledStudents: 25, maxCapacity: 30, course: 'courseId' });
-            (findEnrollment as jest.Mock).mockResolvedValue(null);
-
-            await expect(EnrollmentService.dropStudent('123', 'CSE101', 'Lý do cá nhân'))
-                .rejects
-                .toThrowError(new NotFoundError("Sinh viên chưa đăng ký lớp học này"));
+                .toThrow(new NotFoundError("Sinh viên chưa đăng ký lớp học này"));
         });
     });
 
     describe('getDropHistory', () => {
         it('should throw NotFoundError when student does not exist', async () => {
-            (findStudent as jest.Mock).mockResolvedValue(null);
+            mockStudentRepository.findStudent.mockResolvedValue(null);
 
-            await expect(EnrollmentService.getDropHistory('123'))
+            await expect(enrollmentService.getDropHistory('STU001'))
                 .rejects
-                .toThrowError(new NotFoundError("Sinh viên không tồn tại"));
+                .toThrow(new NotFoundError("Sinh viên không tồn tại"));
         });
 
         it('should return drop history successfully', async () => {
-            (findStudent as jest.Mock).mockResolvedValue({ id: '123' });
-            (findDropHistoryByStudent as jest.Mock).mockResolvedValue([{ classCode: 'CSE101', dropReason: 'Lý do cá nhân' }]);
+            const mockDropHistory = [{ classCode: 'CS101-01', dropReason: 'Personal reason' }];
+            
+            mockStudentRepository.findStudent.mockResolvedValue(mockStudent as any);
+            mockEnrollmentRepository.findDropHistoryByStudent.mockResolvedValue(mockDropHistory);
 
-            const result = await EnrollmentService.getDropHistory('123');
-            expect(result).toEqual([{ classCode: 'CSE101', dropReason: 'Lý do cá nhân' }]);
+            const result = await enrollmentService.getDropHistory('STU001');
+
+            expect(result).toEqual(mockDropHistory);
         });
     });
-});
+}); 

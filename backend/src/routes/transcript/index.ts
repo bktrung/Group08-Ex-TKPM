@@ -1,8 +1,16 @@
-import TranscriptController from '../../controllers/transcript.controller';
+import { Router } from 'express';
 import { asyncHandler } from "../../helpers/asyncHandler";
-import e, { Router } from 'express';
+import { container } from '../../configs/di.config';
+import { TYPES } from '../../configs/di.types';
+import { TranscriptController } from '../../controllers/transcript.controller';
+
 const router = Router();
 
-router.get('/:studentId', asyncHandler(TranscriptController.generateTranscript));
+// Lazy resolution of controller
+const getTranscriptController = () => container.get<TranscriptController>(TYPES.TranscriptController);
+
+router.get('/:studentId', asyncHandler((req, res, next) => 
+	getTranscriptController().generateTranscript(req, res, next)
+));
 
 export default router;

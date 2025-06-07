@@ -1,11 +1,18 @@
+import { injectable, inject } from "inversify";
 import { Request, Response, NextFunction } from 'express';
-import EnrollmentService from '../services/enrollment.service';
+import { IEnrollmentService } from '../interfaces/services/enrollment.service.interface';
 import { CREATED, OK } from '../responses/success.responses';
+import { TYPES } from '../configs/di.types';
 
-class EnrollmentController {
+@injectable()
+export class EnrollmentController {
+	constructor(
+		@inject(TYPES.EnrollmentService) private enrollmentService: IEnrollmentService
+	) {}
+
 	enrollStudent = async (req: Request, res: Response, next: NextFunction) => {
 		const enrollmentData = req.body;
-		const newEnrollment = await EnrollmentService.enrollStudent(enrollmentData);
+		const newEnrollment = await this.enrollmentService.enrollStudent(enrollmentData);
 		return new CREATED({
 			message: 'Enrollment created successfully',
 			metadata: { newEnrollment }
@@ -14,7 +21,7 @@ class EnrollmentController {
 
 	dropStudent = async (req: Request, res: Response, next: NextFunction) => {
 		const { studentId, classCode, dropReason } = req.body;
-		const updatedEnrollment = await EnrollmentService.dropStudent(studentId, classCode, dropReason);
+		const updatedEnrollment = await this.enrollmentService.dropStudent(studentId, classCode, dropReason);
 		return new OK({
 			message: 'Enrollment dropped successfully',
 			metadata: { updatedEnrollment }
@@ -23,12 +30,10 @@ class EnrollmentController {
 
 	getDropHistory = async (req: Request, res: Response, next: NextFunction) => {
 		const { studentId } = req.params;
-		const dropHistory = await EnrollmentService.getDropHistory(studentId);
+		const dropHistory = await this.enrollmentService.getDropHistory(studentId);
 		return new OK({
 			message: 'Drop history retrieved successfully',
 			metadata: { dropHistory }
 		}).send(res);
 	}
 }
-
-export default new EnrollmentController();

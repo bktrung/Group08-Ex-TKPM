@@ -1,24 +1,36 @@
-import { findEnrollment, createEnrollment, getCompletedCourseIdsByStudent, dropEnrollment, findDropHistoryByStudent } from "../models/repositories/enrollment.repo";
+import { injectable, inject } from "inversify";
 import { BadRequestError, NotFoundError } from "../responses/error.responses";
 import { enrollStudentDto } from "../dto/enrollment";
-import { findStudent } from "../models/repositories/student.repo";
-import { findClassByCode } from "../models/repositories/class.repo";
 import { getDocumentId } from "../utils";
-import { findCourseById, findCoursesByIds } from "../models/repositories/course.repo";
-import { findSemester } from "../models/repositories/semester.repo";
+import { IEnrollmentService } from "../interfaces/services/enrollment.service.interface";
+import { IEnrollmentRepository } from "../interfaces/repositories/enrollment.repository.interface";
+import { IStudentRepository } from "../interfaces/repositories/student.repository.interface";
+import { IClassRepository } from "../interfaces/repositories/class.repository.interface";
+import { ICourseRepository } from "../interfaces/repositories/course.repository.interface";
+import { ISemesterRepository } from "../interfaces/repositories/semester.repository.interface";
+import { TYPES } from "../configs/di.types";
 
-class EnrollmentService {
-	static async enrollStudent(enrollmentData: enrollStudentDto) {
+@injectable()
+export class EnrollmentService implements IEnrollmentService {
+	constructor(
+		@inject(TYPES.EnrollmentRepository) private enrollmentRepository: IEnrollmentRepository,
+		@inject(TYPES.StudentRepository) private studentRepository: IStudentRepository,
+		@inject(TYPES.ClassRepository) private classRepository: IClassRepository,
+		@inject(TYPES.CourseRepository) private courseRepository: ICourseRepository,
+		@inject(TYPES.SemesterRepository) private semesterRepository: ISemesterRepository
+	) {}
+
+	async enrollStudent(enrollmentData: enrollStudentDto) {
 		const { studentId, classCode } = enrollmentData;
 
 		// Check if student exists
-		const existingStudent = await findStudent({ studentId });
+		const existingStudent = await this.studentRepository.findStudent({ studentId });
 		if (!existingStudent) {
 			throw new NotFoundError("Sinh viên không tồn tại");
 		}
 
 		// Check if class exists
-		const existingClass = await findClassByCode(classCode);
+		const existingClass = await this.classRepository.findClassByCode(classCode);
 		if (!existingClass) {
 			throw new NotFoundError("Lớp học không tồn tại");
 		}
@@ -34,7 +46,7 @@ class EnrollmentService {
 		}
 
 		// Check if enrollment already exists
-		const existingEnrollment = await findEnrollment(
+		const existingEnrollment = await this.enrollmentRepository.findEnrollment(
 			getDocumentId(existingStudent), 
 			getDocumentId(existingClass)
 		);
@@ -42,7 +54,7 @@ class EnrollmentService {
 			throw new BadRequestError("Sinh viên đã đăng ký lớp học này");
 		}
 
-		const classCourse = await findCourseById(existingClass.course);
+		const classCourse = await this.courseRepository.findCourseById(existingClass.course);
 		if (!classCourse) {
 			throw new NotFoundError("Môn học không tồn tại");
 		}
@@ -52,7 +64,7 @@ class EnrollmentService {
 		}
 
 		// Check if student has prerequisites for the course
-		const studentCompletedCourseIds = await getCompletedCourseIdsByStudent(
+		const studentCompletedCourseIds = await this.enrollmentRepository.getCompletedCourseIdsByStudent(
 			getDocumentId(existingStudent)
 		);
 		
@@ -70,7 +82,7 @@ class EnrollmentService {
 
 			if (missingPrerequisites.length > 0) {
 				// Get the course codes of missing prerequisites for better error message
-				const missingCourses = await findCoursesByIds(missingPrerequisites);
+				const missingCourses = await this.courseRepository.findCoursesByIds(missingPrerequisites);
 				const missingCourseNames = missingCourses.map(course => course.courseCode).join(', ');
 
 				throw new BadRequestError(
@@ -80,7 +92,7 @@ class EnrollmentService {
 		}
 
 		// Create enrollment
-		const newEnrollment = await createEnrollment({
+		const newEnrollment = await this.enrollmentRepository.createEnrollment({
 			student: getDocumentId(existingStudent),
 			class: getDocumentId(existingClass)
 		});
@@ -92,21 +104,21 @@ class EnrollmentService {
 		return newEnrollment;
 	}
 
-	static async dropStudent(studentId: string, classCode: string, dropReason: string) {
+	async dropStudent(studentId: string, classCode: string, dropReason: string) {
 		// Check if student exists
-		const existingStudent = await findStudent({ studentId });
+		const existingStudent = await this.studentRepository.findStudent({ studentId });
 		if (!existingStudent) {
 			throw new NotFoundError("Sinh viên không tồn tại");
 		}
 
 		// Check if class exists
-		const existingClass = await findClassByCode(classCode);
+		const existingClass = await this.classRepository.findClassByCode(classCode);
 		if (!existingClass) {
 			throw new NotFoundError("Lớp học không tồn tại");
 		}
 
 		// Check if enrollment exists
-		const existingEnrollment = await findEnrollment(
+		const existingEnrollment = await this.enrollmentRepository.findEnrollment(
 			getDocumentId(existingStudent),
 			getDocumentId(existingClass)
 		);
@@ -116,7 +128,7 @@ class EnrollmentService {
 		///
 
 		// check if possible to drop class
-		const semester = await findSemester(
+		const semester = await this.semesterRepository.findSemester(
 			existingClass.academicYear,
 			existingClass.semester
 		);
@@ -131,7 +143,7 @@ class EnrollmentService {
 			throw new BadRequestError("Đã quá hạn huỷ lớp học");
 		}
 
-		const droppedEnrollment = await dropEnrollment(
+		const droppedEnrollment = await this.enrollmentRepository.dropEnrollment(
 			getDocumentId(existingStudent),
 			getDocumentId(existingClass),
 			dropReason
@@ -144,14 +156,14 @@ class EnrollmentService {
 		return droppedEnrollment;
 	}
 
-	static async getDropHistory(studentId: string) {
+	async getDropHistory(studentId: string) {
 		// Check if student exists
-		const existingStudent = await findStudent({ studentId });
+		const existingStudent = await this.studentRepository.findStudent({ studentId });
 		if (!existingStudent) {
 			throw new NotFoundError("Sinh viên không tồn tại");
 		}
 
-		const dropHistory = await findDropHistoryByStudent(getDocumentId(existingStudent));
+		const dropHistory = await this.enrollmentRepository.findDropHistoryByStudent(getDocumentId(existingStudent));
 		if (!dropHistory || dropHistory.length === 0) {
 			throw new NotFoundError("Không tìm thấy lịch sử huỷ lớp học");
 		}
@@ -159,5 +171,3 @@ class EnrollmentService {
 		return dropHistory;
 	}
 }
-
-export default EnrollmentService;

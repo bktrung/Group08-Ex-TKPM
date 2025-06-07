@@ -1,12 +1,19 @@
+import { injectable, inject } from "inversify";
 import { Request, Response, NextFunction } from 'express';
-import StudentService from '../services/student.service';
+import { IStudentService } from '../interfaces/services/student.service.interface';
 import { CREATED, OK } from '../responses/success.responses';
 import { BadRequestError } from '../responses/error.responses';
+import { TYPES } from '../configs/di.types';
 
-class StudentController {
+@injectable()
+export class StudentController {
+	constructor(
+		@inject(TYPES.StudentService) private studentService: IStudentService
+	) {}
+
 	addStudent = async (req: Request, res: Response, next: NextFunction) => {
 		const studentData = req.body;
-		const newStudent = await StudentService.addStudent(studentData);
+		const newStudent = await this.studentService.addStudent(studentData);
 		return new CREATED({
 			message: 'Student added successfully',
 			metadata: { newStudent }
@@ -16,7 +23,7 @@ class StudentController {
 	updateStudent = async (req: Request, res: Response, next: NextFunction) => {
 		const studentData = req.body;
 		const studentId = req.params.studentId;
-		const updatedStudent = await StudentService.updateStudent(studentId, studentData);
+		const updatedStudent = await this.studentService.updateStudent(studentId, studentData);
 		return new OK({
 			message: 'Student updated successfully',
 			metadata: { updatedStudent }
@@ -25,7 +32,7 @@ class StudentController {
 
 	deleteStudent = async (req: Request, res: Response, next: NextFunction) => {
 		const studentId = req.params.studentId;
-		const deletedStudent = await StudentService.deleteStudent(studentId);
+		const deletedStudent = await this.studentService.deleteStudent(studentId);
 		return new OK({
 			message: 'Student deleted successfully',
 			metadata: { deletedStudent }
@@ -47,7 +54,7 @@ class StudentController {
 			sort: sort as string
 		};
 
-		const result = await StudentService.searchStudents(searchOptions);
+		const result = await this.studentService.searchStudents(searchOptions);
 
 		return new OK({
 			message: 'Search results',
@@ -60,7 +67,7 @@ class StudentController {
 	
 	getAllStudents = async (req: Request, res: Response, next: NextFunction) => {
 		const { page = "1", limit = "10" } = req.query;
-		const result = await StudentService.getAllStudents(parseInt(page as string, 10), parseInt(limit as string, 10));
+		const result = await this.studentService.getAllStudents(parseInt(page as string, 10), parseInt(limit as string, 10));
 		return new OK({
 			message: 'All students',
 			metadata: result
@@ -68,7 +75,7 @@ class StudentController {
 	}
 
 	getStudentStatusType = async (req: Request, res: Response, next: NextFunction) => {
-		const statusType = await StudentService.getStudentStatus();
+		const statusType = await this.studentService.getStudentStatus();
 		return new OK({
 			message: 'Student status types',
 			metadata: statusType
@@ -77,7 +84,7 @@ class StudentController {
 
 	addStudentStatusType = async (req: Request, res: Response, next: NextFunction) => {
 		const statusType = req.body.type;
-		const newStatusType = await StudentService.addStudentStatus(statusType);
+		const newStatusType = await this.studentService.addStudentStatus(statusType);
 		return new CREATED({
 			message: 'Student status type added',
 			metadata: newStatusType
@@ -87,7 +94,7 @@ class StudentController {
 	modifyStudentStatusType = async (req: Request, res: Response, next: NextFunction) => {
 		const statusType = req.body.type;
 		const statusId = req.params.statusId;
-		const updatedStatusType = await StudentService.modifyStudentStatus(statusId, statusType);
+		const updatedStatusType = await this.studentService.modifyStudentStatus(statusId, statusType);
 		return new OK({
 			message: 'Student status type updated',
 			metadata: updatedStatusType
@@ -97,7 +104,7 @@ class StudentController {
 	getStudentByDepartment = async (req: Request, res: Response, next: NextFunction) => {
 		const { departmentId } = req.params;
 		const { page = "1", limit = "10" } = req.query;
-		const result = await StudentService.getStudentByDepartment(departmentId, parseInt(page as string, 10), parseInt(limit as string, 10));
+		const result = await this.studentService.getStudentByDepartment(departmentId, parseInt(page as string, 10), parseInt(limit as string, 10));
 		return new OK({
 			message: 'Students by department',
 			metadata: result
@@ -106,7 +113,7 @@ class StudentController {
 
 	addStudentStatusTransition = async (req: Request, res: Response, next: NextFunction) => {
 		const { fromStatus, toStatus } = req.body;
-		const newTransition = await StudentService.addStudentStatusTransition(fromStatus, toStatus);
+		const newTransition = await this.studentService.addStudentStatusTransition(fromStatus, toStatus);
 		return new CREATED({
 			message: 'Student status transition added',
 			metadata: newTransition
@@ -116,18 +123,16 @@ class StudentController {
 	getStudentStatusTransition = async (req: Request, res: Response, next: NextFunction) => {
 		return new OK({
 			message: 'Student status transitions',
-			metadata: await StudentService.getStudentStatusTransition()
+			metadata: await this.studentService.getStudentStatusTransition()
 		}).send(res);
 	}
 
 	deleteStudentStatusTransition = async (req: Request, res: Response, next: NextFunction) => {
 		const { fromStatus, toStatus } = req.body;
-		const deletedTransition = await StudentService.deleteStudentStatusTransition(fromStatus, toStatus);
+		const deletedTransition = await this.studentService.deleteStudentStatusTransition(fromStatus, toStatus);
 		return new OK({
 			message: 'Student status transition deleted',
 			metadata: deletedTransition
 		}).send(res);
 	}
 }
-
-export default new StudentController();

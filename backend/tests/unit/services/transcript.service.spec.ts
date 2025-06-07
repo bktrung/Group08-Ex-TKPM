@@ -1,112 +1,172 @@
-import TranscriptService from '../../../src/services/transcript.service';
-import * as studentRepo from '../../../src/models/repositories/student.repo';
-import * as enrollmentRepo from '../../../src//models/repositories/enrollment.repo';
-import * as gradeRepo from '../../../src/models/repositories/grade.repo';
-import * as courseRepo from '../../../src/models/repositories/course.repo';
+import { Container } from "inversify";
+import { TranscriptService } from '../../../src/services/transcript.service';
+import { ICourseRepository } from '../../../src/interfaces/repositories/course.repository.interface';
+import { IEnrollmentRepository } from '../../../src/interfaces/repositories/enrollment.repository.interface';
+import { IGradeRepository } from '../../../src/interfaces/repositories/grade.repository.interface';
+import { IStudentRepository } from '../../../src/interfaces/repositories/student.repository.interface';
+import { TYPES } from '../../../src/configs/di.types';
 import { NotFoundError } from '../../../src/responses/error.responses';
+import mongoose from 'mongoose';
 
-jest.mock('../../../src/models/repositories/student.repo');
-jest.mock('../../../src//models/repositories/enrollment.repo');
-jest.mock('../../../src/models/repositories/grade.repo');
-jest.mock('../../../src/models/repositories/course.repo');
+describe('TranscriptService - DI Implementation', () => {
+    let container: Container;
+    let transcriptService: TranscriptService;
+    let mockCourseRepository: jest.Mocked<ICourseRepository>;
+    let mockEnrollmentRepository: jest.Mocked<IEnrollmentRepository>;
+    let mockGradeRepository: jest.Mocked<IGradeRepository>;
+    let mockStudentRepository: jest.Mocked<IStudentRepository>;
 
-describe('TranscriptService', () => {
-  const mockStudent = {
-    _id: 'studentObjId',
-    studentId: 'SV001',
-    fullName: 'Nguyen Van A',
-    schoolYear: '2023',
-    department: { name: 'Computer Science' },
-    program: { name: 'KTPM' }
-  };
+    const mockStudentId = new mongoose.Types.ObjectId();
+    const mockCourseId = new mongoose.Types.ObjectId();
+    const mockEnrollmentId = new mongoose.Types.ObjectId();
 
-  const mockCourse = {
-    _id: 'courseId123',
-    courseCode: 'CS101',
-    name: 'Introduction to Programming',
-    credits: 3
-  };
+    const mockStudent = {
+        _id: mockStudentId,
+        studentId: "123",
+        fullName: "John Doe",
+        schoolYear: "2023",
+        department: { name: "Computer Science" },
+        program: { name: "Bachelor of Science" }
+    };
 
-  const mockEnrollment = {
-    _id: 'enroll123',
-    enrollmentDate: '2024-01-01T00:00:00Z',
-    class: { course: mockCourse._id }
-  };
+    const mockCourse = {
+        _id: mockCourseId,
+        courseCode: "CS101",
+        name: "Introduction to Programming",
+        credits: 3
+    };
 
-  const mockGrade = {
-    totalScore: 8.5,
-    gradePoints: 3.5
-  };
+    const mockEnrollment = {
+        _id: mockEnrollmentId,
+        student: mockStudentId,
+        class: { course: mockCourseId },
+        enrollmentDate: new Date()
+    };
 
-  beforeEach(() => {
-    jest.clearAllMocks();
-  });
+    const mockGrade = {
+        _id: new mongoose.Types.ObjectId(),
+        enrollment: mockEnrollmentId,
+        totalScore: 8.5,
+        gradePoints: 3.5
+    };
 
-  it('should generate transcript correctly', async () => {
-    // Mock các repository
-    (studentRepo.getStudentInfo as jest.Mock).mockResolvedValue(mockStudent);
-    (studentRepo.findStudent as jest.Mock).mockResolvedValue(mockStudent);
-    (enrollmentRepo.findEnrollmentsByStudent as jest.Mock).mockResolvedValue([mockEnrollment]);
-    (gradeRepo.findGradeByEnrollment as jest.Mock).mockResolvedValue(mockGrade);
-    (courseRepo.findCourseById as jest.Mock).mockResolvedValue(mockCourse);
+    beforeEach(() => {
+        // Create test container
+        container = new Container();
+        
+        // Create mocked repositories
+        mockCourseRepository = {
+            findCourseById: jest.fn(),
+            findCourseByCode: jest.fn(),
+            createCourse: jest.fn(),
+            findCoursesByIds: jest.fn(),
+            updateCourse: jest.fn(),
+            deactivateCourse: jest.fn(),
+            deleteCourse: jest.fn(),
+            getAllCourses: jest.fn(),
+        } as jest.Mocked<ICourseRepository>;
 
-    const result = await TranscriptService.generateTranscript('SV001');
+        mockEnrollmentRepository = {
+            findEnrollment: jest.fn(),
+            createEnrollment: jest.fn(),
+            dropEnrollment: jest.fn(),
+            getCompletedCourseIdsByStudent: jest.fn(),
+            findDropHistoryByStudent: jest.fn(),
+            findEnrollmentsByStudent: jest.fn(),
+            findEnrollmentsByClass: jest.fn(),
+        } as jest.Mocked<IEnrollmentRepository>;
 
-    expect(result.studentInfo).toEqual({
-      studentId: 'SV001',
-      fullName: 'Nguyen Van A',
-      schoolYear: '2023',
-      department: 'Computer Science',
-      program: 'KTPM'
+        mockGradeRepository = {
+            findGradeByEnrollment: jest.fn(),
+            createGrade: jest.fn(),
+        } as jest.Mocked<IGradeRepository>;
+
+        mockStudentRepository = {
+            findStudent: jest.fn(),
+            addStudent: jest.fn(),
+            updateStudent: jest.fn(),
+            deleteStudent: jest.fn(),
+            searchStudents: jest.fn(),
+            getAllStudents: jest.fn(),
+            getStudentInfo: jest.fn(),
+            findStudentStatus: jest.fn(),
+            findStudentStatusById: jest.fn(),
+            addStudentStatus: jest.fn(),
+            updateStudentStatus: jest.fn(),
+            getStudentStatus: jest.fn(),
+            addStudentStatusTransition: jest.fn(),
+            findStudentStatusTransition: jest.fn(),
+            getTransitionRules: jest.fn(),
+            deleteStudentStatusTransition: jest.fn(),
+        } as jest.Mocked<IStudentRepository>;
+        
+        // Bind mocked repositories
+        container.bind<ICourseRepository>(TYPES.CourseRepository).toConstantValue(mockCourseRepository);
+        container.bind<IEnrollmentRepository>(TYPES.EnrollmentRepository).toConstantValue(mockEnrollmentRepository);
+        container.bind<IGradeRepository>(TYPES.GradeRepository).toConstantValue(mockGradeRepository);
+        container.bind<IStudentRepository>(TYPES.StudentRepository).toConstantValue(mockStudentRepository);
+        container.bind<TranscriptService>(TYPES.TranscriptService).to(TranscriptService);
+        
+        // Get service instance
+        transcriptService = container.get<TranscriptService>(TYPES.TranscriptService);
     });
 
-    expect(result.courses).toHaveLength(1);
-    expect(result.courses[0]).toMatchObject({
-      courseCode: 'CS101',
-      courseName: 'Introduction to Programming',
-      credits: 3,
-      totalScore: 8.5,
-      gradePoints: 3.5
+    describe('generateTranscript', () => {
+        it('should throw NotFoundError if student does not exist', async () => {
+            mockStudentRepository.getStudentInfo.mockResolvedValue(null);
+
+            await expect(transcriptService.generateTranscript('123'))
+                .rejects
+                .toThrow(new NotFoundError('Student not found'));
+
+            expect(mockStudentRepository.getStudentInfo).toHaveBeenCalledWith('123');
+        });
+
+        it('should generate transcript successfully with grades', async () => {
+            mockStudentRepository.getStudentInfo.mockResolvedValue(mockStudent as any);
+            mockStudentRepository.findStudent.mockResolvedValue(mockStudent as any);
+            mockEnrollmentRepository.findEnrollmentsByStudent.mockResolvedValue([mockEnrollment as any]);
+            mockCourseRepository.findCourseById.mockResolvedValue(mockCourse as any);
+            mockGradeRepository.findGradeByEnrollment.mockResolvedValue(mockGrade as any);
+
+            const result = await transcriptService.generateTranscript('123');
+
+            expect(result).toEqual({
+                studentInfo: {
+                    studentId: "123",
+                    fullName: "John Doe",
+                    schoolYear: "2023",
+                    department: "Computer Science",
+                    program: "Bachelor of Science"
+                },
+                courses: [{
+                    courseCode: "CS101",
+                    courseName: "Introduction to Programming",
+                    credits: 3,
+                    totalScore: 8.5,
+                    gradePoints: 3.5
+                }],
+                summary: {
+                    totalCredits: 3,
+                    gpaOutOf10: 8.5,
+                    gpaOutOf4: 3.5
+                }
+            });
+        });
+
+        it('should generate transcript with empty courses if no enrollments', async () => {
+            mockStudentRepository.getStudentInfo.mockResolvedValue(mockStudent as any);
+            mockStudentRepository.findStudent.mockResolvedValue(mockStudent as any);
+            mockEnrollmentRepository.findEnrollmentsByStudent.mockResolvedValue([]);
+
+            const result = await transcriptService.generateTranscript('123');
+
+            expect(result.courses).toEqual([]);
+            expect(result.summary).toEqual({
+                totalCredits: 0,
+                gpaOutOf10: 0,
+                gpaOutOf4: 0
+            });
+        });
     });
-
-    expect(result.summary).toEqual({
-      totalCredits: 3,
-      gpaOutOf10: 8.5,
-      gpaOutOf4: 3.5
-    });
-  });
-
-  it('should throw NotFoundError if student not found', async () => {
-    (studentRepo.getStudentInfo as jest.Mock).mockResolvedValue(null);
-
-    await expect(TranscriptService.generateTranscript('SV999'))
-      .rejects
-      .toThrow(NotFoundError);
-  });
-
-  it('should handle student with no enrollments gracefully', async () => {
-    (studentRepo.getStudentInfo as jest.Mock).mockResolvedValue(mockStudent);
-    (studentRepo.findStudent as jest.Mock).mockResolvedValue(mockStudent);
-    (enrollmentRepo.findEnrollmentsByStudent as jest.Mock).mockResolvedValue([]);
-
-    const result = await TranscriptService.generateTranscript('SV001');
-
-    expect(result.courses).toEqual([]);
-    expect(result.summary.totalCredits).toBe(0);
-    expect(result.summary.gpaOutOf10).toBe(0);
-    expect(result.summary.gpaOutOf4).toBe(0);
-  });
-
-  it('should skip courses with missing course info or grade', async () => {
-    (studentRepo.getStudentInfo as jest.Mock).mockResolvedValue(mockStudent);
-    (studentRepo.findStudent as jest.Mock).mockResolvedValue(mockStudent);
-    (enrollmentRepo.findEnrollmentsByStudent as jest.Mock).mockResolvedValue([mockEnrollment]);
-
-    // Course missing
-    (courseRepo.findCourseById as jest.Mock).mockResolvedValue(null);
-    (gradeRepo.findGradeByEnrollment as jest.Mock).mockResolvedValue(mockGrade);
-
-    const result = await TranscriptService.generateTranscript('SV001');
-    expect(result.courses).toEqual([]);
-  });
 });

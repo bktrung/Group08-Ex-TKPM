@@ -1,26 +1,37 @@
+import { injectable, inject } from "inversify";
 import { createGradeDto } from "../dto/grade";
-import { findClassByCode } from "../models/repositories/class.repo";
-import { findEnrollment } from "../models/repositories/enrollment.repo";
-import { createGrade, findGradeByEnrollment } from "../models/repositories/grade.repo";
-import { findStudent } from "../models/repositories/student.repo";
 import { getDocumentId } from "../utils";
 import { BadRequestError, NotFoundError } from "../responses/error.responses";
+import { IGradeService } from "../interfaces/services/grade.service.interface";
+import { IGradeRepository } from "../interfaces/repositories/grade.repository.interface";
+import { IStudentRepository } from "../interfaces/repositories/student.repository.interface";
+import { IClassRepository } from "../interfaces/repositories/class.repository.interface";
+import { IEnrollmentRepository } from "../interfaces/repositories/enrollment.repository.interface";
+import { TYPES } from "../configs/di.types";
 
-class GradeService {
-	static async createGrade(gradeData: createGradeDto) {
+@injectable()
+export class GradeService implements IGradeService {
+	constructor(
+		@inject(TYPES.GradeRepository) private gradeRepository: IGradeRepository,
+		@inject(TYPES.StudentRepository) private studentRepository: IStudentRepository,
+		@inject(TYPES.ClassRepository) private classRepository: IClassRepository,
+		@inject(TYPES.EnrollmentRepository) private enrollmentRepository: IEnrollmentRepository
+	) {}
+
+	async createGrade(gradeData: createGradeDto) {
 		const { studentId, classCode, midtermScore, finalScore , totalScore } = gradeData;
 
-		const existingStudent = await findStudent({ studentId });
+		const existingStudent = await this.studentRepository.findStudent({ studentId });
 		if (!existingStudent) {
 			throw new NotFoundError("Student not found");
 		}
 
-		const existingClass = await findClassByCode(classCode);
+		const existingClass = await this.classRepository.findClassByCode(classCode);
 		if (!existingClass) {
 			throw new NotFoundError("Class not found");
 		}
 
-		const existingEnrollment = await findEnrollment(
+		const existingEnrollment = await this.enrollmentRepository.findEnrollment(
 			getDocumentId(existingStudent), 
 			getDocumentId(existingClass)
 		);
@@ -32,13 +43,10 @@ class GradeService {
 
 		const enrollment = getDocumentId(existingEnrollment);
 
-		const existingGrade = await findGradeByEnrollment(enrollment);
+		const existingGrade = await this.gradeRepository.findGradeByEnrollment(enrollment);
 		if (existingGrade) {
 			throw new BadRequestError("Grade already exists for this enrollment");
 		}
-
-		console.log(enrollment);
-		console.log(existingGrade);
 
 		if (totalScore < 0 || totalScore > 10) {
 			throw new BadRequestError("Total score must be between 0 and 10");
@@ -66,7 +74,7 @@ class GradeService {
 			gradePoints = grade.points;
 		}
 
-		const newGrade = await createGrade({
+		const newGrade = await this.gradeRepository.createGrade({
 			enrollment,
 			midtermScore,
 			finalScore,
@@ -78,5 +86,3 @@ class GradeService {
 		return newGrade;
 	}
 }
-
-export default GradeService;

@@ -1,14 +1,24 @@
-import { findCourseById } from "../models/repositories/course.repo";
-import { findEnrollmentsByStudent } from "../models/repositories/enrollment.repo";
-import { findGradeByEnrollment } from "../models/repositories/grade.repo";
-import { findStudent, getStudentInfo } from "../models/repositories/student.repo";
+import { injectable, inject } from "inversify";
 import { NotFoundError } from "../responses/error.responses";
 import { getDocumentId } from "../utils";
+import { ITranscriptService } from "../interfaces/services/transcript.service.interface";
+import { ICourseRepository } from "../interfaces/repositories/course.repository.interface";
+import { IEnrollmentRepository } from "../interfaces/repositories/enrollment.repository.interface";
+import { IGradeRepository } from "../interfaces/repositories/grade.repository.interface";
+import { IStudentRepository } from "../interfaces/repositories/student.repository.interface";
+import { TYPES } from "../configs/di.types";
 
+@injectable()
+export class TranscriptService implements ITranscriptService {
+	constructor(
+		@inject(TYPES.CourseRepository) private courseRepository: ICourseRepository,
+		@inject(TYPES.EnrollmentRepository) private enrollmentRepository: IEnrollmentRepository,
+		@inject(TYPES.GradeRepository) private gradeRepository: IGradeRepository,
+		@inject(TYPES.StudentRepository) private studentRepository: IStudentRepository
+	) {}
 
-class TranscriptService {
 	private async getStudentInfo(studentId: string) {
-		const student = await getStudentInfo(studentId);
+		const student = await this.studentRepository.getStudentInfo(studentId);
 		if (!student) {
 			throw new NotFoundError("Student not found");
 		}
@@ -28,17 +38,14 @@ class TranscriptService {
 	}
 
 	private async getStudentGrades(studentId: string) {
-		const student = await findStudent({ studentId });
+		const student = await this.studentRepository.findStudent({ studentId });
 		if (!student) {
 			throw new NotFoundError("Student not found");
 		}
 
-
-		const enrollments = await findEnrollmentsByStudent(getDocumentId(student));
-		console.log(`Found ${enrollments.length} enrollments for student ${studentId}`);
+		const enrollments = await this.enrollmentRepository.findEnrollmentsByStudent(getDocumentId(student));
 		
 		if (!enrollments.length) {
-			console.log("No enrollments found, returning empty array");
 			return [];
 		}
 
@@ -54,7 +61,6 @@ class TranscriptService {
 
 		enrollments.forEach(enrollment => {
 			const courseId = getCourse(enrollment.class);
-			console.log(`Processing enrollment for course ID: ${courseId}`);
 			if (!courseEnrollmentMap.has(courseId) || 
 				new Date(enrollment.enrollmentDate) > new Date(courseEnrollmentMap.get(courseId).enrollmentDate)
 			) {
@@ -65,12 +71,12 @@ class TranscriptService {
 		const latestEnrollments = Array.from(courseEnrollmentMap.values());
 
 		const grades = await Promise.all(latestEnrollments.map(async enrollment => {
-			const courseInfo = await findCourseById(getCourse(enrollment.class));
+			const courseInfo = await this.courseRepository.findCourseById(getCourse(enrollment.class));
 			if (!courseInfo) {
 				return null;
 			}
 
-			const gradeInfo = await findGradeByEnrollment(getDocumentId(enrollment));
+			const gradeInfo = await this.gradeRepository.findGradeByEnrollment(getDocumentId(enrollment));
 
 			if (!gradeInfo) {
 				return null;
@@ -126,5 +132,3 @@ class TranscriptService {
 		};
 	}
 }
-
-export default new TranscriptService();

@@ -79,6 +79,12 @@ describe("Course Service", () => {
     } as jest.Mocked<IClassRepository>;
     
     mockEnrollmentRepository = {
+      findEnrollment: jest.fn(),
+      createEnrollment: jest.fn(),
+      dropEnrollment: jest.fn(),
+      getCompletedCourseIdsByStudent: jest.fn(),
+      findDropHistoryByStudent: jest.fn(),
+      findEnrollmentsByStudent: jest.fn(),
       findEnrollmentsByClass: jest.fn(),
     } as jest.Mocked<IEnrollmentRepository>;
     
