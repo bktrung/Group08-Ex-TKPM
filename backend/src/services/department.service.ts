@@ -1,23 +1,32 @@
+import { injectable, inject } from "inversify";
 import { BadRequestError, NotFoundError } from '../responses/error.responses';
-import { addDepartment, findDepartmentByName, updateDepartment, getDepartments } from '../models/repositories/department.repo';
+import { IDepartmentService } from "../interfaces/services/department.service.interface";
+import { IDepartmentRepository } from "../interfaces/repositories/department.repository.interface";
+import { IDepartment } from "../models/interfaces/department.interface";
+import { TYPES } from "../configs/di.types";
 
-class DepartmentService {
-	static async addDepartment(departmentName: string): Promise<any> {
-		const existingDepartment = await findDepartmentByName(departmentName);
+@injectable()
+export class DepartmentService implements IDepartmentService {
+	constructor(
+		@inject(TYPES.DepartmentRepository) private departmentRepository: IDepartmentRepository
+	) {}
+
+	async addDepartment(departmentName: string): Promise<IDepartment> {
+		const existingDepartment = await this.departmentRepository.findDepartmentByName(departmentName);
 		if (existingDepartment) {
 			throw new BadRequestError('Khoa đã tồn tại');
 		}
 
-		return await addDepartment(departmentName);
+		return await this.departmentRepository.addDepartment(departmentName);
 	}
 
-	static async updateDepartment(departmentId: string, departmentName: string): Promise<any> {
-		const existingDepartment = await findDepartmentByName(departmentName);
+	async updateDepartment(departmentId: string, departmentName: string): Promise<IDepartment> {
+		const existingDepartment = await this.departmentRepository.findDepartmentByName(departmentName);
 		if (existingDepartment) {
 			throw new BadRequestError('Khoa đã tồn tại');
 		}
 
-		const updatedDepartment = await updateDepartment(departmentId, departmentName);
+		const updatedDepartment = await this.departmentRepository.updateDepartment(departmentId, departmentName);
 		if (!updatedDepartment) {
 			throw new NotFoundError('Không tìm thấy khoa');
 		}
@@ -25,9 +34,7 @@ class DepartmentService {
 		return updatedDepartment;
 	}
 
-	static async getDepartments(): Promise<any> {
-		return await getDepartments();
+	async getDepartments(): Promise<IDepartment[]> {
+		return await this.departmentRepository.getDepartments();
 	}
 }
-
-export default DepartmentService;

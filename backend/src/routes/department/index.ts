@@ -1,10 +1,22 @@
 import { Router } from 'express';
-import DepartmentController from '../../controllers/department.controller';
 import { asyncHandler } from "../../helpers/asyncHandler";
+import { container } from '../../configs/di.config';
+import { TYPES } from '../../configs/di.types';
+import { DepartmentController } from '../../controllers/department.controller';
+
 const router = Router();
 
-router.get('', asyncHandler(DepartmentController.getDepartments));
-router.post('', asyncHandler(DepartmentController.addDepartment));
-router.patch('/:id', asyncHandler(DepartmentController.updateDepartment));
+// Lazy resolution of controller
+const getDepartmentController = () => container.get<DepartmentController>(TYPES.DepartmentController);
+
+router.get('', asyncHandler((req, res, next) => 
+	getDepartmentController().getDepartments(req, res, next)
+));
+router.post('', asyncHandler((req, res, next) => 
+	getDepartmentController().addDepartment(req, res, next)
+));
+router.patch('/:id', asyncHandler((req, res, next) => 
+	getDepartmentController().updateDepartment(req, res, next)
+));
 
 export default router;

@@ -64,6 +64,10 @@ describe("Course Service", () => {
     
     mockDepartmentRepository = {
       findDepartmentById: jest.fn(),
+      findDepartmentByName: jest.fn(),
+      addDepartment: jest.fn(),
+      updateDepartment: jest.fn(),
+      getDepartments: jest.fn(),
     } as jest.Mocked<IDepartmentRepository>;
     
     mockClassRepository = {

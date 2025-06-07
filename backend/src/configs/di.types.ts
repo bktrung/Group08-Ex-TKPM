@@ -9,8 +9,10 @@ export const TYPES = {
 	// Services
 	ClassService: Symbol.for("ClassService"),
 	CourseService: Symbol.for("CourseService"),
+	DepartmentService: Symbol.for("DepartmentService"),
 	
 	// Controllers
 	ClassController: Symbol.for("ClassController"),
 	CourseController: Symbol.for("CourseController"),
+	DepartmentController: Symbol.for("DepartmentController"),
 }; 

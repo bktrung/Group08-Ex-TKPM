@@ -14,8 +14,10 @@ export const configureDI = () => {
 	const { EnrollmentRepository } = require("../repositories/enrollment.repository");
 	const { ClassService } = require("../services/class.service");
 	const { CourseService } = require("../services/course.service");
+	const { DepartmentService } = require("../services/department.service");
 	const { ClassController } = require("../controllers/class.controller");
 	const { CourseController } = require("../controllers/course.controller");
+	const { DepartmentController } = require("../controllers/department.controller");
 
 	// Bind repositories
 	container.bind(TYPES.ClassRepository).to(ClassRepository);
@@ -26,10 +28,12 @@ export const configureDI = () => {
 	// Bind services
 	container.bind(TYPES.ClassService).to(ClassService);
 	container.bind(TYPES.CourseService).to(CourseService);
+	container.bind(TYPES.DepartmentService).to(DepartmentService);
 
 	// Bind controllers
 	container.bind(TYPES.ClassController).to(ClassController);
 	container.bind(TYPES.CourseController).to(CourseController);
+	container.bind(TYPES.DepartmentController).to(DepartmentController);
 };
 
 export { container }; 

@@ -1,99 +1,146 @@
-import { BadRequestError, NotFoundError } from  '../../../src/responses/error.responses';
-import DepartmentService from '../../../src/services/department.service';
-import * as departmentRepo from '../../../src/models/repositories/department.repo';
+import mongoose from "mongoose";
+import { Container } from "inversify";
+import { DepartmentService } from "../../../src/services/department.service";
+import { BadRequestError, NotFoundError } from "../../../src/responses/error.responses";
+import { IDepartment } from "../../../src/models/interfaces/department.interface";
+import { IDepartmentRepository } from "../../../src/interfaces/repositories/department.repository.interface";
+import { TYPES } from "../../../src/configs/di.types";
 
-// Mocking các hàm trong repository
-jest.mock('../../../src/models/repositories/department.repo');
+describe("Department Service", () => {
+  let container: Container;
+  let departmentService: DepartmentService;
+  let mockDepartmentRepository: jest.Mocked<IDepartmentRepository>;
 
-describe('DepartmentService', () => {
+  const mockDepartmentId = new mongoose.Types.ObjectId().toString();
   
+  const mockDepartment: Partial<IDepartment> = {
+    _id: new mongoose.Types.ObjectId(),
+    name: "Khoa Công nghệ thông tin"
+  };
+
   beforeEach(() => {
-    jest.clearAllMocks();
+    // Create test container
+    container = new Container();
+    
+    // Create mocked repository
+    mockDepartmentRepository = {
+      findDepartmentById: jest.fn(),
+      findDepartmentByName: jest.fn(),
+      addDepartment: jest.fn(),
+      updateDepartment: jest.fn(),
+      getDepartments: jest.fn(),
+    } as jest.Mocked<IDepartmentRepository>;
+    
+    // Bind mocked repository
+    container.bind<IDepartmentRepository>(TYPES.DepartmentRepository).toConstantValue(mockDepartmentRepository);
+    container.bind<DepartmentService>(TYPES.DepartmentService).to(DepartmentService);
+    
+    // Get service instance
+    departmentService = container.get<DepartmentService>(TYPES.DepartmentService);
   });
 
   describe('addDepartment', () => {
     it('should throw BadRequestError if department already exists', async () => {
       const departmentName = 'Khoa Công nghệ thông tin';
 
-      // Mocking findDepartmentByName để trả về department đã tồn tại
-      (departmentRepo.findDepartmentByName as jest.Mock).mockResolvedValue({});
+      // Mock findDepartmentByName to return existing department
+      mockDepartmentRepository.findDepartmentByName.mockResolvedValue(mockDepartment as IDepartment);
 
-      await expect(DepartmentService.addDepartment(departmentName)).rejects.toThrowError(
-        new BadRequestError('Khoa đã tồn tại')
-      );
+      await expect(departmentService.addDepartment(departmentName))
+        .rejects
+        .toThrow(BadRequestError);
+      
+      expect(mockDepartmentRepository.findDepartmentByName).toHaveBeenCalledWith(departmentName);
+      expect(mockDepartmentRepository.addDepartment).not.toHaveBeenCalled();
     });
 
     it('should add department successfully if it does not exist', async () => {
       const departmentName = 'Khoa Công nghệ thông tin';
 
-      // Mocking findDepartmentByName để trả về null (không có department)
-      (departmentRepo.findDepartmentByName as jest.Mock).mockResolvedValue(null);
+      // Mock findDepartmentByName to return null (no existing department)
+      mockDepartmentRepository.findDepartmentByName.mockResolvedValue(null);
+      mockDepartmentRepository.addDepartment.mockResolvedValue(mockDepartment as IDepartment);
 
-      // Mocking addDepartment để trả về một department mới được thêm
-      const newDepartment = { id: '1', name: departmentName };
-      (departmentRepo.addDepartment as jest.Mock).mockResolvedValue(newDepartment);
-
-      const result = await DepartmentService.addDepartment(departmentName);
-      expect(result).toEqual(newDepartment);
+      const result = await departmentService.addDepartment(departmentName);
+      
+      expect(mockDepartmentRepository.findDepartmentByName).toHaveBeenCalledWith(departmentName);
+      expect(mockDepartmentRepository.addDepartment).toHaveBeenCalledWith(departmentName);
+      expect(result).toEqual(mockDepartment);
     });
   });
 
   describe('updateDepartment', () => {
-    it('should throw BadRequestError if department already exists', async () => {
-      const departmentId = '1';
+    it('should throw BadRequestError if department name already exists', async () => {
+      const departmentId = mockDepartmentId;
       const departmentName = 'Khoa Công nghệ thông tin';
 
-      // Mocking findDepartmentByName để trả về department đã tồn tại
-      (departmentRepo.findDepartmentByName as jest.Mock).mockResolvedValue({});
+      // Mock findDepartmentByName to return existing department with same name
+      mockDepartmentRepository.findDepartmentByName.mockResolvedValue(mockDepartment as IDepartment);
 
-      await expect(DepartmentService.updateDepartment(departmentId, departmentName)).rejects.toThrowError(
-        new BadRequestError('Khoa đã tồn tại')
-      );
+      await expect(departmentService.updateDepartment(departmentId, departmentName))
+        .rejects
+        .toThrow(BadRequestError);
+      
+      expect(mockDepartmentRepository.findDepartmentByName).toHaveBeenCalledWith(departmentName);
+      expect(mockDepartmentRepository.updateDepartment).not.toHaveBeenCalled();
     });
 
     it('should throw NotFoundError if department does not exist for update', async () => {
-      const departmentId = '1';
+      const departmentId = mockDepartmentId;
       const departmentName = 'Khoa Công nghệ thông tin';
 
-      // Mocking findDepartmentByName để trả về null (không có department)
-      (departmentRepo.findDepartmentByName as jest.Mock).mockResolvedValue(null);
+      // Mock findDepartmentByName to return null (no existing department with same name)
+      mockDepartmentRepository.findDepartmentByName.mockResolvedValue(null);
+      // Mock updateDepartment to return null (department not found)
+      mockDepartmentRepository.updateDepartment.mockResolvedValue(null);
 
-      // Mocking updateDepartment để trả về null (không cập nhật được)
-      (departmentRepo.updateDepartment as jest.Mock).mockResolvedValue(null);
-
-      await expect(DepartmentService.updateDepartment(departmentId, departmentName)).rejects.toThrowError(
-        new NotFoundError('Không tìm thấy khoa')
-      );
+      await expect(departmentService.updateDepartment(departmentId, departmentName))
+        .rejects
+        .toThrow(NotFoundError);
+      
+      expect(mockDepartmentRepository.findDepartmentByName).toHaveBeenCalledWith(departmentName);
+      expect(mockDepartmentRepository.updateDepartment).toHaveBeenCalledWith(departmentId, departmentName);
     });
 
     it('should update department successfully', async () => {
-      const departmentId = '1';
-      const departmentName = 'Khoa Công nghệ thông tin';
+      const departmentId = mockDepartmentId;
+      const departmentName = 'Khoa Kỹ thuật phần mềm';
+      const updatedDepartment = { ...mockDepartment, name: departmentName };
 
-      // Mocking findDepartmentByName để trả về null (không có department)
-      (departmentRepo.findDepartmentByName as jest.Mock).mockResolvedValue(null);
+      // Mock findDepartmentByName to return null (no existing department with same name)
+      mockDepartmentRepository.findDepartmentByName.mockResolvedValue(null);
+      mockDepartmentRepository.updateDepartment.mockResolvedValue(updatedDepartment as IDepartment);
 
-      // Mocking updateDepartment để trả về department đã được cập nhật
-      const updatedDepartment = { id: departmentId, name: departmentName };
-      (departmentRepo.updateDepartment as jest.Mock).mockResolvedValue(updatedDepartment);
-
-      const result = await DepartmentService.updateDepartment(departmentId, departmentName);
+      const result = await departmentService.updateDepartment(departmentId, departmentName);
+      
+      expect(mockDepartmentRepository.findDepartmentByName).toHaveBeenCalledWith(departmentName);
+      expect(mockDepartmentRepository.updateDepartment).toHaveBeenCalledWith(departmentId, departmentName);
       expect(result).toEqual(updatedDepartment);
     });
   });
 
   describe('getDepartments', () => {
     it('should return list of departments', async () => {
-      // Mocking getDepartments để trả về danh sách departments
       const departments = [
-        { id: '1', name: 'Khoa Công nghệ thông tin' },
-        { id: '2', name: 'Khoa Kinh tế' }
+        { ...mockDepartment, name: 'Khoa Công nghệ thông tin' },
+        { ...mockDepartment, name: 'Khoa Kinh tế', _id: new mongoose.Types.ObjectId() }
       ];
-      (departmentRepo.getDepartments as jest.Mock).mockResolvedValue(departments);
+      
+      mockDepartmentRepository.getDepartments.mockResolvedValue(departments as IDepartment[]);
 
-      const result = await DepartmentService.getDepartments();
+      const result = await departmentService.getDepartments();
+      
+      expect(mockDepartmentRepository.getDepartments).toHaveBeenCalled();
       expect(result).toEqual(departments);
     });
-  });
 
+    it('should return empty array when no departments exist', async () => {
+      mockDepartmentRepository.getDepartments.mockResolvedValue([]);
+
+      const result = await departmentService.getDepartments();
+      
+      expect(mockDepartmentRepository.getDepartments).toHaveBeenCalled();
+      expect(result).toEqual([]);
+    });
+  });
 });
