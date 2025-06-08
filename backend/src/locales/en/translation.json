@@ -1,1 +1,3 @@
-{} 
+{
+  "email.string.emailDomain": "Email must belong to one of the accepted domains: {{domains}}"
+} 

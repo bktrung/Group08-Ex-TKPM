@@ -84,5 +84,16 @@
   "Province/city cannot be empty": "Tỉnh/Thành phố không được để trống",
   "Province/city is required": "Tỉnh/Thành phố là trường bắt buộc",
   "Country cannot be empty": "Quốc gia không được để trống",
-  "Country is required": "Quốc gia là trường bắt buộc"
+  "Country is required": "Quốc gia là trường bắt buộc",
+  "email.string.emailDomain": "Email phải thuộc một trong những miền được chấp nhận: {{domains}}",
+  "Student ID is required": "Mã số sinh viên là bắt buộc",
+  "Full name is required": "Họ và tên là bắt buộc",
+  "Date of birth is required": "Ngày sinh là bắt buộc",
+  "Gender is required": "Giới tính là bắt buộc",
+  "School year is required": "Khóa học là bắt buộc",
+  "Email is required": "Email là bắt buộc",
+  "Phone number is required": "Số điện thoại là bắt buộc",
+  "Mailing address is required": "Địa chỉ nhận thư là bắt buộc",
+  "Identity document is required": "Giấy tờ tùy thân là bắt buộc",
+  "Nationality is required": "Quốc tịch là bắt buộc"
 } 
