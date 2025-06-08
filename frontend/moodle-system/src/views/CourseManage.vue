@@ -2,11 +2,6 @@
   <div class="container-fluid px-5 mt-5">
     <h2 class="mb-4 text-center"> {{ $t('course.management') }}</h2>
 
-    <div v-if="error" class="alert alert-danger alert-dismissible fade show" role="alert">
-      {{ error }}
-      <button type="button" class="btn-close" @click="error = ''" aria-label="Close"></button>
-    </div>
-
     <div v-if="success" class="alert alert-success alert-dismissible fade show" role="alert">
       {{ success }}
       <button type="button" class="btn-close" @click="success = ''" aria-label="Close"></button>
@@ -23,6 +18,15 @@
 
     <CourseList v-if="!showForm" @add-course="showAddForm" @edit-course="showEditForm" @delete-course="deleteCourse"
       @toggle-active-status="toggleCourseActiveStatus" />
+
+    <!-- Error Modal -->
+    <ErrorModal 
+      :showModal="showErrorModal" 
+      :title="$t('common.error')" 
+      :message="errorMessage"
+      :isTranslated="isErrorTranslated"
+      @update:showModal="showErrorModal = $event" 
+    />
   </div>
 </template>
 
@@ -32,12 +36,15 @@ import { useStore } from 'vuex'
 import CourseForm from '@/components/course/CourseForm.vue'
 import CourseList from '@/components/course/CourseList.vue'
 import { useI18n } from 'vue-i18n'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+import ErrorModal from '@/components/layout/ErrorModal.vue'
 
 export default {
   name: 'CourseManage',
   components: {
     CourseForm,
-    CourseList
+    CourseList,
+    ErrorModal
   },
   setup() {
     const { t } = useI18n()
@@ -45,8 +52,9 @@ export default {
     const showForm = ref(false)
     const isEditing = ref(false)
     const selectedCourse = ref({})
-    const error = ref('')
     const success = ref('')
+
+    const { errorMessage, isErrorTranslated, showErrorModal, handleError } = useErrorHandler()
 
     const showAddForm = () => {
       selectedCourse.value = {}
@@ -67,9 +75,7 @@ export default {
 
     const saveCourse = async (courseData) => {
       try {
-       
         if (isEditing.value) {
-       
           const updateData = {};
 
           if (courseData.name !== selectedCourse.value.name) {
@@ -109,53 +115,34 @@ export default {
         setTimeout(() => {
           success.value = '';
         }, 5000);
-      } catch (err) {
-     
-        let errorMessage = '';
-        if (err.response && err.response.data) {
-          if (err.response.data.message) {
-            errorMessage = err.response.data.message;
-          } else if (err.response.data.errors) {
-            errorMessage = Object.values(err.response.data.errors).join(', ');
-          }
-        }
-
-        error.value = errorMessage || err.message || t('course.save_error.fallback');
+      } catch (error) {
+        handleError(error, 'course.save_error')
       }
     }
 
     const deleteCourse = async (course) => {
       try {
-        
         const result = await store.dispatch('course/deleteCourse', course.courseCode);
 
         if (result.success) {
           success.value = result.message || t('course.delete_success');
-
           await store.dispatch('course/fetchCourses');
         }
 
         setTimeout(() => {
           success.value = '';
         }, 5000);
-      } catch (err) {
-        
-        let errorMessage = '';
-        if (err.response && err.response.data && err.response.data.message) {
-          errorMessage = err.response.data.message;
-        }
-
-        error.value = errorMessage || err.message || t('course.delete_error.fallback');
+      } catch (error) {
+        handleError(error, 'course.delete_error')
       }
     }
 
     const toggleCourseActiveStatus = async (course) => {
       try {
-       
         const newStatus = !course.isActive;
 
         if (newStatus === true) {
-          error.value = t('course.reopen_not_supported');
+          handleError({ message: t('course.reopen_not_supported') }, 'course.reopen_not_supported');
           return;
         }
 
@@ -172,16 +159,8 @@ export default {
         setTimeout(() => {
           success.value = '';
         }, 5000);
-      } catch (err) {
-        console.error('Error toggling course status:', err);
-
-        let errorMessage = '';
-        if (err.response && err.response.data && err.response.data.message) {
-          errorMessage = err.response.data.message;
-        }
-
-        const action = course.isActive ? t('common.close') : t('common.reopen')
-        error.value = errorMessage || err.message || t('course.toggle_error', { action })
+      } catch (error) {
+        handleError(error, 'course.toggle_error')
       }
     }
 
@@ -201,10 +180,8 @@ export default {
             console.log('Retry result - courses in store:', store.state.course.courses);
           }, 1000);
         }
-      } catch (err) {
-        console.error('Error loading initial data:', err);
-        const msg = err.message || t('error.load_failed')
-        error.value = `${t('error.prefix')}: ${msg}`
+      } catch (error) {
+        handleError(error, 'course.load_error')
       }
     })
 
@@ -212,8 +189,10 @@ export default {
       showForm,
       isEditing,
       selectedCourse,
-      error,
       success,
+      errorMessage,
+      isErrorTranslated,
+      showErrorModal,
       showAddForm,
       showEditForm,
       cancelForm,

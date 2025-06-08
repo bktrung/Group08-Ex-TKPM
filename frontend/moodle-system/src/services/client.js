@@ -16,6 +16,10 @@ apiClient.interceptors.request.use(
     } else {
       config.params = { lang }
     }
+
+    console.log('🌐 API Request:', config.method?.toUpperCase(), config.url)
+    console.log('📋 Parameters:', config.params)
+    console.log('🔤 Language from localStorage:', localStorage.getItem('language'))
     
     return config
   },
