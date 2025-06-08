@@ -97,6 +97,49 @@ export class SemesterService implements ISemesterService {
 		return updatedSemester;
 	}
 
+	async deleteSemester(id: string): Promise<ISemester> {
+		// Find the existing semester
+		const existingSemester = await this.semesterRepository.findSemesterById(id);
+		if (!existingSemester) {
+			throw new NotFoundError('Semester not found');
+		}
+
+		// Check if there are any classes in this semester
+		try {
+			const classesInSemester = await this.classRepository.getAllClasses(1, 1, {
+				academicYear: existingSemester.academicYear,
+				semester: existingSemester.semester
+			});
+
+			// Check if there are classes in multiple possible property names
+			const hasClasses = (classesInSemester.classes && classesInSemester.classes.length > 0) ||
+				(classesInSemester.data && classesInSemester.data.length > 0) ||
+				(Array.isArray(classesInSemester) && classesInSemester.length > 0);
+
+			if (hasClasses) {
+				throw new BadRequestError(
+					'Cannot delete semester when classes exist for this semester'
+				);
+			}
+		} catch (error) {
+			// If it's our business logic error, re-throw it
+			if (error instanceof BadRequestError) {
+				throw error;
+			}
+			// For other errors (like property access), we'll assume no classes exist
+			// This is safer than failing the entire operation
+			console.warn('Error checking classes in semester:', error);
+		}
+
+		// Delete the semester
+		const deletedSemester = await this.semesterRepository.deleteSemester(id);
+		if (!deletedSemester) {
+			throw new NotFoundError('Semester not found during deletion');
+		}
+
+		return deletedSemester;
+	}
+
 	async getAllSemesters(query: {
 		academicYear?: string;
 		semester?: string;

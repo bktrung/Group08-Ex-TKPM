@@ -56,4 +56,14 @@ export class SemesterController {
 			metadata: { semester: semesterData },
 		}).send(res);
 	}
+
+	deleteSemester = async (req: Request, res: Response, next: NextFunction) => {
+		const { id } = req.params;
+		const deletedSemester = await this.semesterService.deleteSemester(id);
+
+		return new OK({
+			message: 'Semester deleted successfully',
+			metadata: { deletedSemester }
+		}).send(res);
+	}
 }

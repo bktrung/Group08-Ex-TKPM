@@ -106,6 +106,7 @@ describe('EnrollmentService - DI Implementation', () => {
             findSemester: jest.fn(),
             findSemesterById: jest.fn(),
             updateSemester: jest.fn(),
+            deleteSemester: jest.fn(),
             getAllSemesters: jest.fn(),
         } as jest.Mocked<ISemesterRepository>;
         

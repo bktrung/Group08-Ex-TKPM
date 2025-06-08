@@ -27,4 +27,8 @@ router.patch('/:id', updateSemesterValidator, asyncHandler((req, res, next) =>
 	getSemesterController().updateSemester(req, res, next)
 ));
 
+router.delete('/:id', asyncHandler((req, res, next) => 
+	getSemesterController().deleteSemester(req, res, next)
+));
+
 export default router;

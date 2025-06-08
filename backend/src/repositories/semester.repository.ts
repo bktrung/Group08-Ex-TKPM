@@ -27,6 +27,10 @@ export class SemesterRepository implements ISemesterRepository {
 		).lean();
 	}
 
+	async deleteSemester(id: string): Promise<ISemester | null> {
+		return await Semester.findByIdAndDelete(id).lean();
+	}
+
 	async getAllSemesters(
 		page: number = 1,
 		limit: number = 10,

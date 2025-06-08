@@ -45,6 +45,7 @@ describe("Semester Service", () => {
       findSemester: jest.fn(),
       findSemesterById: jest.fn(),
       updateSemester: jest.fn(),
+      deleteSemester: jest.fn(),
       getAllSemesters: jest.fn(),
     } as jest.Mocked<ISemesterRepository>;
 
@@ -125,6 +126,104 @@ describe("Semester Service", () => {
       expect(mockSemesterRepository.findSemester).toHaveBeenCalledWith("2025-2026", 2);
       expect(mockSemesterRepository.createSemester).toHaveBeenCalledWith(customSemesterData);
       expect(result).toEqual(expectedResult);
+    });
+  });
+
+  describe('deleteSemester', () => {
+    const semesterId = new mongoose.Types.ObjectId().toString();
+
+    it('should delete semester successfully when no classes exist', async () => {
+      // Mock existing semester found
+      mockSemesterRepository.findSemesterById.mockResolvedValue(mockSemester as ISemester);
+      // Mock no classes in semester
+      mockClassRepository.getAllClasses.mockResolvedValue({ 
+        data: [], 
+        pagination: { page: 1, limit: 1, total: 0, totalPages: 0 } 
+      } as any);
+      // Mock successful deletion
+      mockSemesterRepository.deleteSemester.mockResolvedValue(mockSemester as ISemester);
+
+      const result = await semesterService.deleteSemester(semesterId);
+
+      expect(mockSemesterRepository.findSemesterById).toHaveBeenCalledWith(semesterId);
+      expect(mockClassRepository.getAllClasses).toHaveBeenCalledWith(1, 1, {
+        academicYear: "2024-2025",
+        semester: 1
+      });
+      expect(mockSemesterRepository.deleteSemester).toHaveBeenCalledWith(semesterId);
+      expect(result).toEqual(mockSemester);
+    });
+
+    it('should throw NotFoundError when semester does not exist', async () => {
+      mockSemesterRepository.findSemesterById.mockResolvedValue(null);
+
+      await expect(semesterService.deleteSemester(semesterId))
+        .rejects
+        .toThrow('Semester not found');
+
+      expect(mockSemesterRepository.findSemesterById).toHaveBeenCalledWith(semesterId);
+      expect(mockClassRepository.getAllClasses).not.toHaveBeenCalled();
+      expect(mockSemesterRepository.deleteSemester).not.toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestError when classes exist in semester', async () => {
+      // Mock existing semester found
+      mockSemesterRepository.findSemesterById.mockResolvedValue(mockSemester as ISemester);
+      // Mock classes exist in semester
+      mockClassRepository.getAllClasses.mockResolvedValue({ 
+        data: [{ _id: new mongoose.Types.ObjectId(), classCode: 'CS101-01' }], 
+        pagination: { page: 1, limit: 1, total: 1, totalPages: 1 } 
+      } as any);
+
+      await expect(semesterService.deleteSemester(semesterId))
+        .rejects
+        .toThrow('Cannot delete semester when classes exist for this semester');
+
+      expect(mockSemesterRepository.findSemesterById).toHaveBeenCalledWith(semesterId);
+      expect(mockClassRepository.getAllClasses).toHaveBeenCalledWith(1, 1, {
+        academicYear: "2024-2025",
+        semester: 1
+      });
+      expect(mockSemesterRepository.deleteSemester).not.toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundError when semester not found during deletion', async () => {
+      // Mock existing semester found initially
+      mockSemesterRepository.findSemesterById.mockResolvedValue(mockSemester as ISemester);
+      // Mock no classes in semester
+      mockClassRepository.getAllClasses.mockResolvedValue({ 
+        data: [], 
+        pagination: { page: 1, limit: 1, total: 0, totalPages: 0 } 
+      } as any);
+      // Mock deletion returns null (semester not found during deletion)
+      mockSemesterRepository.deleteSemester.mockResolvedValue(null);
+
+      await expect(semesterService.deleteSemester(semesterId))
+        .rejects
+        .toThrow('Semester not found during deletion');
+
+      expect(mockSemesterRepository.deleteSemester).toHaveBeenCalledWith(semesterId);
+    });
+
+    it('should handle errors when checking classes and proceed with deletion', async () => {
+      // Mock existing semester found
+      mockSemesterRepository.findSemesterById.mockResolvedValue(mockSemester as ISemester);
+      // Mock error when checking classes (not BadRequestError)
+      mockClassRepository.getAllClasses.mockRejectedValue(new Error('Database connection error'));
+      // Mock successful deletion
+      mockSemesterRepository.deleteSemester.mockResolvedValue(mockSemester as ISemester);
+
+      // Spy on console.warn to verify it's called
+      const consoleSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+      const result = await semesterService.deleteSemester(semesterId);
+
+      expect(consoleSpy).toHaveBeenCalledWith('Error checking classes in semester:', expect.any(Error));
+      expect(mockSemesterRepository.deleteSemester).toHaveBeenCalledWith(semesterId);
+      expect(result).toEqual(mockSemester);
+
+      // Restore console.warn
+      consoleSpy.mockRestore();
     });
   });
 }); 

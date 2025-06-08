@@ -5,6 +5,7 @@ import { PaginationResult } from "../../utils";
 export interface ISemesterService {
 	createSemester(semesterData: CreateSemesterDto): Promise<ISemester>;
 	updateSemester(id: string, updateData: UpdateSemesterDto): Promise<ISemester>;
+	deleteSemester(id: string): Promise<ISemester>;
 	getAllSemesters(query: {
 		academicYear?: string;
 		semester?: string;
