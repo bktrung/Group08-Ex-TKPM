@@ -95,5 +95,28 @@
   "Phone number is required": "Số điện thoại là bắt buộc",
   "Mailing address is required": "Địa chỉ nhận thư là bắt buộc",
   "Identity document is required": "Giấy tờ tùy thân là bắt buộc",
-  "Nationality is required": "Quốc tịch là bắt buộc"
+  "Nationality is required": "Quốc tịch là bắt buộc",
+
+  "API endpoint not found": "Không tìm thấy endpoint API",
+  "Registration end date must be after registration start date": "Ngày kết thúc đăng ký phải sau ngày bắt đầu đăng ký",
+  "Cannot read properties of undefined (reading 'length')": "Không thể đọc thuộc tính của undefined (đọc 'length')",
+  "Semester not found": "Không tìm thấy học kỳ",
+  "Drop deadline cannot be after semester end date": "Hạn chót rút học phần không thể sau ngày kết thúc học kỳ",
+  "Cannot change academic year or semester number when classes exist for this semester": "Không thể thay đổi năm học hoặc số học kỳ khi có lớp học trong học kỳ này",
+  "A semester with this academic year and semester number already exists": "Học kỳ với năm học và số học kỳ này đã tồn tại",
+  "Semester not found during update": "Không tìm thấy học kỳ trong quá trình cập nhật",
+  "Registration start date must be before registration end date": "Ngày bắt đầu đăng ký phải trước ngày kết thúc đăng ký",
+  "Drop deadline must be after registration end date": "Hạn chót rút học phần phải sau ngày kết thúc đăng ký",
+  "Semester end date must be after semester start date": "Ngày kết thúc học kỳ phải sau ngày bắt đầu học kỳ",
+
+  "Academic year cannot be empty": "Năm học không được để trống",
+  "Academic year must be in format YYYY-YYYY (e.g: 2024-2025)": "Năm học phải có định dạng YYYY-YYYY (vd: 2024-2025)",
+  "Academic year second year must be consecutive to first year (e.g: 2024-2025)": "Năm thứ hai phải là năm kế tiếp của năm thứ nhất (ví dụ: 2024-2025)",
+  "Semester must be a number": "Học kỳ phải là một số",
+  "Semester must be 1, 2, or 3": "Học kỳ phải là 1, 2, hoặc 3",
+  "Registration start date must be a valid date": "Ngày bắt đầu đăng ký phải là một ngày hợp lệ",
+  "Registration end date must be a valid date": "Ngày kết thúc đăng ký phải là một ngày hợp lệ",
+  "Drop deadline must be a valid date": "Hạn chót rút học phần phải là một ngày hợp lệ",
+  "Semester start date must be a valid date": "Ngày bắt đầu học kỳ phải là một ngày hợp lệ",
+  "Semester end date must be a valid date": "Ngày kết thúc học kỳ phải là một ngày hợp lệ"
 } 

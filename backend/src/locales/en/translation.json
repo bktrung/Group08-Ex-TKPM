@@ -1,3 +1,17 @@
 {
-  "email.string.emailDomain": "Email must belong to one of the accepted domains: {{domains}}"
+  "email.string.emailDomain": "Email must belong to one of the accepted domains: {{domains}}",
+
+  "Academic year cannot be empty": "Academic year cannot be empty",
+  "Academic year must be in format YYYY-YYYY (e.g: 2024-2025)": "Academic year must be in format YYYY-YYYY (e.g: 2024-2025)",
+  "Academic year second year must be consecutive to first year (e.g: 2024-2025)": "Academic year second year must be consecutive to first year (e.g: 2024-2025)",
+  "Semester must be a number": "Semester must be a number",
+  "Semester must be 1, 2, or 3": "Semester must be 1, 2, or 3",
+  "Registration start date must be a valid date": "Registration start date must be a valid date",
+  "Registration end date must be a valid date": "Registration end date must be a valid date",
+  "Registration end date must be after registration start date": "Registration end date must be after registration start date",
+  "Drop deadline must be a valid date": "Drop deadline must be a valid date",
+  "Drop deadline must be after registration end date": "Drop deadline must be after registration end date",
+  "Semester start date must be a valid date": "Semester start date must be a valid date",
+  "Semester end date must be a valid date": "Semester end date must be a valid date",
+  "Semester end date must be after semester start date": "Semester end date must be after semester start date"
 } 

@@ -18,4 +18,14 @@ export class SemesterController {
 			metadata: { newSemester }
 		}).send(res);
 	}
+
+	updateSemester = async (req: Request, res: Response, next: NextFunction) => {
+		const { id } = req.params;
+		const updateData = req.body;
+		const updatedSemester = await this.semesterService.updateSemester(id, updateData);
+		return new OK({
+			message: 'Semester updated successfully',
+			metadata: { updatedSemester }
+		}).send(res);
+	}
 }
