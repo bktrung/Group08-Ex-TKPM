@@ -78,7 +78,11 @@ describe('TranscriptService - DI Implementation', () => {
 
         mockGradeRepository = {
             findGradeByEnrollment: jest.fn(),
+            findGradeById: jest.fn(),
+            getGradesByClass: jest.fn(),
             createGrade: jest.fn(),
+            updateGrade: jest.fn(),
+            deleteGrade: jest.fn(),
         } as jest.Mocked<IGradeRepository>;
 
         mockStudentRepository = {

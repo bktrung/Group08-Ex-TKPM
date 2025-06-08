@@ -1,5 +1,5 @@
 import { injectable, inject } from "inversify";
-import { createGradeDto } from "../dto/grade";
+import { createGradeDto, updateGradeDto } from "../dto/grade";
 import { getDocumentId } from "../utils";
 import { BadRequestError, NotFoundError } from "../responses/error.responses";
 import { IGradeService } from "../interfaces/services/grade.service.interface";
@@ -52,6 +52,109 @@ export class GradeService implements IGradeService {
 			throw new BadRequestError("Total score must be between 0 and 10");
 		}
 
+		const { letterGrade, gradePoints } = this.calculateGrade(totalScore);
+
+		const newGrade = await this.gradeRepository.createGrade({
+			enrollment,
+			midtermScore,
+			finalScore,
+			totalScore,
+			letterGrade,
+			gradePoints
+		})
+
+		return newGrade;
+	}
+
+	async getGradesByClass(classCode: string) {
+		const existingClass = await this.classRepository.findClassByCode(classCode);
+		if (!existingClass) {
+			throw new NotFoundError("Class not found");
+		}
+
+		const grades = await this.gradeRepository.getGradesByClass(getDocumentId(existingClass));
+		return grades;
+	}
+
+	async getGradeByStudentAndClass(studentId: string, classCode: string) {
+		const existingStudent = await this.studentRepository.findStudent({ studentId });
+		if (!existingStudent) {
+			throw new NotFoundError("Student not found");
+		}
+
+		const existingClass = await this.classRepository.findClassByCode(classCode);
+		if (!existingClass) {
+			throw new NotFoundError("Class not found");
+		}
+
+		const existingEnrollment = await this.enrollmentRepository.findEnrollment(
+			getDocumentId(existingStudent), 
+			getDocumentId(existingClass)
+		);
+		if (!existingEnrollment) {
+			throw new BadRequestError("Student is not enrolled in this class");
+		}
+
+		const grade = await this.gradeRepository.findGradeByEnrollment(getDocumentId(existingEnrollment));
+		if (!grade) {
+			throw new NotFoundError("Grade not found for this student in this class");
+		}
+
+		return grade;
+	}
+
+	async updateGrade(id: string, updateData: updateGradeDto) {
+		const existingGrade = await this.gradeRepository.findGradeById(id);
+		if (!existingGrade) {
+			throw new NotFoundError("Grade not found");
+		}
+
+		// Validate score ranges if provided
+		if (updateData.midtermScore !== undefined && (updateData.midtermScore < 0 || updateData.midtermScore > 10)) {
+			throw new BadRequestError("Midterm score must be between 0 and 10");
+		}
+		if (updateData.finalScore !== undefined && (updateData.finalScore < 0 || updateData.finalScore > 10)) {
+			throw new BadRequestError("Final score must be between 0 and 10");
+		}
+		if (updateData.totalScore !== undefined && (updateData.totalScore < 0 || updateData.totalScore > 10)) {
+			throw new BadRequestError("Total score must be between 0 and 10");
+		}
+
+		// Prepare update data with recalculated letter grade and points if totalScore is updated
+		let finalUpdateData = { ...updateData };
+		
+		if (updateData.totalScore !== undefined) {
+			const { letterGrade, gradePoints } = this.calculateGrade(updateData.totalScore);
+			finalUpdateData = {
+				...finalUpdateData,
+				letterGrade,
+				gradePoints
+			};
+		}
+
+		const updatedGrade = await this.gradeRepository.updateGrade(id, finalUpdateData);
+		if (!updatedGrade) {
+			throw new NotFoundError("Grade not found during update");
+		}
+
+		return updatedGrade;
+	}
+
+	async deleteGrade(id: string) {
+		const existingGrade = await this.gradeRepository.findGradeById(id);
+		if (!existingGrade) {
+			throw new NotFoundError("Grade not found");
+		}
+
+		const deletedGrade = await this.gradeRepository.deleteGrade(id);
+		if (!deletedGrade) {
+			throw new NotFoundError("Grade not found during deletion");
+		}
+
+		return deletedGrade;
+	}
+
+	private calculateGrade(totalScore: number): { letterGrade: string; gradePoints: number } {
 		const gradeScale = [
 			{ threshold: 9, letter: "A", points: 4.0 },
 			{ threshold: 8, letter: "B+", points: 3.5 },
@@ -66,23 +169,9 @@ export class GradeService implements IGradeService {
 		// Find the appropriate grade based on score
 		const grade = gradeScale.find(g => totalScore >= g.threshold);
 
-		let letterGrade, gradePoints;
-
-		// Apply the grade to gradeData
-		if (grade) {
-			letterGrade = grade.letter;
-			gradePoints = grade.points;
-		}
-
-		const newGrade = await this.gradeRepository.createGrade({
-			enrollment,
-			midtermScore,
-			finalScore,
-			totalScore,
-			letterGrade,
-			gradePoints
-		})
-
-		return newGrade;
+		return {
+			letterGrade: grade?.letter || "F",
+			gradePoints: grade?.points || 0.0
+		};
 	}
 }

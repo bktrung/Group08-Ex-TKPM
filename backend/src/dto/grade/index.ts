@@ -5,3 +5,11 @@ export interface createGradeDto {
 	finalScore?: number;
 	totalScore: number;
 }
+
+export interface updateGradeDto {
+	midtermScore?: number;
+	finalScore?: number;
+	totalScore?: number;
+	letterGrade?: string;
+	gradePoints?: number;
+}
