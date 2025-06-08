@@ -3,6 +3,7 @@ import { ISemesterRepository } from "../interfaces/repositories/semester.reposit
 import Semester from "../models/semester.model";
 import { ISemester } from "../models/interfaces/semester.interface";
 import { CreateSemesterDto, UpdateSemesterDto } from "../dto/semester";
+import { getAllDocuments, PaginationResult } from "../utils";
 
 @injectable()
 export class SemesterRepository implements ISemesterRepository {
@@ -25,4 +26,18 @@ export class SemesterRepository implements ISemesterRepository {
 			{ new: true, runValidators: true }
 		).lean();
 	}
-} 
+
+	async getAllSemesters(
+		page: number = 1,
+		limit: number = 10,
+		filter: Record<string, any> = {}
+	): Promise<PaginationResult<ISemester>> {
+		return await getAllDocuments(Semester, {
+			filter,
+			page,
+			limit,
+			sort: "ctime",
+			select: { createdAt: 0, updatedAt: 0, __v: 0 }
+		});
+	}
+}

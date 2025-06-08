@@ -6,6 +6,7 @@ import { ISemesterRepository } from "../interfaces/repositories/semester.reposit
 import { IClassRepository } from "../interfaces/repositories/class.repository.interface";
 import { TYPES } from "../configs/di.types";
 import { BadRequestError, NotFoundError } from "../responses/error.responses";
+import { PaginationResult } from "../utils";
 
 @injectable()
 export class SemesterService implements ISemesterService {
@@ -15,6 +16,19 @@ export class SemesterService implements ISemesterService {
 	) {}
 
 	async createSemester(semesterData: CreateSemesterDto): Promise<ISemester> {
+		// Check if semester already exists
+		const existingSemester = await this.semesterRepository.findSemester(
+			semesterData.academicYear,
+			semesterData.semester
+		);
+
+		if (existingSemester) {
+			throw new BadRequestError('A semester with this academic year and semester number already exists');
+		}
+
+		// Validate date logic
+		this.validateDateLogic(semesterData);
+
 		return await this.semesterRepository.createSemester(semesterData);
 	}
 
@@ -81,6 +95,52 @@ export class SemesterService implements ISemesterService {
 		}
 
 		return updatedSemester;
+	}
+
+	async getAllSemesters(query: {
+		academicYear?: string;
+		semester?: string;
+		page?: string;
+		limit?: string;
+	}): Promise<PaginationResult<ISemester>> {
+		// Parse pagination parameters
+		const page = query.page ? parseInt(query.page) : 1;
+		const limit = query.limit ? parseInt(query.limit) : 10;
+
+		// Build filter object based on query parameters
+		const filter: Record<string, any> = {};
+
+		// Add academic year filter if provided
+		if (query.academicYear) {
+			filter.academicYear = query.academicYear;
+		}
+
+		// Add semester filter if provided
+		if (query.semester) {
+			const semester = parseInt(query.semester);
+			// Validate semester format
+			if (isNaN(semester) || ![1, 2, 3].includes(semester)) {
+				throw new BadRequestError('Invalid semester value. Must be 1, 2, or 3.');
+			}
+			filter.semester = semester;
+		}
+
+		// Query semesters with pagination and filters
+		return await this.semesterRepository.getAllSemesters(page, limit, filter);
+	}
+
+	async getSemesterByDetails(academicYear: string, semester: number): Promise<ISemester> {
+		// Validate semester number
+		if (![1, 2, 3].includes(semester)) {
+			throw new BadRequestError('Invalid semester value. Must be 1, 2, or 3.');
+		}
+
+		const foundSemester = await this.semesterRepository.findSemester(academicYear, semester);
+		if (!foundSemester) {
+			throw new NotFoundError('Semester not found');
+		}
+
+		return foundSemester;
 	}
 
 	private validateDateLogic(semesterData: any): void {

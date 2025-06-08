@@ -104,6 +104,9 @@ describe('EnrollmentService - DI Implementation', () => {
         mockSemesterRepository = {
             createSemester: jest.fn(),
             findSemester: jest.fn(),
+            findSemesterById: jest.fn(),
+            updateSemester: jest.fn(),
+            getAllSemesters: jest.fn(),
         } as jest.Mocked<ISemesterRepository>;
         
         // Bind mocked repositories

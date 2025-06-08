@@ -15,6 +15,14 @@ router.post('', createSemesterValidator, asyncHandler((req, res, next) =>
 	getSemesterController().createSemester(req, res, next)
 ));
 
+router.get('', asyncHandler((req, res, next) => 
+	getSemesterController().getAllSemesters(req, res, next)
+));
+
+router.get('/:academicYear/:semester', asyncHandler((req, res, next) => 
+	getSemesterController().getSemesterByDetails(req, res, next)
+));
+
 router.patch('/:id', updateSemesterValidator, asyncHandler((req, res, next) => 
 	getSemesterController().updateSemester(req, res, next)
 ));

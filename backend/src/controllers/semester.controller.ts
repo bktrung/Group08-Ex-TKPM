@@ -28,4 +28,32 @@ export class SemesterController {
 			metadata: { updatedSemester }
 		}).send(res);
 	}
+
+	getAllSemesters = async (req: Request, res: Response, next: NextFunction) => {
+		const { academicYear, semester, page, limit } = req.query;
+
+		const semestersData = await this.semesterService.getAllSemesters({
+			academicYear: academicYear as string,
+			semester: semester as string,
+			page: page as string,
+			limit: limit as string
+		});
+
+		return new OK({
+			message: 'Retrieved semesters successfully',
+			metadata: semestersData,
+		}).send(res);
+	}
+
+	getSemesterByDetails = async (req: Request, res: Response, next: NextFunction) => {
+		const { academicYear, semester } = req.params;
+		const semesterNumber = parseInt(semester);
+
+		const semesterData = await this.semesterService.getSemesterByDetails(academicYear, semesterNumber);
+
+		return new OK({
+			message: 'Retrieved semester successfully',
+			metadata: { semester: semesterData },
+		}).send(res);
+	}
 }
