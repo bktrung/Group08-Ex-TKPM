@@ -99,7 +99,6 @@ export default {
         }
         isModalOpen.value = false
       } catch (error) {
-        console.error('Error saving program:', error)
         alert(t('common.error_action', {
           action: isEditing.value ? t('common.edit') : t('common.add'),
           target: t('program.title'),

@@ -175,8 +175,7 @@ import { Modal } from 'bootstrap'
 export default {
   name: 'CourseList',
   emits: ['add-course', 'edit-course', 'delete-course', 'toggle-active-status'],
-  setup(props, { emit }) {
-    // const { t } = useI18n()
+  setup( _ , { emit }) {
     const store = useStore()
     const searchQuery = ref('')
     const currentPage = ref(1)

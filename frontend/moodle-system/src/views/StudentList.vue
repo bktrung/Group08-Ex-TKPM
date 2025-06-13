@@ -98,11 +98,11 @@
 
     <!-- Pagination -->
     <BasePagination :currentPage="currentPage" :totalPages="totalPages" :maxVisible="5" @change="changePage" />
-
+    
     <StudentImportExport />
 
     <ConfirmModal :showModal="showConfirmModal" :title="$t('common.confirm_delete')"
-      :message="`${$t('student.delete.confirm')} ${studentToDelete?.fullName}?`"
+      :message="`${$t('student.delete.confirm')} ${studentToDelete?.fullName}?`" 
       @update:showModal="showConfirmModal = $event" @confirm="deleteStudent" />
 
   </div>
@@ -140,8 +140,6 @@ export default {
     const currentPage = computed(() => store.state.student.currentPage)
     const totalPages = computed(() => store.state.student.totalPages)
     const departments = computed(() => store.state.department.departments)
-
-    console.log("Page" + currentPage.value + " of " + totalPages.value);
 
     const showConfirmModal = ref(false)
 

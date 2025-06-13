@@ -42,7 +42,7 @@
                         </td>
                         <td>
                             <button class="btn btn-sm btn-outline-primary" @click="showScheduleModal(classItem)">
-                                 {{ $t('class.view_schedule') }}
+                                {{ $t('class.view_schedule') }}
                             </button>
                         </td>
                         <td class="text-center">
@@ -56,87 +56,28 @@
         </div>
 
         <!-- Pagination -->
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <span>{{ $t('class.display_count', {
-                    current: paginatedClasses.length, total: filteredClasses.length
-                }) }}</span>
-            </div>
-            <nav>
-                <ul class="pagination">
-                    <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                        <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">{{
-                            $t('common.previous') }}</a>
-                    </li>
-                    <li v-for="page in totalPages" :key="page" class="page-item"
-                        :class="{ active: page === currentPage }">
-                        <a class="page-link" href="#" @click.prevent="changePage(page)">{{ page }}</a>
-                    </li>
-                    <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                        <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">{{ $t('common.next')
-                        }}</a>
-                    </li>
-                </ul>
-            </nav>
-            <div>
-                <select v-model="pageSize" class="form-select form-select-sm" style="width: auto;">
-                    <option :value="5">5 / {{ $t('common.page') }}</option>
-                    <option :value="10">10 / {{ $t('common.page') }}</option>
-                    <option :value="20">20 / {{ $t('common.page') }}</option>
-                </select>
-            </div>
-        </div>
+        <BasePagination v-model="currentPage" :pageSize="pageSize" :totalItems="filteredClasses.length"
+            :currentItems="paginatedClasses.length" @update:pageSize="pageSize = $event" />
 
         <!-- Schedule Modal -->
-        <div class="modal fade" id="scheduleModal" tabindex="-1" ref="scheduleModalRef">
-            <div class="modal-dialog modal-lg">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h5 class="modal-title" v-if="selectedClass">
-                            {{ $t('class.schedule') }}: {{ selectedClass.classCode }}
-                        </h5>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body" v-if="selectedClass && selectedClass.schedule">
-                        <div class="table-responsive">
-                            <table class="table table-bordered">
-                                <thead>
-                                    <tr class="text-center">
-                                        <th>{{ $t('days.day_of_week') }}</th>
-                                        <th>{{ $t('class.room') }}</th>
-                                        <th>{{ $t('class.start_period') }}</th>
-                                        <th>{{ $t('class.end_period') }}</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    <tr v-for="(schedule, index) in selectedClass.schedule" :key="index">
-                                        <td class="text-center">{{ formatDayOfWeek(schedule.dayOfWeek) }}</td>
-                                        <td>{{ schedule.classroom }}</td>
-                                        <td class="text-center">{{ schedule.startPeriod }}</td>
-                                        <td class="text-center">{{ schedule.endPeriod }}</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ $t('common.close')
-                        }}</button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <ScheduleModal v-model:visible="isScheduleModalVisible" :selectedClass="selectedClass" />
+
     </div>
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
-import { Modal } from 'bootstrap'
 import { useI18n } from 'vue-i18n'
+import { ref, computed, onMounted } from 'vue'
+import ScheduleModal from '@/components/layout/ScheduleModal.vue'
+import BasePagination from '@/components/layout/DefaultPagination.vue'
 
 export default {
     name: 'ClassTable',
+    components: {
+        BasePagination,
+        ScheduleModal
+    },
     props: {
         courseId: {
             type: String,
@@ -152,14 +93,17 @@ export default {
         const error = ref('')
         const currentPage = ref(1)
         const pageSize = ref(10)
-        const scheduleModalRef = ref(null)
-        let scheduleModal = null
+        const isScheduleModalVisible = ref(false)
 
         const classes = computed(() => store.state.class.classes)
 
         const filteredClasses = computed(() => {
-            return classes.value.filter(classItem => {
-                return classItem.course._id === props.courseId
+            return (classes.value || []).filter(classItem => {
+                return (
+                    classItem &&
+                    classItem.course &&
+                    classItem.course._id === props.courseId
+                )
             })
         })
 
@@ -183,9 +127,7 @@ export default {
 
         const showScheduleModal = (classItem) => {
             selectedClass.value = classItem
-            if (scheduleModal) {
-                scheduleModal.show()
-            }
+            isScheduleModalVisible.value = true
         }
 
         const register = (classItem) => {
@@ -210,10 +152,6 @@ export default {
 
         onMounted(async () => {
             try {
-                if (scheduleModalRef.value) {
-                    scheduleModal = new Modal(scheduleModalRef.value)
-                }
-
                 await store.dispatch('class/fetchClasses')
             } catch (err) {
                 console.error('Error loading data:', err);
@@ -227,7 +165,6 @@ export default {
             error,
             currentPage,
             pageSize,
-            scheduleModalRef,
             classes,
             filteredClasses,
             paginatedClasses,
@@ -238,7 +175,8 @@ export default {
             register,
             formatDayOfWeek,
             formatSemester,
-            getProgressBarClass
+            getProgressBarClass,
+            isScheduleModalVisible
         }
     }
 }

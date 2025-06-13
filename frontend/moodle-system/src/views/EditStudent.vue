@@ -55,7 +55,7 @@ export default {
     const loading = ref(true)
     const error = ref(null)
     const modalRef = ref(null)
-    const errorMessage = ref('Có lỗi xảy ra. Vui lòng thử lại!')
+    const errorMessage = ref(`${t('common.undefined_error')}`)
 
     const showSuccessModal = ref(false)
     const showErrorModal = ref(false)
@@ -158,7 +158,6 @@ export default {
           error.value = t('student.no_exist')
         }
       } catch (err) {
-        console.error('Error fetching student:', err)
         error.value = err.message || t('common.loading_error')
       } finally {
         loading.value = false
@@ -189,8 +188,6 @@ export default {
 
     const handleSubmit = async (updatedStudentData) => {
       try {
-        console.log('Received updated student data:', JSON.stringify(updatedStudentData, null, 2));
-
         const cleanData = {};
 
         const originalStatus = studentData.value && studentData.value.status ?
@@ -239,8 +236,6 @@ export default {
           }
         } 
 
-        console.log('Prepared data for API:', JSON.stringify(cleanData, null, 2));
-
         delete cleanData.studentId;
 
         await store.dispatch('student/updateStudent', {
@@ -249,13 +244,9 @@ export default {
         });
 
         showSuccessModal.value = true
-
       } catch (err) {
-        console.error('Error updating student:', err);
         errorMessage.value = err.response.data.message || t('common.error');
-
         showErrorModal.value = true
-
       }
     };
 

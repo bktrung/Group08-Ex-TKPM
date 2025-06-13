@@ -73,48 +73,22 @@
         </div>
 
         <!-- Pagination -->
-        <div class="d-flex justify-content-between align-items-center">
-            <div>
-                <span>
-                    {{ $t('course.display_count', { current: paginatedCourses.length, total: filteredCourses.length })
-                    }}
-                </span>
-            </div>
-            <nav>
-                <ul class="pagination">
-                    <li class="page-item" :class="{ disabled: currentPage === 1 }">
-                        <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">{{
-                            $t('common.previous') }}</a>
-                    </li>
-                    <li v-for="page in totalPages" :key="page" class="page-item"
-                        :class="{ active: page === currentPage }">
-                        <a class="page-link" href="#" @click.prevent="changePage(page)">{{ page }}</a>
-                    </li>
-                    <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-                        <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">{{ $t('common.next')
-                            }}</a>
-                    </li>
-                </ul>
-            </nav>
-            <div>
-                <select v-model="pageSize" class="form-select form-select-sm" style="width: auto;">
-                    <option :value="5">5 / {{ $t('common.page') }}</option>
-                    <option :value="10">10 / {{ $t('common.page') }}</option>
-                    <option :value="20">20 / {{ $t('common.page') }}</option>
-                </select>
-            </div>
-        </div>
+        <BasePagination v-model="currentPage" :pageSize="pageSize" :totalItems="filteredCourses.length"
+        :currentItems="paginatedCourses.length" @update:pageSize="pageSize = $event" />
     </div>
 </template>
 
 <script>
-import { ref, computed } from 'vue'
 import { useStore } from 'vuex'
-// import { useI18n } from 'vue-i18n'
+import { ref, computed } from 'vue'
+import BasePagination from '@/components/layout/DefaultPagination.vue'
 
 export default {
     name: 'CourseTable',
-    setup(props, { emit }) {
+    components: {
+        BasePagination
+    },
+    setup( _ , { emit }) {
         // const { t } = useI18n()
         const store = useStore()
         const searchQuery = ref('')

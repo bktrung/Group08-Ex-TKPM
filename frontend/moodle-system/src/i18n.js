@@ -3,7 +3,7 @@ import en from './locales/en.json'
 import vi from './locales/vi.json'
 
 const i18n = createI18n({
-  legacy: false, // dùng composition API
+  legacy: false, 
   locale: 'vi',
   fallbackLocale: 'en',
   messages: {

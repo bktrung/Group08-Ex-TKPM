@@ -11,7 +11,6 @@
         <button @click="generateTranscript" class="btn btn-primary">{{ $t('student.grade.create') }}</button>
         <button v-if="pdfGenerated" @click="downloadPDF" class="btn btn-success">{{ $t(common.download) }} PDF</button>
 
-        <!-- Nội dung để render thành PDF -->
         <div id="pdf-content" style="margin-top: 20px; background: white; padding: 20px;">
             <div v-if="transcriptData">
                 <h3>{{ $t('stundent.student_info') }}</h3>
@@ -33,7 +32,7 @@
                 <p>{{ $t('student.grade.summary.gpaOutOf10') }}: {{
                     transcriptData.metadata.transcript.summary.gpaOutOf10 }}</p>
                 <p>{{ $t('student.grade.summary.gpaOutOf4') }}: {{ transcriptData.metadata.transcript.summary.gpaOutOf4
-                    }}</p>
+                }}</p>
             </div>
         </div>
 

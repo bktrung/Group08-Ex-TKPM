@@ -126,85 +126,31 @@
       </div>
 
       <!-- Pagination -->
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <span>{{ $t('class.display_count', { current: paginatedClasses.length, total: filteredClasses.length })}}</span>
-        </div>
-        <nav>
-          <ul class="pagination">
-            <li class="page-item" :class="{ disabled: currentPage === 1 }">
-              <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">{{ $t('common.previous') }}</a>
-            </li>
-            <li v-for="page in totalPages" :key="page" class="page-item" :class="{ active: page === currentPage }">
-              <a class="page-link" href="#" @click.prevent="changePage(page)">{{ page }}</a>
-            </li>
-            <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-              <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">{{ $t('common.next') }}</a>
-            </li>
-          </ul>
-        </nav>
-        <div>
-          <select v-model="pageSize" class="form-select form-select-sm" style="width: auto;">
-            <option :value="5">5 / {{ $t('common.page') }}</option>
-            <option :value="10">10 / {{ $t('common.page') }}</option>
-            <option :value="20">20 / {{ $t('common.page') }}</option>
-          </select>
-        </div>
-      </div>
+      <BasePagination v-model="currentPage" :pageSize="pageSize" :totalItems="filteredClasses.length"
+        :currentItems="paginatedClasses.length" @update:pageSize="pageSize = $event" />
     </div>
 
     <!-- Schedule Modal -->
-    <div class="modal fade" id="scheduleModal" tabindex="-1" ref="scheduleModalRef">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" v-if="selectedClass">
-              {{ $t('class.schedule') }}: {{ selectedClass.classCode }} - {{ getCourseInfo(selectedClass.course) }}
-            </h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body" v-if="selectedClass && selectedClass.schedule">
-            <div class="table-responsive">
-              <table class="table table-bordered">
-                <thead>
-                  <tr class="text-center">
-                    <th>{{ $t('class.day_of_week') }}</th>
-                    <th>{{ $t('class.room') }}</th>
-                    <th>{{ $t('class.start_period') }}</th>
-                    <th>{{ $t('class.end_period') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(schedule, index) in selectedClass.schedule" :key="index">
-                    <td class="text-center">{{ formatDayOfWeek(schedule.dayOfWeek) }}</td>
-                    <td class="text-center">{{ schedule.classroom }}</td>
-                    <td class="text-center">{{ schedule.startPeriod }}</td>
-                    <td class="text-center">{{ schedule.endPeriod }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ $t('common.close') }}</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <ScheduleModal v-model:visible="isScheduleModalVisible" :selectedClass="selectedClass" />
+
   </div>
 </template>
 
 <script>
 import { ref, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
-import { Modal } from 'bootstrap'
 import ClassForm from '@/components/class/ClassForm.vue'
+import BasePagination from '@/components/layout/DefaultPagination.vue'
+import ScheduleModal from '@/components/layout/ScheduleModal.vue'
+
 import { useI18n } from 'vue-i18n'
 
 export default {
   name: 'ClassManage',
   components: {
-    ClassForm
+    ClassForm,
+    BasePagination,
+    ScheduleModal
   },
   setup() {
     const { t } = useI18n()
@@ -222,9 +168,7 @@ export default {
     const selectedAcademicYear = ref('')
     const selectedSemester = ref('')
 
-    const scheduleModalRef = ref(null)
-
-    let scheduleModal = null
+    const isScheduleModalVisible = ref(false)
 
     const currentDate = new Date()
     const currentYear = currentDate.getFullYear()
@@ -358,9 +302,7 @@ export default {
 
     const showScheduleModal = (classItem) => {
       selectedClass.value = classItem
-      if (scheduleModal) {
-        scheduleModal.show()
-      }
+      isScheduleModalVisible.value = true
     }
 
     const formatDayOfWeek = (day) => {
@@ -397,35 +339,23 @@ export default {
       try {
         resetFilter();
 
-        console.log('Fetching classes and courses...');
         await Promise.all([
           store.dispatch('class/fetchClasses'),
           store.dispatch('course/fetchCourses')
         ]);
 
-        console.log('Classes in store:', store.state.class.classes);
-        console.log('Filtered classes:', filteredClasses.value);
-
         if (!Array.isArray(store.state.class.classes) || store.state.class.classes.length === 0) {
-          console.log('No classes found, trying direct API call...');
-
-          const apiResponse = await store.dispatch('class/fetchClasses', {
+          await store.dispatch('class/fetchClasses', {
             page: 1,
             limit: 50
           });
-
-          console.log('Direct API response:', apiResponse);
         }
 
         if (store.state.class.classes.length > 0) {
           selectedAcademicYear.value = academicYears.value[1];
         }
 
-        if (document.getElementById('scheduleModal')) {
-          scheduleModal = new Modal(document.getElementById('scheduleModal'));
-        }
       } catch (err) {
-        console.error('Error loading data:', err);
         const msg = err.message || t('error.load_failed')
         error.value = `${t('error.prefix')}: ${msg}`
       }
@@ -448,7 +378,6 @@ export default {
       filteredClasses,
       paginatedClasses,
       totalPages,
-      scheduleModalRef,
       filterClasses,
       resetFilter,
       changePage,
@@ -460,7 +389,8 @@ export default {
       formatDayOfWeek,
       formatSemester,
       getCourseInfo,
-      getProgressBarClass
+      getProgressBarClass,
+      isScheduleModalVisible
     }
   }
 }
