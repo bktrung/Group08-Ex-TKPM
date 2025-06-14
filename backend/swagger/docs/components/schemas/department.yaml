@@ -1,0 +1,67 @@
+Department:
+  type: object
+  properties:
+    _id:
+      $ref: './common.yaml#/ObjectId'
+    name:
+      type: string
+      minLength: 1
+      maxLength: 100
+      example: "Computer Science"
+      description: "Department name"
+    createdAt:
+      type: string
+      format: date-time
+      example: "2024-01-15T10:30:00Z"
+    updatedAt:
+      type: string
+      format: date-time
+      example: "2024-01-15T10:30:00Z"
+  required:
+    - _id
+    - name
+    - createdAt
+    - updatedAt
+
+DepartmentCreateRequest:
+  type: object
+  properties:
+    name:
+      type: string
+      minLength: 1
+      maxLength: 100
+      example: "Computer Science"
+      description: "Department name"
+  required:
+    - name
+
+DepartmentUpdateRequest:
+  type: object
+  properties:
+    name:
+      type: string
+      minLength: 1
+      maxLength: 100
+      example: "Information Technology"
+      description: "Updated department name"
+  required:
+    - name
+
+DepartmentResponse:
+  allOf:
+    - $ref: './common.yaml#/SuccessResponse'
+    - type: object
+      properties:
+        metadata:
+          type: object
+          properties:
+            newDepartment:
+              $ref: '#/Department'
+            updatedDepartment:
+              $ref: '#/Department'
+            deletedDepartment:
+              $ref: '#/Department'
+            departments:
+              type: array
+              items:
+                $ref: '#/Department' 

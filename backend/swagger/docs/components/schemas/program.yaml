@@ -1,0 +1,67 @@
+Program:
+  type: object
+  properties:
+    _id:
+      $ref: './common.yaml#/ObjectId'
+    name:
+      type: string
+      minLength: 1
+      maxLength: 100
+      example: "Bachelor of Computer Science"
+      description: "Program name"
+    createdAt:
+      type: string
+      format: date-time
+      example: "2024-01-15T10:30:00Z"
+    updatedAt:
+      type: string
+      format: date-time
+      example: "2024-01-15T10:30:00Z"
+  required:
+    - _id
+    - name
+    - createdAt
+    - updatedAt
+
+ProgramCreateRequest:
+  type: object
+  properties:
+    name:
+      type: string
+      minLength: 1
+      maxLength: 100
+      example: "Bachelor of Computer Science"
+      description: "Program name"
+  required:
+    - name
+
+ProgramUpdateRequest:
+  type: object
+  properties:
+    name:
+      type: string
+      minLength: 1
+      maxLength: 100
+      example: "Master of Computer Science"
+      description: "Updated program name"
+  required:
+    - name
+
+ProgramResponse:
+  allOf:
+    - $ref: './common.yaml#/SuccessResponse'
+    - type: object
+      properties:
+        metadata:
+          type: object
+          properties:
+            newProgram:
+              $ref: '#/Program'
+            updatedProgram:
+              $ref: '#/Program'
+            deletedProgram:
+              $ref: '#/Program'
+            programs:
+              type: array
+              items:
+                $ref: '#/Program' 

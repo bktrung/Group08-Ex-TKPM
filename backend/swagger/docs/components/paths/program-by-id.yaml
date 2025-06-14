@@ -1,0 +1,89 @@
+patch:
+  tags:
+    - Programs
+  summary: Update a program
+  description: Update an existing program by ID
+  operationId: updateProgram
+  parameters:
+    - $ref: '../parameters/common.yaml#/ObjectIdParam'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../schemas/program.yaml#/ProgramUpdateRequest'
+        example:
+          name: "Master of Information Technology"
+  responses:
+    '200':
+      description: Program updated successfully
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../schemas/common.yaml#/SuccessResponse'
+              - type: object
+                properties:
+                  metadata:
+                    type: object
+                    properties:
+                      updatedProgram:
+                        $ref: '../schemas/program.yaml#/Program'
+          example:
+            status: "success"
+            code: 200
+            message: "Program updated successfully"
+            metadata:
+              updatedProgram:
+                _id: "507f1f77bcf86cd799439013"
+                name: "Master of Information Technology"
+                createdAt: "2024-01-15T10:30:00Z"
+                updatedAt: "2024-01-15T12:30:00Z"
+    '400':
+      $ref: '../responses/common.yaml#/BadRequest'
+    '404':
+      $ref: '../responses/common.yaml#/NotFound'
+    '422':
+      $ref: '../responses/common.yaml#/ValidationError'
+    '500':
+      $ref: '../responses/common.yaml#/InternalServerError'
+
+delete:
+  tags:
+    - Programs
+  summary: Delete a program
+  description: Delete an existing program by ID
+  operationId: deleteProgram
+  parameters:
+    - $ref: '../parameters/common.yaml#/ObjectIdParam'
+  responses:
+    '200':
+      description: Program deleted successfully
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../schemas/common.yaml#/SuccessResponse'
+              - type: object
+                properties:
+                  metadata:
+                    type: object
+                    properties:
+                      deletedProgram:
+                        $ref: '../schemas/program.yaml#/Program'
+          example:
+            status: "success"
+            code: 200
+            message: "Program deleted successfully"
+            metadata:
+              deletedProgram:
+                _id: "507f1f77bcf86cd799439013"
+                name: "Bachelor of Computer Science"
+                createdAt: "2024-01-15T10:30:00Z"
+                updatedAt: "2024-01-15T10:30:00Z"
+    '400':
+      $ref: '../responses/common.yaml#/BadRequest'
+    '404':
+      $ref: '../responses/common.yaml#/NotFound'
+    '500':
+      $ref: '../responses/common.yaml#/InternalServerError' 

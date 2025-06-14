@@ -1,0 +1,15 @@
+{
+  "title": "Student Management System API",
+  "customCss": ".swagger-ui .topbar { display: none } .swagger-ui .info { margin: 20px 0; } .swagger-ui .info .title { color: #3b4151; }",
+  "swaggerOptions": {
+    "persistAuthorization": true,
+    "displayRequestDuration": true,
+    "docExpansion": "none",
+    "filter": true,
+    "showRequestHeaders": true,
+    "tryItOutEnabled": true,
+    "supportedSubmitMethods": ["get", "post", "put", "patch", "delete"],
+    "defaultModelsExpandDepth": 2,
+    "defaultModelExpandDepth": 2
+  }
+} 

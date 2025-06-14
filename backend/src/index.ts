@@ -9,6 +9,7 @@ import cors from "cors";
 import { errorLogger } from "./middlewares/error-logger.middleware";
 import i18n from "./configs/i18n.config";
 import middleware from "i18next-http-middleware";
+import { setupSwagger } from "./configs/swagger.config";
 
 config();
 
@@ -29,6 +30,9 @@ app.use(cors());
 
 // Setup i18n middleware
 app.use(middleware.handle(i18n));
+
+// Setup Swagger documentation
+setupSwagger(app);
 
 // init db
 import "./dbs/init.mongodb";

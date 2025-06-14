@@ -1,0 +1,65 @@
+BadRequest:
+  description: Bad Request
+  content:
+    application/json:
+      schema:
+        $ref: '../schemas/common.yaml#/ErrorResponse'
+      example:
+        status: "error"
+        code: 400
+        message: "Bad Request"
+
+NotFound:
+  description: Resource not found
+  content:
+    application/json:
+      schema:
+        $ref: '../schemas/common.yaml#/ErrorResponse'
+      example:
+        status: "error"
+        code: 404
+        message: "Resource not found"
+
+InternalServerError:
+  description: Internal Server Error
+  content:
+    application/json:
+      schema:
+        $ref: '../schemas/common.yaml#/ErrorResponse'
+      example:
+        status: "error"
+        code: 500
+        message: "Internal Server Error"
+
+ValidationError:
+  description: Validation Error
+  content:
+    application/json:
+      schema:
+        $ref: '../schemas/common.yaml#/ErrorResponse'
+      example:
+        status: "error"
+        code: 422
+        message: "Validation failed"
+
+Unauthorized:
+  description: Unauthorized
+  content:
+    application/json:
+      schema:
+        $ref: '../schemas/common.yaml#/ErrorResponse'
+      example:
+        status: "error"
+        code: 401
+        message: "Unauthorized"
+
+Forbidden:
+  description: Forbidden
+  content:
+    application/json:
+      schema:
+        $ref: '../schemas/common.yaml#/ErrorResponse'
+      example:
+        status: "error"
+        code: 403
+        message: "Forbidden" 

@@ -1,0 +1,3500 @@
+openapi: 3.0.3
+info:
+  title: Student Management System API
+  description: |
+    Comprehensive API for managing students, departments, programs, and academic records.
+    
+    This API provides endpoints for:
+    - Managing departments and programs
+    - Student enrollment and records
+    - Course and class management
+    - Grade and transcript management
+    - Data import/export functionality
+    
+    ## Authentication
+    Currently, the API does not require authentication, but this may be added in future versions.
+    
+    ## Response Format
+    All responses follow a consistent format with `status`, `code`, `message`, and `metadata` fields.
+    
+    ## Error Handling
+    Errors are returned with appropriate HTTP status codes and descriptive messages.
+    The API supports internationalization (i18n) for error messages.
+  version: 1.0.0
+  contact:
+    name: API Support
+    email: support@example.com
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+
+servers:
+  - url: http://localhost:3456
+    description: Development server
+  - url: https://api.yourdomain.com
+    description: Production server
+
+tags:
+  - name: Departments
+    description: Department management operations
+  - name: Programs
+    description: Program management operations
+  - name: Address
+    description: Address and location data from external APIs
+  - name: Semesters
+    description: Academic semester management operations
+  - name: Courses
+    description: Course management operations
+  - name: Students
+    description: Student management operations
+  - name: Classes
+    description: Class management operations
+  - name: Enrollment
+    description: Student enrollment management operations
+  - name: Grades
+    description: Grade management operations
+  - name: Transcripts
+    description: Student transcript operations (to be documented)
+  - name: Import/Export
+    description: Data import and export operations (to be documented)
+
+paths:
+  # Address API endpoints
+  /v1/api/address/countries:
+    get:
+      tags:
+        - Address
+      summary: Get all countries
+      description: Retrieve a list of all countries with their geonameIds
+      operationId: getCountries
+      responses:
+        '200':
+          description: Countries retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          countries:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Country'
+              example:
+                status: "success"
+                code: 200
+                message: "Countries retrieved successfully"
+                metadata:
+                  countries:
+                    - countryName: "Vietnam"
+                      geonameId: 1562822
+                    - countryName: "United States"
+                      geonameId: 6252001
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v1/api/address/children/{geonameId}:
+    get:
+      tags:
+        - Address
+      summary: Get administrative divisions
+      description: Retrieve administrative divisions (states, provinces, etc.) for a given country or region
+      operationId: getChildren
+      parameters:
+        - name: geonameId
+          in: path
+          required: true
+          description: Geoname ID of the parent location
+          schema:
+            type: integer
+            example: 1269750
+      responses:
+        '200':
+          description: Administrative divisions retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          children:
+                            $ref: '#/components/schemas/GeonamesResult'
+              example:
+                status: "success"
+                code: 200
+                message: "Children retrieved successfully"
+                metadata:
+                  children:
+                    totalResultsCount: 36
+                    geonames:
+                      - name: "Ho Chi Minh City"
+                        toponymName: "Ho Chi Minh City"
+                        geonameId: 1566083
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v1/api/address/nationalities:
+    get:
+      tags:
+        - Address
+      summary: Get all nationalities
+      description: Retrieve a list of all nationalities
+      operationId: getNationalities
+      responses:
+        '200':
+          description: Nationalities retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          nationalities:
+                            type: array
+                            items:
+                              type: string
+              example:
+                status: "success"
+                code: 200
+                message: "Nationalities retrieved successfully"
+                metadata:
+                  nationalities:
+                    - "Vietnamese"
+                    - "American"
+                    - "Chinese"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # Semester API endpoints
+  /v1/api/semesters:
+    get:
+      tags:
+        - Semesters
+      summary: Get all semesters
+      description: Retrieve a paginated list of semesters with optional filtering
+      operationId: getAllSemesters
+      parameters:
+        - name: academicYear
+          in: query
+          description: Filter by academic year (format: YYYY-YYYY)
+          schema:
+            type: string
+            pattern: '^\d{4}-\d{4}$'
+            example: "2024-2025"
+        - name: semester
+          in: query
+          description: Filter by semester number
+          schema:
+            type: integer
+            enum: [1, 2, 3]
+            example: 1
+        - name: page
+          in: query
+          description: Page number for pagination
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Semesters retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          semesters:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Semester'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Semesters
+      summary: Create a new semester
+      description: Add a new semester to the system
+      operationId: createSemester
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SemesterCreateRequest'
+            example:
+              academicYear: "2024-2025"
+              semester: 1
+              registrationStartDate: "2024-08-01T00:00:00.000Z"
+              registrationEndDate: "2024-08-15T23:59:59.000Z"
+              dropDeadline: "2024-09-15T23:59:59.000Z"
+              semesterStartDate: "2024-09-01T00:00:00.000Z"
+              semesterEndDate: "2024-12-31T23:59:59.000Z"
+      responses:
+        '201':
+          description: Semester created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          newSemester:
+                            $ref: '#/components/schemas/Semester'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v1/api/semesters/{id}:
+    patch:
+      tags:
+        - Semesters
+      summary: Update a semester
+      description: Update an existing semester by ID
+      operationId: updateSemester
+      parameters:
+        - $ref: '#/components/parameters/ObjectIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/SemesterUpdateRequest'
+      responses:
+        '200':
+          description: Semester updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          updatedSemester:
+                            $ref: '#/components/schemas/Semester'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Semesters
+      summary: Delete a semester
+      description: Delete an existing semester by ID
+      operationId: deleteSemester
+      parameters:
+        - $ref: '#/components/parameters/ObjectIdParam'
+      responses:
+        '200':
+          description: Semester deleted successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          deletedSemester:
+                            $ref: '#/components/schemas/Semester'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v1/api/semesters/{academicYear}/{semester}:
+    get:
+      tags:
+        - Semesters
+      summary: Get semester by details
+      description: Retrieve a specific semester by academic year and semester number
+      operationId: getSemesterByDetails
+      parameters:
+        - name: academicYear
+          in: path
+          required: true
+          description: Academic year in YYYY-YYYY format
+          schema:
+            type: string
+            pattern: '^\d{4}-\d{4}$'
+            example: "2024-2025"
+        - name: semester
+          in: path
+          required: true
+          description: Semester number (1, 2, or 3)
+          schema:
+            type: integer
+            enum: [1, 2, 3]
+            example: 1
+      responses:
+        '200':
+          description: Semester retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          semester:
+                            $ref: '#/components/schemas/Semester'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # Course API endpoints
+  /v1/api/courses:
+    get:
+      tags:
+        - Courses
+      summary: Get all courses
+      description: Retrieve a list of all courses with optional filtering
+      operationId: getCourses
+      parameters:
+        - name: department
+          in: query
+          description: Filter by department ID
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+        - name: isActive
+          in: query
+          description: Filter by active status
+          schema:
+            type: boolean
+            default: true
+      responses:
+        '200':
+          description: Courses retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          courses:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Course'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Courses
+      summary: Create a new course
+      description: Add a new course to the system
+      operationId: addCourse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseCreateRequest'
+            example:
+              courseCode: "CS101"
+              name: "Introduction to Computer Science"
+              credits: 3
+              department: "507f1f77bcf86cd799439011"
+              description: "An introductory course covering fundamental concepts of computer science"
+              prerequisites: ["507f1f77bcf86cd799439012"]
+      responses:
+        '201':
+          description: Course created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          newCourse:
+                            $ref: '#/components/schemas/Course'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v1/api/courses/{courseCode}:
+    patch:
+      tags:
+        - Courses
+      summary: Update a course
+      description: Update an existing course by course code
+      operationId: updateCourse
+      parameters:
+        - name: courseCode
+          in: path
+          required: true
+          description: Course code
+          schema:
+            type: string
+            example: "CS101"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CourseUpdateRequest'
+      responses:
+        '200':
+          description: Course updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          updatedCourse:
+                            $ref: '#/components/schemas/Course'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Courses
+      summary: Delete a course
+      description: Delete an existing course by course code
+      operationId: deleteCourse
+      parameters:
+        - name: courseCode
+          in: path
+          required: true
+          description: Course code
+          schema:
+            type: string
+            example: "CS101"
+      responses:
+        '200':
+          description: Course deleted successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          deletedCourse:
+                            $ref: '#/components/schemas/Course'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # Existing Department API endpoints
+  /v1/api/departments:
+    get:
+      tags:
+        - Departments
+      summary: Get all departments
+      description: Retrieve a list of all departments
+      operationId: getDepartments
+      responses:
+        '200':
+          description: Departments retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          departments:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Department'
+              example:
+                status: "success"
+                code: 200
+                message: "Departments retrieved successfully"
+                metadata:
+                  departments:
+                    - _id: "507f1f77bcf86cd799439011"
+                      name: "Computer Science"
+                    - _id: "507f1f77bcf86cd799439012"
+                      name: "Mathematics"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Departments
+      summary: Create a new department
+      description: Add a new department to the system
+      operationId: addDepartment
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepartmentCreateRequest'
+            example:
+              name: "Computer Science"
+      responses:
+        '201':
+          description: Department created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          newDepartment:
+                            $ref: '#/components/schemas/Department'
+              example:
+                status: "success"
+                code: 201
+                message: "Department added successfully"
+                metadata:
+                  newDepartment:
+                    _id: "507f1f77bcf86cd799439011"
+                    name: "Computer Science"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v1/api/departments/{id}:
+    patch:
+      tags:
+        - Departments
+      summary: Update a department
+      description: Update an existing department by ID
+      operationId: updateDepartment
+      parameters:
+        - $ref: '#/components/parameters/ObjectIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DepartmentUpdateRequest'
+            example:
+              name: "Information Technology"
+      responses:
+        '200':
+          description: Department updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          updatedDepartment:
+                            $ref: '#/components/schemas/Department'
+              example:
+                status: "success"
+                code: 200
+                message: "Department updated successfully"
+                metadata:
+                  updatedDepartment:
+                    _id: "507f1f77bcf86cd799439011"
+                    name: "Information Technology"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Departments
+      summary: Delete a department
+      description: Delete an existing department by ID
+      operationId: deleteDepartment
+      parameters:
+        - $ref: '#/components/parameters/ObjectIdParam'
+      responses:
+        '200':
+          description: Department deleted successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          deletedDepartment:
+                            $ref: '#/components/schemas/Department'
+              example:
+                status: "success"
+                code: 200
+                message: "Department deleted successfully"
+                metadata:
+                  deletedDepartment:
+                    _id: "507f1f77bcf86cd799439011"
+                    name: "Computer Science"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # Existing Program API endpoints
+  /v1/api/programs:
+    get:
+      tags:
+        - Programs
+      summary: Get all programs
+      description: Retrieve a list of all programs
+      operationId: getPrograms
+      responses:
+        '200':
+          description: Programs retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          programs:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Program'
+              example:
+                status: "success"
+                code: 200
+                message: "Programs retrieved successfully"
+                metadata:
+                  programs:
+                    - _id: "507f1f77bcf86cd799439013"
+                      name: "Bachelor of Computer Science"
+                    - _id: "507f1f77bcf86cd799439014"
+                      name: "Master of Computer Science"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Programs
+      summary: Create a new program
+      description: Add a new program to the system
+      operationId: addProgram
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProgramCreateRequest'
+            example:
+              name: "Bachelor of Computer Science"
+      responses:
+        '201':
+          description: Program created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          newProgram:
+                            $ref: '#/components/schemas/Program'
+              example:
+                status: "success"
+                code: 201
+                message: "Program added successfully"
+                metadata:
+                  newProgram:
+                    _id: "507f1f77bcf86cd799439013"
+                    name: "Bachelor of Computer Science"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v1/api/programs/{id}:
+    patch:
+      tags:
+        - Programs
+      summary: Update a program
+      description: Update an existing program by ID
+      operationId: updateProgram
+      parameters:
+        - $ref: '#/components/parameters/ObjectIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProgramUpdateRequest'
+            example:
+              name: "Master of Computer Science"
+      responses:
+        '200':
+          description: Program updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          updatedProgram:
+                            $ref: '#/components/schemas/Program'
+              example:
+                status: "success"
+                code: 200
+                message: "Program updated successfully"
+                metadata:
+                  updatedProgram:
+                    _id: "507f1f77bcf86cd799439013"
+                    name: "Master of Computer Science"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Programs
+      summary: Delete a program
+      description: Delete an existing program by ID
+      operationId: deleteProgram
+      parameters:
+        - $ref: '#/components/parameters/ObjectIdParam'
+      responses:
+        '200':
+          description: Program deleted successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          deletedProgram:
+                            $ref: '#/components/schemas/Program'
+              example:
+                status: "success"
+                code: 200
+                message: "Program deleted successfully"
+                metadata:
+                  deletedProgram:
+                    _id: "507f1f77bcf86cd799439013"
+                    name: "Bachelor of Computer Science"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # Student API endpoints
+  /v1/api/students:
+    get:
+      tags:
+        - Students
+      summary: Get all students
+      description: Retrieve a paginated list of all students
+      operationId: getAllStudents
+      parameters:
+        - name: page
+          in: query
+          description: Page number for pagination
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Students retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          students:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Student'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+              example:
+                message: "All students"
+                status: 200
+                metadata:
+                  pagination:
+                    total: 1
+                    page: 1
+                    limit: 2
+                    totalPages: 1
+                  students:
+                    - studentId: "22000001"
+                      fullName: "Nguyễn Văn A"
+                      dateOfBirth: "1999-01-15T00:00:00.000Z"
+                      gender: "Nam"
+                      department:
+                        _id: "67ffa8794a74924a52c0d1de"
+                        name: "Luật"
+                      schoolYear: 2022
+                      program:
+                        _id: "67ffa87a4a74924a52c0d1f6"
+                        name: "CQ"
+                      mailingAddress:
+                        houseNumberStreet: "425/23 Thu KHoa Huan"
+                        wardCommune: "null"
+                        districtCounty: "Husbands"
+                        provinceCity: "Saint James"
+                        country: "Barbados"
+                      email: "nguyenvana@student.hcmus.edu.vn"
+                      phoneNumber: "0901234567"
+                      status:
+                        _id: "67ffa8794a74924a52c0d1ea"
+                        type: "Đang học"
+                      identityDocument:
+                        type: "CCCD"
+                        hasChip: "true"
+                        number: "038204012567"
+                        issueDate: "2018-02-03"
+                        issuedBy: "Cong An Phuong"
+                        expiryDate: "2030-03-02"
+                      nationality: "Vietnamese"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Students
+      summary: Create a new student
+      description: Add a new student to the system
+      operationId: addStudent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentCreateRequest'
+            example:
+              studentId: "22000002"
+              fullName: "Trần Thị B"
+              dateOfBirth: "2000-05-20T00:00:00.000Z"
+              gender: "Nữ"
+              department: "507f1f77bcf86cd799439011"
+              schoolYear: 2022
+              program: "507f1f77bcf86cd799439013"
+              mailingAddress:
+                houseNumberStreet: "123 Nguyen Van Cu"
+                wardCommune: "Ward 1"
+                districtCounty: "District 5"
+                provinceCity: "Ho Chi Minh City"
+                country: "Vietnam"
+              email: "tranthib@student.hcmus.edu.vn"
+              phoneNumber: "0987654321"
+              status: "507f1f77bcf86cd799439015"
+              identityDocument:
+                type: "CCCD"
+                number: "038204012568"
+                issueDate: "2020-01-15T00:00:00.000Z"
+                issuedBy: "Cong An TP HCM"
+                expiryDate: "2035-01-15T00:00:00.000Z"
+                hasChip: true
+              nationality: "Vietnamese"
+      responses:
+        '201':
+          description: Student created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          newStudent:
+                            $ref: '#/components/schemas/Student'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v1/api/students/search:
+    get:
+      tags:
+        - Students
+      summary: Search students
+      description: Search students by name or student ID with full-text search
+      operationId: searchStudents
+      parameters:
+        - name: q
+          in: query
+          required: true
+          description: Search query (name or student ID)
+          schema:
+            type: string
+            example: "Nguyen"
+        - name: page
+          in: query
+          description: Page number for pagination
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+        - name: sort
+          in: query
+          description: Sort order
+          schema:
+            type: string
+            default: "ctime"
+        - name: departmentId
+          in: query
+          description: Filter by department ID
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+      responses:
+        '200':
+          description: Search results retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          students:
+                            type: array
+                            items:
+                              allOf:
+                                - $ref: '#/components/schemas/Student'
+                                - type: object
+                                  properties:
+                                    score:
+                                      type: number
+                                      description: "Search relevance score"
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+                          query:
+                            type: string
+                            description: "Original search query"
+              example:
+                message: "Search results"
+                status: 200
+                metadata:
+                  pagination:
+                    total: 1
+                    page: 1
+                    limit: 2
+                    totalPages: 1
+                  students:
+                    - studentId: "22000001"
+                      fullName: "Nguyễn Văn A"
+                      score: 7.5
+                  query: "Nguyen"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v1/api/students/status-types:
+    get:
+      tags:
+        - Students
+      summary: Get all student status types
+      description: Retrieve all available student status types
+      operationId: getStudentStatusTypes
+      responses:
+        '200':
+          description: Student status types retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/StudentStatus'
+              example:
+                message: "Student status types"
+                status: 200
+                metadata:
+                  - _id: "67ffa8794a74924a52c0d1ea"
+                    type: "Đang học"
+                  - _id: "67ffa8794a74924a52c0d1ed"
+                    type: "Đã tốt nghiệp"
+                  - _id: "67ffa87a4a74924a52c0d1f0"
+                    type: "Đã thôi học"
+                  - _id: "67ffa87a4a74924a52c0d1f3"
+                    type: "Tạm dừng học"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Students
+      summary: Create a new student status type
+      description: Add a new student status type to the system
+      operationId: addStudentStatusType
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  example: "Bảo lưu"
+                  description: "Status type name"
+              required:
+                - type
+      responses:
+        '201':
+          description: Student status type created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        $ref: '#/components/schemas/StudentStatus'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v1/api/students/status-types/{statusId}:
+    put:
+      tags:
+        - Students
+      summary: Update a student status type
+      description: Update an existing student status type
+      operationId: modifyStudentStatusType
+      parameters:
+        - name: statusId
+          in: path
+          required: true
+          description: Student status ID
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                  example: "Bảo lưu học tập"
+                  description: "Updated status type name"
+              required:
+                - type
+      responses:
+        '200':
+          description: Student status type updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        $ref: '#/components/schemas/StudentStatus'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Students
+      summary: Delete a student status type
+      description: Delete an existing student status type (only if not in use)
+      operationId: deleteStudentStatusType
+      parameters:
+        - name: statusId
+          in: path
+          required: true
+          description: Student status ID
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+      responses:
+        '200':
+          description: Student status type deleted successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        $ref: '#/components/schemas/StudentStatus'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v1/api/students/status-transitions:
+    get:
+      tags:
+        - Students
+      summary: Get student status transitions
+      description: Retrieve all allowed student status transitions
+      operationId: getStudentStatusTransitions
+      responses:
+        '200':
+          description: Student status transitions retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/StudentStatusTransitionGroup'
+              example:
+                message: "Student status transitions"
+                status: 200
+                metadata:
+                  - fromStatusId: "67ffa87a4a74924a52c0d1f3"
+                    fromStatus: "Tạm dừng học"
+                    toStatus:
+                      - type: "Đang học"
+                        _id: "67ffa8794a74924a52c0d1ea"
+                  - fromStatusId: "67ffa8794a74924a52c0d1ea"
+                    fromStatus: "Đang học"
+                    toStatus:
+                      - type: "Tạm dừng học"
+                        _id: "67ffa87a4a74924a52c0d1f3"
+                      - type: "Đã tốt nghiệp"
+                        _id: "67ffa8794a74924a52c0d1ed"
+                      - type: "Đã thôi học"
+                        _id: "67ffa87a4a74924a52c0d1f0"
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Students
+      summary: Create a student status transition
+      description: Add a new allowed transition between student statuses
+      operationId: addStudentStatusTransition
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fromStatus:
+                  $ref: '#/components/schemas/ObjectId'
+                  description: "Source status ID"
+                toStatus:
+                  $ref: '#/components/schemas/ObjectId'
+                  description: "Target status ID"
+              required:
+                - fromStatus
+                - toStatus
+      responses:
+        '201':
+          description: Student status transition created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        $ref: '#/components/schemas/StudentStatusTransition'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Students
+      summary: Delete a student status transition
+      description: Remove an allowed transition between student statuses
+      operationId: deleteStudentStatusTransition
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                fromStatus:
+                  $ref: '#/components/schemas/ObjectId'
+                  description: "Source status ID"
+                toStatus:
+                  $ref: '#/components/schemas/ObjectId'
+                  description: "Target status ID"
+              required:
+                - fromStatus
+                - toStatus
+      responses:
+        '200':
+          description: Student status transition deleted successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        $ref: '#/components/schemas/StudentStatusTransition'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v1/api/students/{studentId}:
+    patch:
+      tags:
+        - Students
+      summary: Update a student
+      description: Update an existing student's information
+      operationId: updateStudent
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          description: Student ID (8-digit string)
+          schema:
+            type: string
+            pattern: '^[0-9]{8}$'
+            example: "22000001"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StudentUpdateRequest'
+      responses:
+        '200':
+          description: Student updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          updatedStudent:
+                            $ref: '#/components/schemas/Student'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Students
+      summary: Delete a student
+      description: Delete an existing student from the system
+      operationId: deleteStudent
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          description: Student ID (8-digit string)
+          schema:
+            type: string
+            pattern: '^[0-9]{8}$'
+            example: "22000001"
+      responses:
+        '200':
+          description: Student deleted successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          deletedStudent:
+                            $ref: '#/components/schemas/Student'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v1/api/students/department/{departmentId}:
+    get:
+      tags:
+        - Students
+      summary: Get students by department
+      description: Retrieve students belonging to a specific department
+      operationId: getStudentsByDepartment
+      parameters:
+        - name: departmentId
+          in: path
+          required: true
+          description: Department ID
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+        - name: page
+          in: query
+          description: Page number for pagination
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Students by department retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          students:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Student'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # Classes API endpoints
+  /v1/api/classes:
+    get:
+      tags:
+        - Classes
+      summary: Get all classes
+      description: Retrieve a paginated list of all classes with optional filtering
+      operationId: getAllClasses
+      parameters:
+        - name: courseId
+          in: query
+          description: Filter by course ID
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+        - name: academicYear
+          in: query
+          description: Filter by academic year (format: YYYY-YYYY)
+          schema:
+            type: string
+            pattern: '^\d{4}-\d{4}$'
+            example: "2024-2025"
+        - name: semester
+          in: query
+          description: Filter by semester number
+          schema:
+            type: integer
+            enum: [1, 2, 3]
+            example: 1
+        - name: page
+          in: query
+          description: Page number for pagination
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - name: limit
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+      responses:
+        '200':
+          description: Classes retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          classs:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Class'
+                          pagination:
+                            $ref: '#/components/schemas/Pagination'
+              example:
+                message: "Retrieved classes successfully"
+                status: 200
+                metadata:
+                  pagination:
+                    total: 1
+                    page: 1
+                    limit: 2
+                    totalPages: 1
+                  classs:
+                    - _id: "67ffaafa4a74924a52c0d241"
+                      classCode: "SFX11122"
+                      course:
+                        _id: "67ffaac84a74924a52c0d23c"
+                        courseCode: "SFX001"
+                        name: "VIPRO"
+                      academicYear: "2024-2025"
+                      semester: 1
+                      instructor: "Dr. Updated Instructor"
+                      maxCapacity: 45
+                      schedule:
+                        - dayOfWeek: 3
+                          startPeriod: 2
+                          endPeriod: 4
+                          classroom: "C1.05"
+                      enrolledStudents: 0
+                      isActive: true
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    post:
+      tags:
+        - Classes
+      summary: Create a new class
+      description: Add a new class to the system
+      operationId: addClass
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassCreateRequest'
+            example:
+              classCode: "CS101-01"
+              course: "507f1f77bcf86cd799439011"
+              academicYear: "2024-2025"
+              semester: 1
+              instructor: "Dr. John Smith"
+              maxCapacity: 40
+              schedule:
+                - dayOfWeek: 3
+                  startPeriod: 1
+                  endPeriod: 3
+                  classroom: "A1.01"
+                - dayOfWeek: 5
+                  startPeriod: 7
+                  endPeriod: 9
+                  classroom: "A1.01"
+      responses:
+        '201':
+          description: Class created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          newClass:
+                            $ref: '#/components/schemas/Class'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v1/api/classes/{classCode}:
+    get:
+      tags:
+        - Classes
+      summary: Get class by code
+      description: Retrieve a specific class by its class code
+      operationId: getClassByCode
+      parameters:
+        - name: classCode
+          in: path
+          required: true
+          description: Class code
+          schema:
+            type: string
+            example: "SFX11122"
+      responses:
+        '200':
+          description: Class retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          class:
+                            $ref: '#/components/schemas/Class'
+              example:
+                message: "Class retrieved successfully"
+                status: 200
+                metadata:
+                  class:
+                    _id: "67ffaafa4a74924a52c0d241"
+                    classCode: "SFX11122"
+                    course: "67ffaac84a74924a52c0d23c"
+                    academicYear: "2024-2025"
+                    semester: 1
+                    instructor: "Dr. Updated Instructor"
+                    maxCapacity: 45
+                    schedule:
+                      - dayOfWeek: 3
+                        startPeriod: 2
+                        endPeriod: 4
+                        classroom: "C1.05"
+                    enrolledStudents: 0
+                    isActive: true
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    patch:
+      tags:
+        - Classes
+      summary: Update a class
+      description: Update an existing class by class code
+      operationId: updateClass
+      parameters:
+        - name: classCode
+          in: path
+          required: true
+          description: Class code
+          schema:
+            type: string
+            example: "SFX11122"
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ClassUpdateRequest'
+      responses:
+        '200':
+          description: Class updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          updatedClass:
+                            $ref: '#/components/schemas/Class'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Classes
+      summary: Delete a class
+      description: Delete an existing class by class code
+      operationId: deleteClass
+      parameters:
+        - name: classCode
+          in: path
+          required: true
+          description: Class code
+          schema:
+            type: string
+            example: "SFX11122"
+      responses:
+        '200':
+          description: Class deleted successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          deletedClass:
+                            $ref: '#/components/schemas/Class'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # Enrollment API endpoints
+  /v1/api/enrollment:
+    post:
+      tags:
+        - Enrollment
+      summary: Enroll student in class
+      description: Enroll a student in a specific class
+      operationId: enrollStudent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnrollmentCreateRequest'
+            example:
+              studentId: "22000001"
+              classCode: "SFX11122"
+      responses:
+        '201':
+          description: Enrollment created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          newEnrollment:
+                            $ref: '#/components/schemas/Enrollment'
+              example:
+                message: "Enrollment created successfully"
+                status: 201
+                metadata:
+                  newEnrollment:
+                    student: "67ffaa144a74924a52c0d21f"
+                    class: "67ffaafa4a74924a52c0d241"
+                    status: "ACTIVE"
+                    _id: "684d8d92ef2f90fe4c30f639"
+                    enrollmentDate: "2025-06-14T14:56:18.663Z"
+                    createdAt: "2025-06-14T14:56:18.665Z"
+                    updatedAt: "2025-06-14T14:56:18.665Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v1/api/enrollment/drop:
+    post:
+      tags:
+        - Enrollment
+      summary: Drop student from class
+      description: Drop a student from a specific class with a reason
+      operationId: dropStudent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/EnrollmentDropRequest'
+            example:
+              studentId: "22000001"
+              classCode: "SFX11122"
+              dropReason: "Schedule conflict"
+      responses:
+        '200':
+          description: Student dropped successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          updatedEnrollment:
+                            $ref: '#/components/schemas/Enrollment'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v1/api/enrollment/drop-history/{studentId}:
+    get:
+      tags:
+        - Enrollment
+      summary: Get student drop history
+      description: Retrieve the enrollment drop history for a specific student
+      operationId: getDropHistory
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          description: Student ID (8-digit string)
+          schema:
+            type: string
+            pattern: '^[0-9]{8}$'
+            example: "22000001"
+      responses:
+        '200':
+          description: Drop history retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          dropHistory:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/EnrollmentWithDetails'
+              example:
+                message: "Drop history retrieved successfully"
+                status: 200
+                metadata:
+                  dropHistory:
+                    - _id: "67ffab664a74924a52c0d24b"
+                      student:
+                        _id: "67ffaa144a74924a52c0d21f"
+                        studentId: "22000001"
+                        fullName: "Nguyễn Văn A"
+                      class:
+                        _id: "67ffaafa4a74924a52c0d241"
+                        classCode: "SFX11122"
+                      status: "DROPPED"
+                      enrollmentDate: "2025-04-16T13:06:46.862Z"
+                      dropDate: "2025-04-16T13:07:17.437Z"
+                      createdAt: "2025-04-16T13:06:46.863Z"
+                      updatedAt: "2025-04-16T13:07:17.438Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  # Grades API endpoints
+  /v1/api/grades:
+    post:
+      tags:
+        - Grades
+      summary: Create a new grade
+      description: Create a grade record for a student in a specific class
+      operationId: createGrade
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GradeCreateRequest'
+            example:
+              studentId: "22000001"
+              classCode: "SFX11122"
+              midtermScore: 8.5
+              finalScore: 9.0
+              totalScore: 8.8
+      responses:
+        '201':
+          description: Grade created successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          newGrade:
+                            $ref: '#/components/schemas/Grade'
+              example:
+                message: "Grade created successfully"
+                status: 201
+                metadata:
+                  newGrade:
+                    enrollment: "684d8d92ef2f90fe4c30f639"
+                    midtermScore: 8.5
+                    finalScore: 9
+                    totalScore: 8.8
+                    letterGrade: "B+"
+                    gradePoints: 3.5
+                    isPublished: true
+                    _id: "684d8da1ef2f90fe4c30f645"
+                    createdAt: "2025-06-14T14:56:33.568Z"
+                    updatedAt: "2025-06-14T14:56:33.568Z"
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v1/api/grades/class/{classCode}:
+    get:
+      tags:
+        - Grades
+      summary: Get grades by class
+      description: Retrieve all grades for students in a specific class
+      operationId: getGradesByClass
+      parameters:
+        - name: classCode
+          in: path
+          required: true
+          description: Class code
+          schema:
+            type: string
+            example: "SFX11122"
+      responses:
+        '200':
+          description: Class grades retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          grades:
+                            type: array
+                            items:
+                              $ref: '#/components/schemas/Grade'
+              example:
+                message: "Retrieved class grades successfully"
+                status: 200
+                metadata:
+                  grades: []
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v1/api/grades/student/{studentId}/class/{classCode}:
+    get:
+      tags:
+        - Grades
+      summary: Get grade by student and class
+      description: Retrieve the grade for a specific student in a specific class
+      operationId: getGradeByStudentAndClass
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          description: Student ID (8-digit string)
+          schema:
+            type: string
+            pattern: '^[0-9]{8}$'
+            example: "22000001"
+        - name: classCode
+          in: path
+          required: true
+          description: Class code
+          schema:
+            type: string
+            example: "SFX11122"
+      responses:
+        '200':
+          description: Student grade retrieved successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          grade:
+                            $ref: '#/components/schemas/Grade'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+  /v1/api/grades/{id}:
+    patch:
+      tags:
+        - Grades
+      summary: Update a grade
+      description: Update an existing grade record
+      operationId: updateGrade
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Grade ID
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GradeUpdateRequest'
+            example:
+              midtermScore: 9.0
+              finalScore: 9.5
+              totalScore: 9.2
+      responses:
+        '200':
+          description: Grade updated successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          updatedGrade:
+                            $ref: '#/components/schemas/Grade'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '422':
+          $ref: '#/components/responses/ValidationError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+    delete:
+      tags:
+        - Grades
+      summary: Delete a grade
+      description: Delete an existing grade record
+      operationId: deleteGrade
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: Grade ID
+          schema:
+            $ref: '#/components/schemas/ObjectId'
+      responses:
+        '200':
+          description: Grade deleted successfully
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/SuccessResponse'
+                  - type: object
+                    properties:
+                      metadata:
+                        type: object
+                        properties:
+                          deletedGrade:
+                            $ref: '#/components/schemas/Grade'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+# Global security (currently not enforced)
+# security:
+#   - BearerAuth: [] 
+
+# Student schemas
+Student:
+  type: object
+  properties:
+    _id:
+      $ref: '#/components/schemas/ObjectId'
+    studentId:
+      type: string
+      pattern: '^[0-9]{8}$'
+      example: "22000001"
+    fullName:
+      type: string
+      example: "Nguyễn Văn A"
+    dateOfBirth:
+      type: string
+      format: date-time
+      example: "1999-01-15T00:00:00.000Z"
+    gender:
+      type: string
+      enum: ["Nam", "Nữ"]
+      example: "Nam"
+    department:
+      $ref: '#/components/schemas/Department'
+    schoolYear:
+      type: integer
+      example: 2022
+    program:
+      $ref: '#/components/schemas/Program'
+    mailingAddress:
+      $ref: '#/components/schemas/Address'
+    email:
+      type: string
+      format: email
+      example: "nguyenvana@student.hcmus.edu.vn"
+    phoneNumber:
+      type: string
+      pattern: '^[0-9]{10}$'
+      example: "0901234567"
+    status:
+      $ref: '#/components/schemas/StudentStatus'
+    identityDocument:
+      $ref: '#/components/schemas/IdentityDocument'
+    nationality:
+      type: string
+      example: "Vietnamese"
+
+# Class schemas
+Class:
+  type: object
+  properties:
+    _id:
+      $ref: '#/components/schemas/ObjectId'
+    classCode:
+      type: string
+      example: "SFX11122"
+      description: "Unique class code"
+    course:
+      oneOf:
+        - $ref: '#/components/schemas/ObjectId'
+        - type: object
+          properties:
+            _id:
+              $ref: '#/components/schemas/ObjectId'
+            courseCode:
+              type: string
+              example: "SFX001"
+            name:
+              type: string
+              example: "VIPRO"
+      description: "Course reference or populated course object"
+    academicYear:
+      type: string
+      pattern: '^\d{4}-\d{4}$'
+      example: "2024-2025"
+      description: "Academic year in YYYY-YYYY format"
+    semester:
+      type: integer
+      enum: [1, 2, 3]
+      example: 1
+      description: "Semester number (1, 2, or 3)"
+    instructor:
+      type: string
+      example: "Dr. Updated Instructor"
+      description: "Instructor name"
+    maxCapacity:
+      type: integer
+      minimum: 1
+      example: 45
+      description: "Maximum number of students"
+    schedule:
+      type: array
+      items:
+        $ref: '#/components/schemas/ClassSchedule'
+      description: "Class schedule (array of time slots)"
+    enrolledStudents:
+      type: integer
+      example: 0
+      description: "Current number of enrolled students"
+    isActive:
+      type: boolean
+      default: true
+      description: "Whether the class is active"
+    createdAt:
+      type: string
+      format: date-time
+      description: "Creation timestamp"
+    updatedAt:
+      type: string
+      format: date-time
+      description: "Last update timestamp"
+  required:
+    - _id
+    - classCode
+    - course
+    - academicYear
+    - semester
+    - instructor
+    - maxCapacity
+    - schedule
+
+ClassSchedule:
+  type: object
+  properties:
+    _id:
+      $ref: '#/components/schemas/ObjectId'
+    dayOfWeek:
+      type: integer
+      minimum: 2
+      maximum: 7
+      example: 3
+      description: "Day of week (2=Monday, 3=Tuesday, ..., 7=Saturday)"
+    startPeriod:
+      type: integer
+      minimum: 1
+      maximum: 10
+      example: 2
+      description: "Starting period (1-10)"
+    endPeriod:
+      type: integer
+      minimum: 1
+      maximum: 10
+      example: 4
+      description: "Ending period (1-10, must be >= startPeriod)"
+    classroom:
+      type: string
+      example: "C1.05"
+      description: "Classroom location"
+  required:
+    - dayOfWeek
+    - startPeriod
+    - endPeriod
+    - classroom
+
+ClassCreateRequest:
+  type: object
+  properties:
+    classCode:
+      type: string
+      example: "CS101-01"
+      description: "Unique class code"
+    course:
+      $ref: '#/components/schemas/ObjectId'
+      description: "Course ID reference"
+    academicYear:
+      type: string
+      pattern: '^\d{4}-\d{4}$'
+      example: "2024-2025"
+      description: "Academic year in YYYY-YYYY format"
+    semester:
+      type: integer
+      enum: [1, 2, 3]
+      example: 1
+      description: "Semester number (1, 2, or 3)"
+    instructor:
+      type: string
+      example: "Dr. John Smith"
+      description: "Instructor name"
+    maxCapacity:
+      type: integer
+      minimum: 1
+      example: 40
+      description: "Maximum number of students"
+    schedule:
+      type: array
+      items:
+        type: object
+        properties:
+          dayOfWeek:
+            type: integer
+            minimum: 2
+            maximum: 7
+            example: 3
+          startPeriod:
+            type: integer
+            minimum: 1
+            maximum: 10
+            example: 1
+          endPeriod:
+            type: integer
+            minimum: 1
+            maximum: 10
+            example: 3
+          classroom:
+            type: string
+            example: "A1.01"
+        required:
+          - dayOfWeek
+          - startPeriod
+          - endPeriod
+          - classroom
+      minItems: 1
+      description: "Class schedule (array of time slots)"
+  required:
+    - classCode
+    - course
+    - academicYear
+    - semester
+    - instructor
+    - maxCapacity
+    - schedule
+
+ClassUpdateRequest:
+  type: object
+  properties:
+    course:
+      $ref: '#/components/schemas/ObjectId'
+      description: "Updated course ID reference"
+    academicYear:
+      type: string
+      pattern: '^\d{4}-\d{4}$'
+      example: "2024-2025"
+      description: "Updated academic year"
+    semester:
+      type: integer
+      enum: [1, 2, 3]
+      example: 2
+      description: "Updated semester number"
+    instructor:
+      type: string
+      example: "Dr. Jane Doe"
+      description: "Updated instructor name"
+    maxCapacity:
+      type: integer
+      minimum: 1
+      example: 50
+      description: "Updated maximum capacity"
+    schedule:
+      type: array
+      items:
+        type: object
+        properties:
+          dayOfWeek:
+            type: integer
+            minimum: 2
+            maximum: 7
+          startPeriod:
+            type: integer
+            minimum: 1
+            maximum: 10
+          endPeriod:
+            type: integer
+            minimum: 1
+            maximum: 10
+          classroom:
+            type: string
+        required:
+          - dayOfWeek
+          - startPeriod
+          - endPeriod
+          - classroom
+      description: "Updated class schedule"
+    isActive:
+      type: boolean
+      description: "Whether the class is active"
+
+# Enrollment schemas
+Enrollment:
+  type: object
+  properties:
+    _id:
+      $ref: '#/components/schemas/ObjectId'
+    student:
+      $ref: '#/components/schemas/ObjectId'
+      description: "Student ID reference"
+    class:
+      $ref: '#/components/schemas/ObjectId'
+      description: "Class ID reference"
+    status:
+      type: string
+      enum: ["ACTIVE", "DROPPED"]
+      example: "ACTIVE"
+      description: "Enrollment status"
+    enrollmentDate:
+      type: string
+      format: date-time
+      example: "2025-06-14T14:56:18.663Z"
+      description: "Enrollment date"
+    dropDate:
+      type: string
+      format: date-time
+      example: "2025-04-16T13:07:17.437Z"
+      description: "Drop date (only present if status is DROPPED)"
+    dropReason:
+      type: string
+      example: "Schedule conflict"
+      description: "Reason for dropping (only present if status is DROPPED)"
+    createdAt:
+      type: string
+      format: date-time
+      description: "Creation timestamp"
+    updatedAt:
+      type: string
+      format: date-time
+      description: "Last update timestamp"
+  required:
+    - _id
+    - student
+    - class
+    - status
+    - enrollmentDate
+
+EnrollmentWithDetails:
+  type: object
+  properties:
+    _id:
+      $ref: '#/components/schemas/ObjectId'
+    student:
+      type: object
+      properties:
+        _id:
+          $ref: '#/components/schemas/ObjectId'
+        studentId:
+          type: string
+          pattern: '^[0-9]{8}$'
+          example: "22000001"
+        fullName:
+          type: string
+          example: "Nguyễn Văn A"
+      description: "Populated student information"
+    class:
+      type: object
+      properties:
+        _id:
+          $ref: '#/components/schemas/ObjectId'
+        classCode:
+          type: string
+          example: "SFX11122"
+      description: "Populated class information"
+    status:
+      type: string
+      enum: ["ACTIVE", "DROPPED"]
+      example: "DROPPED"
+    enrollmentDate:
+      type: string
+      format: date-time
+      example: "2025-04-16T13:06:46.862Z"
+    dropDate:
+      type: string
+      format: date-time
+      example: "2025-04-16T13:07:17.437Z"
+    dropReason:
+      type: string
+      example: "Schedule conflict"
+    createdAt:
+      type: string
+      format: date-time
+    updatedAt:
+      type: string
+      format: date-time
+  required:
+    - _id
+    - student
+    - class
+    - status
+    - enrollmentDate
+
+EnrollmentCreateRequest:
+  type: object
+  properties:
+    studentId:
+      type: string
+      pattern: '^[0-9]{8}$'
+      example: "22000001"
+      description: "Student ID (8-digit string)"
+    classCode:
+      type: string
+      example: "SFX11122"
+      description: "Class code"
+  required:
+    - studentId
+    - classCode
+
+EnrollmentDropRequest:
+  type: object
+  properties:
+    studentId:
+      type: string
+      pattern: '^[0-9]{8}$'
+      example: "22000001"
+      description: "Student ID (8-digit string)"
+    classCode:
+      type: string
+      example: "SFX11122"
+      description: "Class code"
+    dropReason:
+      type: string
+      example: "Schedule conflict"
+      description: "Reason for dropping the class"
+  required:
+    - studentId
+    - classCode
+    - dropReason
+
+# Grade schemas
+Grade:
+  type: object
+  properties:
+    _id:
+      $ref: '#/components/schemas/ObjectId'
+    enrollment:
+      $ref: '#/components/schemas/ObjectId'
+      description: "Enrollment ID reference"
+    midtermScore:
+      type: number
+      minimum: 0
+      maximum: 10
+      example: 8.5
+      description: "Midterm score (0-10)"
+    finalScore:
+      type: number
+      minimum: 0
+      maximum: 10
+      example: 9.0
+      description: "Final score (0-10)"
+    totalScore:
+      type: number
+      minimum: 0
+      maximum: 10
+      example: 8.8
+      description: "Total score (0-10)"
+    letterGrade:
+      type: string
+      enum: ["A+", "A", "B+", "B", "C+", "C", "D+", "D", "F"]
+      example: "B+"
+      description: "Letter grade"
+    gradePoints:
+      type: number
+      minimum: 0
+      maximum: 4
+      example: 3.5
+      description: "Grade points (0-4)"
+    isPublished:
+      type: boolean
+      default: true
+      example: true
+      description: "Whether the grade is published"
+    createdAt:
+      type: string
+      format: date-time
+      description: "Creation timestamp"
+    updatedAt:
+      type: string
+      format: date-time
+      description: "Last update timestamp"
+  required:
+    - _id
+    - enrollment
+    - totalScore
+    - letterGrade
+    - gradePoints
+
+GradeCreateRequest:
+  type: object
+  properties:
+    studentId:
+      type: string
+      pattern: '^[0-9]{8}$'
+      example: "22000001"
+      description: "Student ID (8-digit string)"
+    classCode:
+      type: string
+      example: "SFX11122"
+      description: "Class code"
+    midtermScore:
+      type: number
+      minimum: 0
+      maximum: 10
+      example: 8.5
+      description: "Midterm score (0-10)"
+    finalScore:
+      type: number
+      minimum: 0
+      maximum: 10
+      example: 9.0
+      description: "Final score (0-10)"
+    totalScore:
+      type: number
+      minimum: 0
+      maximum: 10
+      example: 8.8
+      description: "Total score (0-10)"
+  required:
+    - studentId
+    - classCode
+    - totalScore
+
+GradeUpdateRequest:
+  type: object
+  properties:
+    midtermScore:
+      type: number
+      minimum: 0
+      maximum: 10
+      example: 9.0
+      description: "Updated midterm score (0-10)"
+    finalScore:
+      type: number
+      minimum: 0
+      maximum: 10
+      example: 9.5
+      description: "Updated final score (0-10)"
+    totalScore:
+      type: number
+      minimum: 0
+      maximum: 10
+      example: 9.2
+      description: "Updated total score (0-10)"
+    letterGrade:
+      type: string
+      enum: ["A+", "A", "B+", "B", "C+", "C", "D+", "D", "F"]
+      example: "A"
+      description: "Updated letter grade"
+    gradePoints:
+      type: number
+      minimum: 0
+      maximum: 4
+      example: 4.0
+      description: "Updated grade points (0-4)"
+
+# Common schemas 
+
+components:
+  schemas:
+    # Common schemas from common.yaml
+    ErrorResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "error"
+        code:
+          type: integer
+          example: 400
+        message:
+          type: string
+          example: "Bad Request"
+        stack:
+          type: string
+          description: "Stack trace (only in development)"
+      required:
+        - status
+        - code
+        - message
+
+    SuccessResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          example: "success"
+        code:
+          type: integer
+          example: 200
+        message:
+          type: string
+          example: "Operation completed successfully"
+        metadata:
+          type: object
+          description: "Response data"
+      required:
+        - status
+        - code
+        - message
+
+    PaginationInfo:
+      type: object
+      properties:
+        page:
+          type: integer
+          minimum: 1
+          example: 1
+        limit:
+          type: integer
+          minimum: 1
+          maximum: 100
+          example: 10
+        total:
+          type: integer
+          minimum: 0
+          example: 50
+        totalPages:
+          type: integer
+          minimum: 0
+          example: 5
+      required:
+        - page
+        - limit
+        - total
+        - totalPages
+
+    Pagination:
+      $ref: '#/components/schemas/PaginationInfo'
+
+    ObjectId:
+      type: string
+      pattern: '^[0-9a-fA-F]{24}$'
+      example: "507f1f77bcf86cd799439011"
+      description: "MongoDB ObjectId"
+
+    # Department schemas
+    Department:
+      type: object
+      properties:
+        _id:
+          $ref: '#/components/schemas/ObjectId'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "Computer Science"
+          description: "Department name"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+      required:
+        - _id
+        - name
+        - createdAt
+        - updatedAt
+
+    DepartmentCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "Computer Science"
+          description: "Department name"
+      required:
+        - name
+
+    DepartmentUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "Information Technology"
+          description: "Updated department name"
+      required:
+        - name
+
+    # Program schemas
+    Program:
+      type: object
+      properties:
+        _id:
+          $ref: '#/components/schemas/ObjectId'
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "Bachelor of Computer Science"
+          description: "Program name"
+        createdAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+        updatedAt:
+          type: string
+          format: date-time
+          example: "2024-01-15T10:30:00Z"
+      required:
+        - _id
+        - name
+        - createdAt
+        - updatedAt
+
+    ProgramCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "Bachelor of Computer Science"
+          description: "Program name"
+      required:
+        - name
+
+    ProgramUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 100
+          example: "Master of Computer Science"
+          description: "Updated program name"
+      required:
+        - name
+
+    # Address schemas (referenced in paths)
+    Country:
+      type: object
+      properties:
+        countryName:
+          type: string
+          example: "Vietnam"
+        geonameId:
+          type: integer
+          example: 1562822
+
+    GeonamesResult:
+      type: object
+      properties:
+        totalResultsCount:
+          type: integer
+          example: 36
+        geonames:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: "Ho Chi Minh City"
+              toponymName:
+                type: string
+                example: "Ho Chi Minh City"
+              geonameId:
+                type: integer
+                example: 1566083
+
+    # Semester schemas (referenced in paths)
+    Semester:
+      type: object
+      properties:
+        _id:
+          $ref: '#/components/schemas/ObjectId'
+        academicYear:
+          type: string
+          pattern: '^\d{4}-\d{4}$'
+          example: "2024-2025"
+        semester:
+          type: integer
+          minimum: 1
+          maximum: 3
+          example: 1
+        startDate:
+          type: string
+          format: date
+          example: "2024-09-01"
+        endDate:
+          type: string
+          format: date
+          example: "2025-01-15"
+        isActive:
+          type: boolean
+          example: true
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - _id
+        - academicYear
+        - semester
+        - startDate
+        - endDate
+
+    SemesterCreateRequest:
+      type: object
+      properties:
+        academicYear:
+          type: string
+          pattern: '^\d{4}-\d{4}$'
+          example: "2024-2025"
+        semester:
+          type: integer
+          minimum: 1
+          maximum: 3
+          example: 1
+        startDate:
+          type: string
+          format: date
+          example: "2024-09-01"
+        endDate:
+          type: string
+          format: date
+          example: "2025-01-15"
+      required:
+        - academicYear
+        - semester
+        - startDate
+        - endDate
+
+    SemesterUpdateRequest:
+      type: object
+      properties:
+        academicYear:
+          type: string
+          pattern: '^\d{4}-\d{4}$'
+          example: "2024-2025"
+        semester:
+          type: integer
+          minimum: 1
+          maximum: 3
+          example: 2
+        startDate:
+          type: string
+          format: date
+          example: "2025-02-01"
+        endDate:
+          type: string
+          format: date
+          example: "2025-06-15"
+
+    # Course schemas (referenced in paths)
+    Course:
+      type: object
+      properties:
+        _id:
+          $ref: '#/components/schemas/ObjectId'
+        code:
+          type: string
+          example: "CS101"
+        name:
+          type: string
+          example: "Introduction to Computer Science"
+        credits:
+          type: integer
+          minimum: 1
+          maximum: 6
+          example: 3
+        department:
+          $ref: '#/components/schemas/ObjectId'
+        description:
+          type: string
+          example: "Basic concepts of computer science"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - _id
+        - code
+        - name
+        - credits
+        - department
+
+    CourseCreateRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          example: "CS101"
+        name:
+          type: string
+          example: "Introduction to Computer Science"
+        credits:
+          type: integer
+          minimum: 1
+          maximum: 6
+          example: 3
+        departmentId:
+          $ref: '#/components/schemas/ObjectId'
+        description:
+          type: string
+          example: "Basic concepts of computer science"
+      required:
+        - code
+        - name
+        - credits
+        - departmentId
+
+    CourseUpdateRequest:
+      type: object
+      properties:
+        code:
+          type: string
+          example: "CS102"
+        name:
+          type: string
+          example: "Advanced Computer Science"
+        credits:
+          type: integer
+          minimum: 1
+          maximum: 6
+          example: 4
+        departmentId:
+          $ref: '#/components/schemas/ObjectId'
+        description:
+          type: string
+          example: "Advanced concepts of computer science"
+
+    # Student schemas (referenced in paths)
+    Student:
+      type: object
+      properties:
+        _id:
+          $ref: '#/components/schemas/ObjectId'
+        studentId:
+          type: string
+          pattern: '^[0-9]{8}$'
+          example: "22000001"
+        firstName:
+          type: string
+          example: "John"
+        lastName:
+          type: string
+          example: "Doe"
+        dateOfBirth:
+          type: string
+          format: date
+          example: "2000-01-15"
+        gender:
+          type: string
+          enum: ["Male", "Female", "Other"]
+          example: "Male"
+        email:
+          type: string
+          format: email
+          example: "john.doe@student.edu"
+        phone:
+          type: string
+          example: "+1234567890"
+        address:
+          type: string
+          example: "123 Main St, City, Country"
+        nationality:
+          type: string
+          example: "Vietnamese"
+        program:
+          $ref: '#/components/schemas/ObjectId'
+        academicYear:
+          type: string
+          pattern: '^\d{4}-\d{4}$'
+          example: "2022-2026"
+        status:
+          type: string
+          enum: ["ACTIVE", "GRADUATED", "SUSPENDED", "DROPPED"]
+          example: "ACTIVE"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - _id
+        - studentId
+        - firstName
+        - lastName
+        - dateOfBirth
+        - gender
+        - email
+        - program
+        - academicYear
+        - status
+
+    StudentCreateRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+          example: "John"
+        lastName:
+          type: string
+          example: "Doe"
+        dateOfBirth:
+          type: string
+          format: date
+          example: "2000-01-15"
+        gender:
+          type: string
+          enum: ["Male", "Female", "Other"]
+          example: "Male"
+        email:
+          type: string
+          format: email
+          example: "john.doe@student.edu"
+        phone:
+          type: string
+          example: "+1234567890"
+        address:
+          type: string
+          example: "123 Main St, City, Country"
+        nationality:
+          type: string
+          example: "Vietnamese"
+        programId:
+          $ref: '#/components/schemas/ObjectId'
+        academicYear:
+          type: string
+          pattern: '^\d{4}-\d{4}$'
+          example: "2022-2026"
+      required:
+        - firstName
+        - lastName
+        - dateOfBirth
+        - gender
+        - email
+        - programId
+        - academicYear
+
+    StudentUpdateRequest:
+      type: object
+      properties:
+        firstName:
+          type: string
+          example: "Jane"
+        lastName:
+          type: string
+          example: "Smith"
+        dateOfBirth:
+          type: string
+          format: date
+          example: "2000-02-20"
+        gender:
+          type: string
+          enum: ["Male", "Female", "Other"]
+          example: "Female"
+        email:
+          type: string
+          format: email
+          example: "jane.smith@student.edu"
+        phone:
+          type: string
+          example: "+1234567891"
+        address:
+          type: string
+          example: "456 Oak Ave, City, Country"
+        nationality:
+          type: string
+          example: "American"
+        programId:
+          $ref: '#/components/schemas/ObjectId'
+        academicYear:
+          type: string
+          pattern: '^\d{4}-\d{4}$'
+          example: "2022-2026"
+        status:
+          type: string
+          enum: ["ACTIVE", "GRADUATED", "SUSPENDED", "DROPPED"]
+          example: "ACTIVE"
+
+    # Class schemas
+    Class:
+      type: object
+      properties:
+        _id:
+          $ref: '#/components/schemas/ObjectId'
+        classCode:
+          type: string
+          example: "CS101-01"
+        course:
+          $ref: '#/components/schemas/ObjectId'
+        semester:
+          $ref: '#/components/schemas/ObjectId'
+        instructor:
+          type: string
+          example: "Dr. John Smith"
+        schedule:
+          type: string
+          example: "MWF 10:00-11:30"
+        room:
+          type: string
+          example: "A101"
+        maxStudents:
+          type: integer
+          minimum: 1
+          example: 30
+        enrolledCount:
+          type: integer
+          minimum: 0
+          example: 25
+        status:
+          type: string
+          enum: ["ACTIVE", "CANCELLED", "COMPLETED"]
+          example: "ACTIVE"
+        createdAt:
+          type: string
+          format: date-time
+        updatedAt:
+          type: string
+          format: date-time
+      required:
+        - _id
+        - classCode
+        - course
+        - semester
+        - instructor
+        - maxStudents
+
+    ClassCreateRequest:
+      type: object
+      properties:
+        classCode:
+          type: string
+          example: "CS101-01"
+        courseId:
+          $ref: '#/components/schemas/ObjectId'
+        semesterId:
+          $ref: '#/components/schemas/ObjectId'
+        instructor:
+          type: string
+          example: "Dr. John Smith"
+        schedule:
+          type: string
+          example: "MWF 10:00-11:30"
+        room:
+          type: string
+          example: "A101"
+        maxStudents:
+          type: integer
+          minimum: 1
+          example: 30
+      required:
+        - classCode
+        - courseId
+        - semesterId
+        - instructor
+        - maxStudents
+
+    ClassUpdateRequest:
+      type: object
+      properties:
+        classCode:
+          type: string
+          example: "CS101-02"
+        courseId:
+          $ref: '#/components/schemas/ObjectId'
+        semesterId:
+          $ref: '#/components/schemas/ObjectId'
+        instructor:
+          type: string
+          example: "Dr. Jane Doe"
+        schedule:
+          type: string
+          example: "TTH 14:00-15:30"
+        room:
+          type: string
+          example: "B201"
+        maxStudents:
+          type: integer
+          minimum: 1
+          example: 35
+        status:
+          type: string
+          enum: ["ACTIVE", "CANCELLED", "COMPLETED"]
+          example: "ACTIVE"
+
+  responses:
+    BadRequest:
+      description: Bad Request
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: "error"
+            code: 400
+            message: "Bad Request"
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: "error"
+            code: 404
+            message: "Resource not found"
+
+    InternalServerError:
+      description: Internal Server Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: "error"
+            code: 500
+            message: "Internal Server Error"
+
+    ValidationError:
+      description: Validation Error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: "error"
+            code: 422
+            message: "Validation failed"
+
+    Unauthorized:
+      description: Unauthorized
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: "error"
+            code: 401
+            message: "Unauthorized"
+
+    Forbidden:
+      description: Forbidden
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ErrorResponse'
+          example:
+            status: "error"
+            code: 403
+            message: "Forbidden"
+
+  parameters:
+    ObjectIdParam:
+      name: id
+      in: path
+      required: true
+      description: MongoDB ObjectId
+      schema:
+        $ref: '#/components/schemas/ObjectId'
+      example: "507f1f77bcf86cd799439011"
+
+    PageParam:
+      name: page
+      in: query
+      required: false
+      description: Page number for pagination
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      example: 1
+
+    LimitParam:
+      name: limit
+      in: query
+      required: false
+      description: Number of items per page
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 10
+      example: 10
+
+    SearchParam:
+      name: search
+      in: query
+      required: false
+      description: Search term for filtering results
+      schema:
+        type: string
+        minLength: 1
+        maxLength: 100
+      example: "computer"
+
+    SortParam:
+      name: sort
+      in: query
+      required: false
+      description: Sort field and direction (field:asc or field:desc)
+      schema:
+        type: string
+        pattern: '^[a-zA-Z_][a-zA-Z0-9_]*:(asc|desc)$'
+      example: "name:asc"

@@ -1,0 +1,85 @@
+get:
+  tags:
+    - Departments
+  summary: Get all departments
+  description: Retrieve a list of all departments
+  operationId: getDepartments
+  responses:
+    '200':
+      description: Departments retrieved successfully
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../schemas/common.yaml#/SuccessResponse'
+              - type: object
+                properties:
+                  metadata:
+                    type: object
+                    properties:
+                      departments:
+                        type: array
+                        items:
+                          $ref: '../schemas/department.yaml#/Department'
+          example:
+            status: "success"
+            code: 200
+            message: "Departments retrieved successfully"
+            metadata:
+              departments:
+                - _id: "507f1f77bcf86cd799439011"
+                  name: "Computer Science"
+                  createdAt: "2024-01-15T10:30:00Z"
+                  updatedAt: "2024-01-15T10:30:00Z"
+                - _id: "507f1f77bcf86cd799439012"
+                  name: "Mathematics"
+                  createdAt: "2024-01-15T11:30:00Z"
+                  updatedAt: "2024-01-15T11:30:00Z"
+    '500':
+      $ref: '../responses/common.yaml#/InternalServerError'
+
+post:
+  tags:
+    - Departments
+  summary: Create a new department
+  description: Add a new department to the system
+  operationId: addDepartment
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../schemas/department.yaml#/DepartmentCreateRequest'
+        example:
+          name: "Computer Science"
+  responses:
+    '201':
+      description: Department created successfully
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../schemas/common.yaml#/SuccessResponse'
+              - type: object
+                properties:
+                  metadata:
+                    type: object
+                    properties:
+                      newDepartment:
+                        $ref: '../schemas/department.yaml#/Department'
+          example:
+            status: "success"
+            code: 201
+            message: "Department added successfully"
+            metadata:
+              newDepartment:
+                _id: "507f1f77bcf86cd799439011"
+                name: "Computer Science"
+                createdAt: "2024-01-15T10:30:00Z"
+                updatedAt: "2024-01-15T10:30:00Z"
+    '400':
+      $ref: '../responses/common.yaml#/BadRequest'
+    '422':
+      $ref: '../responses/common.yaml#/ValidationError'
+    '500':
+      $ref: '../responses/common.yaml#/InternalServerError' 

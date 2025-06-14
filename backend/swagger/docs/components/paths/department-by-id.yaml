@@ -1,0 +1,89 @@
+patch:
+  tags:
+    - Departments
+  summary: Update a department
+  description: Update an existing department by ID
+  operationId: updateDepartment
+  parameters:
+    - $ref: '../parameters/common.yaml#/ObjectIdParam'
+  requestBody:
+    required: true
+    content:
+      application/json:
+        schema:
+          $ref: '../schemas/department.yaml#/DepartmentUpdateRequest'
+        example:
+          name: "Information Technology"
+  responses:
+    '200':
+      description: Department updated successfully
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../schemas/common.yaml#/SuccessResponse'
+              - type: object
+                properties:
+                  metadata:
+                    type: object
+                    properties:
+                      updatedDepartment:
+                        $ref: '../schemas/department.yaml#/Department'
+          example:
+            status: "success"
+            code: 200
+            message: "Department updated successfully"
+            metadata:
+              updatedDepartment:
+                _id: "507f1f77bcf86cd799439011"
+                name: "Information Technology"
+                createdAt: "2024-01-15T10:30:00Z"
+                updatedAt: "2024-01-15T12:30:00Z"
+    '400':
+      $ref: '../responses/common.yaml#/BadRequest'
+    '404':
+      $ref: '../responses/common.yaml#/NotFound'
+    '422':
+      $ref: '../responses/common.yaml#/ValidationError'
+    '500':
+      $ref: '../responses/common.yaml#/InternalServerError'
+
+delete:
+  tags:
+    - Departments
+  summary: Delete a department
+  description: Delete an existing department by ID
+  operationId: deleteDepartment
+  parameters:
+    - $ref: '../parameters/common.yaml#/ObjectIdParam'
+  responses:
+    '200':
+      description: Department deleted successfully
+      content:
+        application/json:
+          schema:
+            allOf:
+              - $ref: '../schemas/common.yaml#/SuccessResponse'
+              - type: object
+                properties:
+                  metadata:
+                    type: object
+                    properties:
+                      deletedDepartment:
+                        $ref: '../schemas/department.yaml#/Department'
+          example:
+            status: "success"
+            code: 200
+            message: "Department deleted successfully"
+            metadata:
+              deletedDepartment:
+                _id: "507f1f77bcf86cd799439011"
+                name: "Computer Science"
+                createdAt: "2024-01-15T10:30:00Z"
+                updatedAt: "2024-01-15T10:30:00Z"
+    '400':
+      $ref: '../responses/common.yaml#/BadRequest'
+    '404':
+      $ref: '../responses/common.yaml#/NotFound'
+    '500':
+      $ref: '../responses/common.yaml#/InternalServerError' 
