@@ -76,6 +76,9 @@ describe('EnrollmentService - DI Implementation', () => {
             addStudentStatus: jest.fn(),
             updateStudentStatus: jest.fn(),
             getStudentStatus: jest.fn(),
+            deleteStudentStatus: jest.fn(),
+            countStudentsByStatus: jest.fn(),
+            countTransitionsByStatus: jest.fn(),
             addStudentStatusTransition: jest.fn(),
             findStudentStatusTransition: jest.fn(),
             getTransitionRules: jest.fn(),
@@ -88,6 +91,8 @@ describe('EnrollmentService - DI Implementation', () => {
             findClassByCourse: jest.fn(),
             findClassesWithOverlappingSchedule: jest.fn(),
             getAllClasses: jest.fn(),
+            updateClassByCode: jest.fn(),
+            deleteClassByCode: jest.fn(),
         } as jest.Mocked<IClassRepository>;
 
         mockCourseRepository = {

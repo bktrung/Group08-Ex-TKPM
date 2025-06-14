@@ -3,6 +3,7 @@ import { asyncHandler } from "../../helpers/asyncHandler";
 import { container } from '../../configs/di.config';
 import { TYPES } from '../../configs/di.types';
 import { ProgramController } from '../../controllers/program.controller';
+import { deleteProgramValidator } from '../../validators/program/delete-program.validator';
 
 const router = Router();
 
@@ -17,6 +18,9 @@ router.get('', asyncHandler((req, res, next) =>
 ));
 router.patch('/:id', asyncHandler((req, res, next) => 
 	getProgramController().updateProgram(req, res, next)
+));
+router.delete('/:id', deleteProgramValidator, asyncHandler((req, res, next) => 
+	getProgramController().deleteProgram(req, res, next)
 ));
 
 export default router;

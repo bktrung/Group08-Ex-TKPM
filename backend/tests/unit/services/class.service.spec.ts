@@ -7,6 +7,7 @@ import { IClass, ISchedule } from "../../../src/models/interfaces/class.interfac
 import { CreateClassDto } from "../../../src/dto/class";
 import { IClassRepository } from "../../../src/interfaces/repositories/class.repository.interface";
 import { ICourseRepository } from "../../../src/interfaces/repositories/course.repository.interface";
+import { IEnrollmentRepository } from "../../../src/interfaces/repositories/enrollment.repository.interface";
 import { TYPES } from "../../../src/configs/di.types";
 
 describe("Class Service", () => {
@@ -14,6 +15,7 @@ describe("Class Service", () => {
   let classService: ClassService;
   let mockClassRepository: jest.Mocked<IClassRepository>;
   let mockCourseRepository: jest.Mocked<ICourseRepository>;
+  let mockEnrollmentRepository: jest.Mocked<IEnrollmentRepository>;
 
   const mockCourseId = new mongoose.Types.ObjectId().toString();
   
@@ -68,6 +70,8 @@ describe("Class Service", () => {
       findClassByCourse: jest.fn(),
       findClassesWithOverlappingSchedule: jest.fn(),
       getAllClasses: jest.fn(),
+      updateClassByCode: jest.fn(),
+      deleteClassByCode: jest.fn(),
     } as jest.Mocked<IClassRepository>;
     
     mockCourseRepository = {
@@ -80,10 +84,21 @@ describe("Class Service", () => {
       deleteCourse: jest.fn(),
       getAllCourses: jest.fn(),
     } as jest.Mocked<ICourseRepository>;
+
+    mockEnrollmentRepository = {
+      findEnrollment: jest.fn(),
+      createEnrollment: jest.fn(),
+      dropEnrollment: jest.fn(),
+      getCompletedCourseIdsByStudent: jest.fn(),
+      findDropHistoryByStudent: jest.fn(),
+      findEnrollmentsByStudent: jest.fn(),
+      findEnrollmentsByClass: jest.fn(),
+    } as jest.Mocked<IEnrollmentRepository>;
     
     // Bind mocked repositories
     container.bind<IClassRepository>(TYPES.ClassRepository).toConstantValue(mockClassRepository);
     container.bind<ICourseRepository>(TYPES.CourseRepository).toConstantValue(mockCourseRepository);
+    container.bind<IEnrollmentRepository>(TYPES.EnrollmentRepository).toConstantValue(mockEnrollmentRepository);
     container.bind<ClassService>(TYPES.ClassService).to(ClassService);
     
     // Get service instance

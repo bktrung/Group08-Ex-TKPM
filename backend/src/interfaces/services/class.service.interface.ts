@@ -1,4 +1,4 @@
-import { CreateClassDto } from "../../dto/class";
+import { CreateClassDto, UpdateClassDto } from "../../dto/class";
 import { IClass } from "../../models/interfaces/class.interface";
 import { PaginationResult } from "../../utils";
 
@@ -11,4 +11,7 @@ export interface IClassService {
 		page?: string;
 		limit?: string;
 	}): Promise<PaginationResult<IClass>>;
+	getClassByCode(classCode: string): Promise<IClass>;
+	updateClass(classCode: string, updateData: UpdateClassDto): Promise<IClass>;
+	deleteClass(classCode: string): Promise<IClass>;
 } 

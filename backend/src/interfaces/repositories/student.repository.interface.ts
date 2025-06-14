@@ -19,6 +19,9 @@ export interface IStudentRepository {
 	addStudentStatus(statusType: string): Promise<any>;
 	updateStudentStatus(statusId: string, statusType: string): Promise<any>;
 	getStudentStatus(): Promise<any>;
+	deleteStudentStatus(statusId: string): Promise<any>;
+	countStudentsByStatus(statusId: string): Promise<number>;
+	countTransitionsByStatus(statusId: string): Promise<number>;
 
 	// Student status transition operations
 	addStudentStatusTransition(fromStatus: string, toStatus: string): Promise<any>;

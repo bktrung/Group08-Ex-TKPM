@@ -29,6 +29,8 @@ describe("Program Service", () => {
       addProgram: jest.fn(),
       updateProgram: jest.fn(),
       getPrograms: jest.fn(),
+      deleteProgram: jest.fn(),
+      countStudentsByProgram: jest.fn(),
     } as jest.Mocked<IProgramRepository>;
     
     // Bind mocked repository
@@ -141,6 +143,68 @@ describe("Program Service", () => {
       
       expect(mockProgramRepository.getPrograms).toHaveBeenCalled();
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('deleteProgram', () => {
+    it('should delete program successfully when no students are assigned', async () => {
+      const programId = mockProgramId;
+
+      mockProgramRepository.findProgramById.mockResolvedValue(mockProgram as IProgram);
+      mockProgramRepository.countStudentsByProgram.mockResolvedValue(0);
+      mockProgramRepository.deleteProgram.mockResolvedValue(mockProgram as IProgram);
+
+      const result = await programService.deleteProgram(programId);
+
+      expect(mockProgramRepository.findProgramById).toHaveBeenCalledWith(programId);
+      expect(mockProgramRepository.countStudentsByProgram).toHaveBeenCalledWith(programId);
+      expect(mockProgramRepository.deleteProgram).toHaveBeenCalledWith(programId);
+      expect(result).toEqual(mockProgram);
+    });
+
+    it('should throw NotFoundError if program does not exist', async () => {
+      const programId = mockProgramId;
+
+      mockProgramRepository.findProgramById.mockResolvedValue(null);
+
+      await expect(programService.deleteProgram(programId))
+        .rejects
+        .toThrow(NotFoundError);
+      
+      expect(mockProgramRepository.findProgramById).toHaveBeenCalledWith(programId);
+      expect(mockProgramRepository.countStudentsByProgram).not.toHaveBeenCalled();
+      expect(mockProgramRepository.deleteProgram).not.toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestError if students are assigned to program', async () => {
+      const programId = mockProgramId;
+
+      mockProgramRepository.findProgramById.mockResolvedValue(mockProgram as IProgram);
+      mockProgramRepository.countStudentsByProgram.mockResolvedValue(5);
+
+      await expect(programService.deleteProgram(programId))
+        .rejects
+        .toThrow(BadRequestError);
+      
+      expect(mockProgramRepository.findProgramById).toHaveBeenCalledWith(programId);
+      expect(mockProgramRepository.countStudentsByProgram).toHaveBeenCalledWith(programId);
+      expect(mockProgramRepository.deleteProgram).not.toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundError if deletion fails', async () => {
+      const programId = mockProgramId;
+
+      mockProgramRepository.findProgramById.mockResolvedValue(mockProgram as IProgram);
+      mockProgramRepository.countStudentsByProgram.mockResolvedValue(0);
+      mockProgramRepository.deleteProgram.mockResolvedValue(null);
+
+      await expect(programService.deleteProgram(programId))
+        .rejects
+        .toThrow(NotFoundError);
+      
+      expect(mockProgramRepository.findProgramById).toHaveBeenCalledWith(programId);
+      expect(mockProgramRepository.countStudentsByProgram).toHaveBeenCalledWith(programId);
+      expect(mockProgramRepository.deleteProgram).toHaveBeenCalledWith(programId);
     });
   });
 

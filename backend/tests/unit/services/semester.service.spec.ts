@@ -55,6 +55,8 @@ describe("Semester Service", () => {
       findClassByCourse: jest.fn(),
       findClassesWithOverlappingSchedule: jest.fn(),
       getAllClasses: jest.fn(),
+      updateClassByCode: jest.fn(),
+      deleteClassByCode: jest.fn(),
     } as jest.Mocked<IClassRepository>;
     
     // Bind mocked repositories

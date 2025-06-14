@@ -118,5 +118,35 @@
   "Registration end date must be a valid date": "Ngày kết thúc đăng ký phải là một ngày hợp lệ",
   "Drop deadline must be a valid date": "Hạn chót rút học phần phải là một ngày hợp lệ",
   "Semester start date must be a valid date": "Ngày bắt đầu học kỳ phải là một ngày hợp lệ",
-  "Semester end date must be a valid date": "Ngày kết thúc học kỳ phải là một ngày hợp lệ"
+  "Semester end date must be a valid date": "Ngày kết thúc học kỳ phải là một ngày hợp lệ",
+
+  "Cannot delete department with assigned students": "Không thể xóa khoa khi có sinh viên được phân công",
+  "Cannot delete department with assigned courses": "Không thể xóa khoa khi có môn học được phân công",
+  "Department not found during deletion": "Không tìm thấy khoa trong quá trình xóa",
+  "Department ID is required": "ID khoa là bắt buộc",
+  "Department ID must be a valid ObjectId": "ID khoa phải là ObjectId hợp lệ",
+
+  "Cannot delete program with assigned students": "Không thể xóa chương trình khi có sinh viên được phân công",
+  "Program not found during deletion": "Không tìm thấy chương trình trong quá trình xóa",
+  "Program ID is required": "ID chương trình là bắt buộc",
+  "Program ID must be a valid ObjectId": "ID chương trình phải là ObjectId hợp lệ",
+
+  "Cannot delete status with assigned students": "Không thể xóa trạng thái khi có sinh viên được phân công",
+  "Cannot delete status with existing transitions": "Không thể xóa trạng thái khi có quy tắc chuyển đổi tồn tại",
+  "Status not found during deletion": "Không tìm thấy trạng thái trong quá trình xóa",
+  "Status ID is required": "ID trạng thái là bắt buộc",
+  "Status ID must be a valid ObjectId": "ID trạng thái phải là ObjectId hợp lệ",
+
+  "Cannot reduce class capacity below enrolled students": "Không thể giảm sức chứa lớp xuống dưới số sinh viên đã đăng ký",
+  "Cannot delete class with existing enrollments": "Không thể xóa lớp có sinh viên đã đăng ký",
+  "Cannot delete class with existing grades": "Không thể xóa lớp có điểm số tồn tại",
+  "Class not found": "Không tìm thấy lớp học",
+  "Class not found during update": "Không tìm thấy lớp học khi cập nhật",
+  "Class not found during deletion": "Không tìm thấy lớp học khi xóa",
+  "Schedule must be in same semester": "Lịch học phải trong cùng học kỳ",
+  "Class code is required": "Mã lớp học là bắt buộc",
+  "Class code cannot be empty": "Mã lớp học không được để trống",
+  "Cannot update schedule to different semester": "Không thể cập nhật lịch học sang học kỳ khác",
+  "Room conflict detected": "Phát hiện xung đột phòng học",
+  "Schedule conflict detected": "Phát hiện xung đột lịch học"
 } 

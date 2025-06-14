@@ -17,3 +17,5 @@ export interface CreateClassDto {
 	maxCapacity: number;
 	schedule: ScheduleDto[]; // Array of schedule objects
 }
+
+export { UpdateClassDto } from './update-class.dto';

@@ -206,6 +206,34 @@ export class StudentService implements IStudentService {
 		return this.studentRepository.getStudentStatus();
 	}
 
+	async deleteStudentStatus(statusId: string): Promise<any> {
+		// Check if status exists
+		const status = await this.studentRepository.findStudentStatusById(statusId);
+		if (!status) {
+			throw new NotFoundError('Student status not found');
+		}
+
+		// Check for cascade dependencies - students
+		const studentCount = await this.studentRepository.countStudentsByStatus(statusId);
+		if (studentCount > 0) {
+			throw new BadRequestError('Cannot delete status with assigned students');
+		}
+
+		// Check for cascade dependencies - status transitions
+		const transitionCount = await this.studentRepository.countTransitionsByStatus(statusId);
+		if (transitionCount > 0) {
+			throw new BadRequestError('Cannot delete status with existing transitions');
+		}
+
+		// Perform deletion
+		const deletedStatus = await this.studentRepository.deleteStudentStatus(statusId);
+		if (!deletedStatus) {
+			throw new NotFoundError('Status not found during deletion');
+		}
+
+		return deletedStatus;
+	}
+
 	async getStudentByDepartment(departmentId: string, page: number, limit: number): Promise<PaginationResult<IStudent>> {
 		return await this.studentRepository.getAllStudents(page, limit, { department: departmentId });
 	}

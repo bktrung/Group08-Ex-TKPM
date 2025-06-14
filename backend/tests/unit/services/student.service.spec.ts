@@ -108,6 +108,9 @@ describe("Student Service - DI Implementation", () => {
       addStudentStatus: jest.fn(),
       updateStudentStatus: jest.fn(),
       getStudentStatus: jest.fn(),
+      deleteStudentStatus: jest.fn(),
+      countStudentsByStatus: jest.fn(),
+      countTransitionsByStatus: jest.fn(),
       addStudentStatusTransition: jest.fn(),
       findStudentStatusTransition: jest.fn(),
       getTransitionRules: jest.fn(),
@@ -120,6 +123,9 @@ describe("Student Service - DI Implementation", () => {
       addDepartment: jest.fn(),
       updateDepartment: jest.fn(),
       getDepartments: jest.fn(),
+      deleteDepartment: jest.fn(),
+      countStudentsByDepartment: jest.fn(),
+      countCoursesByDepartment: jest.fn(),
     } as jest.Mocked<IDepartmentRepository>;
 
     mockProgramRepository = {
@@ -128,6 +134,8 @@ describe("Student Service - DI Implementation", () => {
       addProgram: jest.fn(),
       updateProgram: jest.fn(),
       getPrograms: jest.fn(),
+      deleteProgram: jest.fn(),
+      countStudentsByProgram: jest.fn(),
     } as jest.Mocked<IProgramRepository>;
     
     // Bind mocked repositories
@@ -320,6 +328,87 @@ describe("Student Service - DI Implementation", () => {
         .toThrow(new NotFoundError('Student not found'));
       
       expect(mockStudentRepository.findStudent).toHaveBeenCalledWith({ studentId: "STU001" });
+    });
+  });
+
+  describe('deleteStudentStatus', () => {
+    const mockStatusId = new mongoose.Types.ObjectId().toString();
+    const mockStatus = {
+      _id: new mongoose.Types.ObjectId(),
+      type: 'Active'
+    };
+
+    it('should delete student status successfully when no dependencies exist', async () => {
+      mockStudentRepository.findStudentStatusById.mockResolvedValue(mockStatus);
+      mockStudentRepository.countStudentsByStatus.mockResolvedValue(0);
+      mockStudentRepository.countTransitionsByStatus.mockResolvedValue(0);
+      mockStudentRepository.deleteStudentStatus.mockResolvedValue(mockStatus);
+
+      const result = await studentService.deleteStudentStatus(mockStatusId);
+
+      expect(mockStudentRepository.findStudentStatusById).toHaveBeenCalledWith(mockStatusId);
+      expect(mockStudentRepository.countStudentsByStatus).toHaveBeenCalledWith(mockStatusId);
+      expect(mockStudentRepository.countTransitionsByStatus).toHaveBeenCalledWith(mockStatusId);
+      expect(mockStudentRepository.deleteStudentStatus).toHaveBeenCalledWith(mockStatusId);
+      expect(result).toEqual(mockStatus);
+    });
+
+    it('should throw NotFoundError if status does not exist', async () => {
+      mockStudentRepository.findStudentStatusById.mockResolvedValue(null);
+
+      await expect(studentService.deleteStudentStatus(mockStatusId))
+        .rejects
+        .toThrow(new NotFoundError('Student status not found'));
+      
+      expect(mockStudentRepository.findStudentStatusById).toHaveBeenCalledWith(mockStatusId);
+      expect(mockStudentRepository.countStudentsByStatus).not.toHaveBeenCalled();
+      expect(mockStudentRepository.countTransitionsByStatus).not.toHaveBeenCalled();
+      expect(mockStudentRepository.deleteStudentStatus).not.toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestError if students are assigned to status', async () => {
+      mockStudentRepository.findStudentStatusById.mockResolvedValue(mockStatus);
+      mockStudentRepository.countStudentsByStatus.mockResolvedValue(3);
+
+      await expect(studentService.deleteStudentStatus(mockStatusId))
+        .rejects
+        .toThrow(new BadRequestError('Cannot delete status with assigned students'));
+      
+      expect(mockStudentRepository.findStudentStatusById).toHaveBeenCalledWith(mockStatusId);
+      expect(mockStudentRepository.countStudentsByStatus).toHaveBeenCalledWith(mockStatusId);
+      expect(mockStudentRepository.countTransitionsByStatus).not.toHaveBeenCalled();
+      expect(mockStudentRepository.deleteStudentStatus).not.toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestError if status transitions exist', async () => {
+      mockStudentRepository.findStudentStatusById.mockResolvedValue(mockStatus);
+      mockStudentRepository.countStudentsByStatus.mockResolvedValue(0);
+      mockStudentRepository.countTransitionsByStatus.mockResolvedValue(2);
+
+      await expect(studentService.deleteStudentStatus(mockStatusId))
+        .rejects
+        .toThrow(new BadRequestError('Cannot delete status with existing transitions'));
+      
+      expect(mockStudentRepository.findStudentStatusById).toHaveBeenCalledWith(mockStatusId);
+      expect(mockStudentRepository.countStudentsByStatus).toHaveBeenCalledWith(mockStatusId);
+      expect(mockStudentRepository.countTransitionsByStatus).toHaveBeenCalledWith(mockStatusId);
+      expect(mockStudentRepository.deleteStudentStatus).not.toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundError if deletion fails', async () => {
+      mockStudentRepository.findStudentStatusById.mockResolvedValue(mockStatus);
+      mockStudentRepository.countStudentsByStatus.mockResolvedValue(0);
+      mockStudentRepository.countTransitionsByStatus.mockResolvedValue(0);
+      mockStudentRepository.deleteStudentStatus.mockResolvedValue(null);
+
+      await expect(studentService.deleteStudentStatus(mockStatusId))
+        .rejects
+        .toThrow(new NotFoundError('Status not found during deletion'));
+      
+      expect(mockStudentRepository.findStudentStatusById).toHaveBeenCalledWith(mockStatusId);
+      expect(mockStudentRepository.countStudentsByStatus).toHaveBeenCalledWith(mockStatusId);
+      expect(mockStudentRepository.countTransitionsByStatus).toHaveBeenCalledWith(mockStatusId);
+      expect(mockStudentRepository.deleteStudentStatus).toHaveBeenCalledWith(mockStatusId);
     });
   });
 });

@@ -68,6 +68,9 @@ describe("Course Service", () => {
       addDepartment: jest.fn(),
       updateDepartment: jest.fn(),
       getDepartments: jest.fn(),
+      deleteDepartment: jest.fn(),
+      countStudentsByDepartment: jest.fn(),
+      countCoursesByDepartment: jest.fn(),
     } as jest.Mocked<IDepartmentRepository>;
     
     mockClassRepository = {
@@ -76,6 +79,8 @@ describe("Course Service", () => {
       findClassByCourse: jest.fn(),
       findClassesWithOverlappingSchedule: jest.fn(),
       getAllClasses: jest.fn(),
+      updateClassByCode: jest.fn(),
+      deleteClassByCode: jest.fn(),
     } as jest.Mocked<IClassRepository>;
     
     mockEnrollmentRepository = {

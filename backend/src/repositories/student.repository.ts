@@ -58,6 +58,18 @@ export class StudentRepository implements IStudentRepository {
 		return await StudentRepo.getStudentStatus();
 	}
 
+	async deleteStudentStatus(statusId: string): Promise<any> {
+		return await StudentRepo.deleteStudentStatus(statusId);
+	}
+
+	async countStudentsByStatus(statusId: string): Promise<number> {
+		return await StudentRepo.countStudentsByStatus(statusId);
+	}
+
+	async countTransitionsByStatus(statusId: string): Promise<number> {
+		return await StudentRepo.countTransitionsByStatus(statusId);
+	}
+
 	// Student status transition operations
 	async addStudentStatusTransition(fromStatus: string, toStatus: string): Promise<any> {
 		return await StudentRepo.addStudentStatusTransition(fromStatus, toStatus);

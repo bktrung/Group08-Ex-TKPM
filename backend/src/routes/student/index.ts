@@ -5,6 +5,7 @@ import { updateStudentValidator } from "../../validators/student/update-student.
 import { container } from '../../configs/di.config';
 import { TYPES } from '../../configs/di.types';
 import { StudentController } from '../../controllers/student.controller';
+import { deleteStudentStatusValidator } from '../../validators/student-status/delete-student-status.validator';
 
 const router = Router();
 
@@ -43,6 +44,9 @@ router.post('/status-types', asyncHandler((req, res, next) =>
 ));
 router.put('/status-types/:statusId', asyncHandler((req, res, next) => 
 	getStudentController().modifyStudentStatusType(req, res, next)
+));
+router.delete('/status-types/:statusId', deleteStudentStatusValidator, asyncHandler((req, res, next) => 
+	getStudentController().deleteStudentStatusType(req, res, next)
 ));
 router.get('/department/:departmentId', asyncHandler((req, res, next) => 
 	getStudentController().getStudentByDepartment(req, res, next)

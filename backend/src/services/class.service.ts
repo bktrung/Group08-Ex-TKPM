@@ -1,19 +1,21 @@
 import { injectable, inject } from "inversify";
-import { CreateClassDto } from "../dto/class";
-import { BadRequestError } from "../responses/error.responses";
+import { CreateClassDto, UpdateClassDto } from "../dto/class";
+import { BadRequestError, NotFoundError } from "../responses/error.responses";
 import { IClass } from "../models/interfaces/class.interface";
 import { Types } from "mongoose";
 import { IClassService } from "../interfaces/services/class.service.interface";
 import { IClassRepository } from "../interfaces/repositories/class.repository.interface";
 import { ICourseRepository } from "../interfaces/repositories/course.repository.interface";
+import { IEnrollmentRepository } from "../interfaces/repositories/enrollment.repository.interface";
 import { TYPES } from "../configs/di.types";
-import { PaginationResult } from "../utils";
+import { PaginationResult, getDocumentId } from "../utils";
 
 @injectable()
 export class ClassService implements IClassService {
 	constructor(
 		@inject(TYPES.ClassRepository) private classRepository: IClassRepository,
-		@inject(TYPES.CourseRepository) private courseRepository: ICourseRepository
+		@inject(TYPES.CourseRepository) private courseRepository: ICourseRepository,
+		@inject(TYPES.EnrollmentRepository) private enrollmentRepository: IEnrollmentRepository
 	) {}
 
 	async addClass(classData: CreateClassDto): Promise<IClass> {
@@ -141,5 +143,117 @@ export class ClassService implements IClassService {
 
 		// Query classes with pagination and filters
 		return await this.classRepository.getAllClasses(page, limit, filter);
+	}
+
+	async getClassByCode(classCode: string): Promise<IClass> {
+		const existingClass = await this.classRepository.findClassByCode(classCode);
+		if (!existingClass) {
+			throw new NotFoundError("Class not found");
+		}
+		return existingClass;
+	}
+
+	async updateClass(classCode: string, updateData: UpdateClassDto): Promise<IClass> {
+		const existingClass = await this.classRepository.findClassByCode(classCode);
+		if (!existingClass) {
+			throw new NotFoundError("Class not found during update");
+		}
+
+		// Validate maxCapacity if being updated
+		if (updateData.maxCapacity !== undefined) {
+			if (updateData.maxCapacity < existingClass.enrolledStudents) {
+				throw new BadRequestError("Cannot reduce class capacity below enrolled students");
+			}
+		}
+
+		// Validate schedule if being updated
+		if (updateData.schedule) {
+			// Validate that schedules don't overlap internally
+			for (let i = 0; i < updateData.schedule.length; i++) {
+				const scheduleA = updateData.schedule[i];
+
+				// Validate each schedule item
+				if (scheduleA.startPeriod > scheduleA.endPeriod) {
+					throw new BadRequestError(
+						`End period (${scheduleA.endPeriod}) must be greater than or equal to start period (${scheduleA.startPeriod})`
+					);
+				}
+
+				// Check if schedules overlap with each other
+				for (let j = i + 1; j < updateData.schedule.length; j++) {
+					const scheduleB = updateData.schedule[j];
+					if (scheduleA.dayOfWeek === scheduleB.dayOfWeek) {
+						const overlap = (
+							(scheduleA.startPeriod <= scheduleB.endPeriod && scheduleA.startPeriod >= scheduleB.startPeriod) ||
+							(scheduleA.endPeriod >= scheduleB.startPeriod && scheduleA.endPeriod <= scheduleB.endPeriod) ||
+							(scheduleA.startPeriod <= scheduleB.startPeriod && scheduleA.endPeriod >= scheduleB.endPeriod)
+						);
+
+						if (overlap) {
+							throw new BadRequestError("Schedule conflict detected");
+						}
+					}
+				}
+			}
+
+			// Check for classroom conflicts with other classes (excluding current class)
+			const overlappingClasses = await this.classRepository.findClassesWithOverlappingSchedule(updateData.schedule);
+			if (overlappingClasses && overlappingClasses.length > 0) {
+				// Filter out the current class being updated
+				const conflictingClasses = overlappingClasses.filter(cls => cls.classCode !== classCode);
+				
+				if (conflictingClasses.length > 0) {
+					// Find the specific conflict
+					for (const conflictingClass of conflictingClasses) {
+						for (const existingSchedule of conflictingClass.schedule) {
+							for (const newSchedule of updateData.schedule) {
+								if (existingSchedule.dayOfWeek === newSchedule.dayOfWeek &&
+									existingSchedule.classroom === newSchedule.classroom) {
+
+									const overlap = (
+										(newSchedule.startPeriod <= existingSchedule.endPeriod && newSchedule.startPeriod >= existingSchedule.startPeriod) ||
+										(newSchedule.endPeriod >= existingSchedule.startPeriod && newSchedule.endPeriod <= existingSchedule.endPeriod) ||
+										(newSchedule.startPeriod <= existingSchedule.startPeriod && newSchedule.endPeriod >= existingSchedule.endPeriod)
+									);
+
+									if (overlap) {
+										throw new BadRequestError("Room conflict detected");
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		// Perform the update
+		const updatedClass = await this.classRepository.updateClassByCode(classCode, updateData);
+		if (!updatedClass) {
+			throw new NotFoundError("Class not found during update");
+		}
+
+		return updatedClass;
+	}
+
+	async deleteClass(classCode: string): Promise<IClass> {
+		const existingClass = await this.classRepository.findClassByCode(classCode);
+		if (!existingClass) {
+			throw new NotFoundError("Class not found during deletion");
+		}
+
+		// Check for enrollment dependencies
+		const enrollments = await this.enrollmentRepository.findEnrollmentsByClass(getDocumentId(existingClass));
+		if (enrollments.length > 0) {
+			throw new BadRequestError("Cannot delete class with existing enrollments");
+		}
+
+		// Perform the deletion
+		const deletedClass = await this.classRepository.deleteClassByCode(classCode);
+		if (!deletedClass) {
+			throw new NotFoundError("Class not found during deletion");
+		}
+
+		return deletedClass;
 	}
 }

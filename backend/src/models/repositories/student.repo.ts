@@ -108,6 +108,20 @@ export const updateStudentStatus = async (statusId: string, StatusType: string):
 export const getStudentStatus = async (): Promise<any> => {
 	return await StudentStatus.find({}, { createdAt: 0, updatedAt: 0, __v: 0 }).lean();
 }
+
+export const deleteStudentStatus = async (statusId: string): Promise<any> => {
+	return await StudentStatus.findByIdAndDelete(statusId).lean();
+}
+
+export const countStudentsByStatus = async (statusId: string): Promise<number> => {
+	return await Student.countDocuments({ status: statusId });
+}
+
+export const countTransitionsByStatus = async (statusId: string): Promise<number> => {
+	const fromCount = await StudentStatusTransition.countDocuments({ fromStatus: statusId });
+	const toCount = await StudentStatusTransition.countDocuments({ toStatus: statusId });
+	return fromCount + toCount;
+}
 /// End Student Status Repo
 
 /// Student Status Transition Repo

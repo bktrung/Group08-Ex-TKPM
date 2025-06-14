@@ -36,4 +36,13 @@ export class ProgramController {
 			metadata: { programs }
 		}).send(res);
 	}
+
+	deleteProgram = async (req: Request, res: Response, next: NextFunction) => {
+		const programId = req.params.id;
+		const deletedProgram = await this.programService.deleteProgram(programId);
+		return new OK({
+			message: 'Program deleted successfully',
+			metadata: { deletedProgram }
+		}).send(res);
+	}
 }

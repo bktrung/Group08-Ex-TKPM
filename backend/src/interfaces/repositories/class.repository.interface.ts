@@ -1,4 +1,4 @@
-import { CreateClassDto } from "../../dto/class";
+import { CreateClassDto, UpdateClassDto } from "../../dto/class";
 import { IClass } from "../../models/interfaces/class.interface";
 import { Types } from "mongoose";
 import { PaginationResult } from "../../utils";
@@ -9,4 +9,6 @@ export interface IClassRepository {
 	findClassByCourse(courseId: string | Types.ObjectId): Promise<IClass[]>;
 	findClassesWithOverlappingSchedule(schedule: any[]): Promise<IClass[]>;
 	getAllClasses(page: number, limit: number, filter: Record<string, any>): Promise<PaginationResult<IClass>>;
+	updateClassByCode(classCode: string, updateData: UpdateClassDto): Promise<IClass | null>;
+	deleteClassByCode(classCode: string): Promise<IClass | null>;
 } 

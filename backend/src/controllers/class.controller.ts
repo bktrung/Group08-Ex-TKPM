@@ -35,4 +35,32 @@ export class ClassController {
 			metadata: classesData,
 		}).send(res);
 	};
+
+	getClassByCode = async (req: Request, res: Response, next: NextFunction) => {
+		const { classCode } = req.params;
+		const classData = await this.classService.getClassByCode(classCode);
+		return new OK({
+			message: "Class retrieved successfully",
+			metadata: { class: classData },
+		}).send(res);
+	};
+
+	updateClass = async (req: Request, res: Response, next: NextFunction) => {
+		const { classCode } = req.params;
+		const updateData = req.body;
+		const updatedClass = await this.classService.updateClass(classCode, updateData);
+		return new OK({
+			message: "Class updated successfully",
+			metadata: { updatedClass },
+		}).send(res);
+	};
+
+	deleteClass = async (req: Request, res: Response, next: NextFunction) => {
+		const { classCode } = req.params;
+		const deletedClass = await this.classService.deleteClass(classCode);
+		return new OK({
+			message: "Class deleted successfully", 
+			metadata: { deletedClass },
+		}).send(res);
+	};
 }

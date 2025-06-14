@@ -1,6 +1,6 @@
 import { injectable } from "inversify";
 import Class from "../models/class.model";
-import { CreateClassDto } from "../dto/class";
+import { CreateClassDto, UpdateClassDto } from "../dto/class";
 import { IClass, ISchedule } from "../models/interfaces/class.interface";
 import { Types } from "mongoose";
 import { getAllDocuments } from "../utils";
@@ -106,5 +106,13 @@ export class ClassRepository implements IClassRepository {
 				{ path: 'course', select: '_id name courseCode' }
 			]
 		});
+	}
+
+	async updateClassByCode(classCode: string, updateData: UpdateClassDto): Promise<IClass | null> {
+		return await Class.findOneAndUpdate({ classCode }, updateData, { new: true }).lean();
+	}
+
+	async deleteClassByCode(classCode: string): Promise<IClass | null> {
+		return await Class.findOneAndDelete({ classCode }).lean();
 	}
 } 

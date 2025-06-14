@@ -36,4 +36,13 @@ export class DepartmentController {
 			metadata: { departments }
 		}).send(res);
 	}
+
+	deleteDepartment = async (req: Request, res: Response, next: NextFunction) => {
+		const departmentId = req.params.id;
+		const deletedDepartment = await this.departmentService.deleteDepartment(departmentId);
+		return new OK({
+			message: 'Department deleted successfully',
+			metadata: { deletedDepartment }
+		}).send(res);
+	}
 }

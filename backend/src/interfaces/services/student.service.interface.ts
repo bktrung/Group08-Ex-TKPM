@@ -16,6 +16,7 @@ export interface IStudentService {
 	addStudentStatus(statusType: string): Promise<any>;
 	modifyStudentStatus(statusId: string, statusType: string): Promise<any>;
 	getStudentStatus(): Promise<any>;
+	deleteStudentStatus(statusId: string): Promise<any>;
 
 	// Student status transition operations
 	addStudentStatusTransition(fromStatus: string, toStatus: string): Promise<any>;

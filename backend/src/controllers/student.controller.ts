@@ -101,6 +101,15 @@ export class StudentController {
 		}).send(res);
 	}
 
+	deleteStudentStatusType = async (req: Request, res: Response, next: NextFunction) => {
+		const statusId = req.params.statusId;
+		const deletedStatusType = await this.studentService.deleteStudentStatus(statusId);
+		return new OK({
+			message: 'Student status type deleted',
+			metadata: deletedStatusType
+		}).send(res);
+	}
+
 	getStudentByDepartment = async (req: Request, res: Response, next: NextFunction) => {
 		const { departmentId } = req.params;
 		const { page = "1", limit = "10" } = req.query;

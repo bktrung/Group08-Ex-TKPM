@@ -37,4 +37,26 @@ export class ProgramService implements IProgramService {
 	async getPrograms(): Promise<IProgram[]> {
 		return await this.programRepository.getPrograms();
 	}
+
+	async deleteProgram(programId: string): Promise<IProgram> {
+		// Check if program exists
+		const program = await this.programRepository.findProgramById(programId);
+		if (!program) {
+			throw new NotFoundError('Training program not found');
+		}
+
+		// Check for cascade dependencies - students
+		const studentCount = await this.programRepository.countStudentsByProgram(programId);
+		if (studentCount > 0) {
+			throw new BadRequestError('Cannot delete program with assigned students');
+		}
+
+		// Perform deletion
+		const deletedProgram = await this.programRepository.deleteProgram(programId);
+		if (!deletedProgram) {
+			throw new NotFoundError('Program not found during deletion');
+		}
+
+		return deletedProgram;
+	}
 }

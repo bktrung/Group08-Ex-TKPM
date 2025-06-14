@@ -7,4 +7,6 @@ export interface IProgramRepository {
 	addProgram(name: string): Promise<IProgram>;
 	updateProgram(id: string, name: string): Promise<IProgram | null>;
 	getPrograms(): Promise<IProgram[]>;
+	deleteProgram(id: string): Promise<IProgram | null>;
+	countStudentsByProgram(programId: string): Promise<number>;
 } 

@@ -7,4 +7,7 @@ export interface IDepartmentRepository {
 	addDepartment(name: string): Promise<IDepartment>;
 	updateDepartment(id: string, name: string): Promise<IDepartment | null>;
 	getDepartments(): Promise<IDepartment[]>;
+	deleteDepartment(id: string): Promise<IDepartment | null>;
+	countStudentsByDepartment(departmentId: string): Promise<number>;
+	countCoursesByDepartment(departmentId: string): Promise<number>;
 } 

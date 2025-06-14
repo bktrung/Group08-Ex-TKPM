@@ -29,6 +29,9 @@ describe("Department Service", () => {
       addDepartment: jest.fn(),
       updateDepartment: jest.fn(),
       getDepartments: jest.fn(),
+      deleteDepartment: jest.fn(),
+      countStudentsByDepartment: jest.fn(),
+      countCoursesByDepartment: jest.fn(),
     } as jest.Mocked<IDepartmentRepository>;
     
     // Bind mocked repository
@@ -141,6 +144,123 @@ describe("Department Service", () => {
       
       expect(mockDepartmentRepository.getDepartments).toHaveBeenCalled();
       expect(result).toEqual([]);
+    });
+  });
+
+  describe('deleteDepartment', () => {
+    it('should throw NotFoundError if department does not exist', async () => {
+      const departmentId = mockDepartmentId;
+
+      // Mock findDepartmentById to return null (department not found)
+      mockDepartmentRepository.findDepartmentById.mockResolvedValue(null);
+
+      await expect(departmentService.deleteDepartment(departmentId))
+        .rejects
+        .toThrow(NotFoundError);
+      
+      expect(mockDepartmentRepository.findDepartmentById).toHaveBeenCalledWith(departmentId);
+      expect(mockDepartmentRepository.countStudentsByDepartment).not.toHaveBeenCalled();
+      expect(mockDepartmentRepository.countCoursesByDepartment).not.toHaveBeenCalled();
+      expect(mockDepartmentRepository.deleteDepartment).not.toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestError if department has students', async () => {
+      const departmentId = mockDepartmentId;
+
+      // Mock findDepartmentById to return existing department
+      mockDepartmentRepository.findDepartmentById.mockResolvedValue(mockDepartment as IDepartment);
+      // Mock countStudentsByDepartment to return > 0
+      mockDepartmentRepository.countStudentsByDepartment.mockResolvedValue(5);
+
+      await expect(departmentService.deleteDepartment(departmentId))
+        .rejects
+        .toThrow(new BadRequestError('Cannot delete department with assigned students'));
+      
+      expect(mockDepartmentRepository.findDepartmentById).toHaveBeenCalledWith(departmentId);
+      expect(mockDepartmentRepository.countStudentsByDepartment).toHaveBeenCalledWith(departmentId);
+      expect(mockDepartmentRepository.countCoursesByDepartment).not.toHaveBeenCalled();
+      expect(mockDepartmentRepository.deleteDepartment).not.toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestError if department has courses', async () => {
+      const departmentId = mockDepartmentId;
+
+      // Mock findDepartmentById to return existing department
+      mockDepartmentRepository.findDepartmentById.mockResolvedValue(mockDepartment as IDepartment);
+      // Mock countStudentsByDepartment to return 0
+      mockDepartmentRepository.countStudentsByDepartment.mockResolvedValue(0);
+      // Mock countCoursesByDepartment to return > 0
+      mockDepartmentRepository.countCoursesByDepartment.mockResolvedValue(3);
+
+      await expect(departmentService.deleteDepartment(departmentId))
+        .rejects
+        .toThrow(new BadRequestError('Cannot delete department with assigned courses'));
+      
+      expect(mockDepartmentRepository.findDepartmentById).toHaveBeenCalledWith(departmentId);
+      expect(mockDepartmentRepository.countStudentsByDepartment).toHaveBeenCalledWith(departmentId);
+      expect(mockDepartmentRepository.countCoursesByDepartment).toHaveBeenCalledWith(departmentId);
+      expect(mockDepartmentRepository.deleteDepartment).not.toHaveBeenCalled();
+    });
+
+    it('should throw BadRequestError if department has both students and courses', async () => {
+      const departmentId = mockDepartmentId;
+
+      // Mock findDepartmentById to return existing department
+      mockDepartmentRepository.findDepartmentById.mockResolvedValue(mockDepartment as IDepartment);
+      // Mock countStudentsByDepartment to return > 0
+      mockDepartmentRepository.countStudentsByDepartment.mockResolvedValue(2);
+
+      await expect(departmentService.deleteDepartment(departmentId))
+        .rejects
+        .toThrow(new BadRequestError('Cannot delete department with assigned students'));
+      
+      expect(mockDepartmentRepository.findDepartmentById).toHaveBeenCalledWith(departmentId);
+      expect(mockDepartmentRepository.countStudentsByDepartment).toHaveBeenCalledWith(departmentId);
+      // Should not check courses if students exist (early return)
+      expect(mockDepartmentRepository.countCoursesByDepartment).not.toHaveBeenCalled();
+      expect(mockDepartmentRepository.deleteDepartment).not.toHaveBeenCalled();
+    });
+
+    it('should throw NotFoundError if department not found during deletion', async () => {
+      const departmentId = mockDepartmentId;
+
+      // Mock findDepartmentById to return existing department
+      mockDepartmentRepository.findDepartmentById.mockResolvedValue(mockDepartment as IDepartment);
+      // Mock counts to return 0 (no dependencies)
+      mockDepartmentRepository.countStudentsByDepartment.mockResolvedValue(0);
+      mockDepartmentRepository.countCoursesByDepartment.mockResolvedValue(0);
+      // Mock deleteDepartment to return null (not found during deletion)
+      mockDepartmentRepository.deleteDepartment.mockResolvedValue(null);
+
+      await expect(departmentService.deleteDepartment(departmentId))
+        .rejects
+        .toThrow(new NotFoundError('Department not found during deletion'));
+      
+      expect(mockDepartmentRepository.findDepartmentById).toHaveBeenCalledWith(departmentId);
+      expect(mockDepartmentRepository.countStudentsByDepartment).toHaveBeenCalledWith(departmentId);
+      expect(mockDepartmentRepository.countCoursesByDepartment).toHaveBeenCalledWith(departmentId);
+      expect(mockDepartmentRepository.deleteDepartment).toHaveBeenCalledWith(departmentId);
+    });
+
+    it('should delete department successfully when no dependencies exist', async () => {
+      const departmentId = mockDepartmentId;
+      const deletedDepartment = { ...mockDepartment };
+
+      // Mock findDepartmentById to return existing department
+      mockDepartmentRepository.findDepartmentById.mockResolvedValue(mockDepartment as IDepartment);
+      // Mock counts to return 0 (no dependencies)
+      mockDepartmentRepository.countStudentsByDepartment.mockResolvedValue(0);
+      mockDepartmentRepository.countCoursesByDepartment.mockResolvedValue(0);
+      // Mock deleteDepartment to return deleted department
+      mockDepartmentRepository.deleteDepartment.mockResolvedValue(deletedDepartment as IDepartment);
+
+      const result = await departmentService.deleteDepartment(departmentId);
+      
+      expect(mockDepartmentRepository.findDepartmentById).toHaveBeenCalledWith(departmentId);
+      expect(mockDepartmentRepository.countStudentsByDepartment).toHaveBeenCalledWith(departmentId);
+      expect(mockDepartmentRepository.countCoursesByDepartment).toHaveBeenCalledWith(departmentId);
+      expect(mockDepartmentRepository.deleteDepartment).toHaveBeenCalledWith(departmentId);
+      expect(result).toEqual(deletedDepartment);
     });
   });
 });

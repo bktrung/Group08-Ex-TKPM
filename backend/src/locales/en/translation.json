@@ -13,5 +13,35 @@
   "Drop deadline must be after registration end date": "Drop deadline must be after registration end date",
   "Semester start date must be a valid date": "Semester start date must be a valid date",
   "Semester end date must be a valid date": "Semester end date must be a valid date",
-  "Semester end date must be after semester start date": "Semester end date must be after semester start date"
+  "Semester end date must be after semester start date": "Semester end date must be after semester start date",
+
+  "Cannot delete department with assigned students": "Cannot delete department with assigned students",
+  "Cannot delete department with assigned courses": "Cannot delete department with assigned courses",
+  "Department not found during deletion": "Department not found during deletion",
+  "Department ID is required": "Department ID is required",
+  "Department ID must be a valid ObjectId": "Department ID must be a valid ObjectId",
+
+  "Cannot delete program with assigned students": "Cannot delete program with assigned students",
+  "Program not found during deletion": "Program not found during deletion",
+  "Program ID is required": "Program ID is required",
+  "Program ID must be a valid ObjectId": "Program ID must be a valid ObjectId",
+
+  "Cannot delete status with assigned students": "Cannot delete status with assigned students",
+  "Cannot delete status with existing transitions": "Cannot delete status with existing transitions",
+  "Status not found during deletion": "Status not found during deletion",
+  "Status ID is required": "Status ID is required",
+  "Status ID must be a valid ObjectId": "Status ID must be a valid ObjectId",
+
+  "Cannot reduce class capacity below enrolled students": "Cannot reduce class capacity below enrolled students",
+  "Cannot delete class with existing enrollments": "Cannot delete class with existing enrollments",
+  "Cannot delete class with existing grades": "Cannot delete class with existing grades",
+  "Class not found": "Class not found",
+  "Class not found during update": "Class not found during update",
+  "Class not found during deletion": "Class not found during deletion",
+  "Schedule must be in same semester": "Schedule must be in same semester",
+  "Class code is required": "Class code is required",
+  "Class code cannot be empty": "Class code cannot be empty",
+  "Cannot update schedule to different semester": "Cannot update schedule to different semester",
+  "Room conflict detected": "Room conflict detected",
+  "Schedule conflict detected": "Schedule conflict detected"
 } 
