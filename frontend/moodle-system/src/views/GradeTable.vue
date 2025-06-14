@@ -32,7 +32,7 @@
                 <p>{{ $t('student.grade.summary.gpaOutOf10') }}: {{
                     transcriptData.metadata.transcript.summary.gpaOutOf10 }}</p>
                 <p>{{ $t('student.grade.summary.gpaOutOf4') }}: {{ transcriptData.metadata.transcript.summary.gpaOutOf4
-                }}</p>
+                    }}</p>
             </div>
         </div>
 

@@ -5,7 +5,7 @@
     <div class="row mb-3">
       <div class="col-md-4">
         <button class="btn btn-success" @click="openAddProgramModal">+ {{ $t('common.add') }} {{ $t('program.title')
-          }}</button>
+        }}</button>
       </div>
     </div>
 
@@ -34,7 +34,7 @@
             <td>{{ program.name }}</td>
             <td class="text-center">
               <button class="btn btn-warning btn-sm" @click="openEditProgramModal(program)">{{ $t('common.edit')
-                }}</button>
+              }}</button>
             </td>
           </tr>
         </tbody>
@@ -43,6 +43,9 @@
 
     <BaseModal :title="modalTitle" :placeholderTitle="$t('program.enter')" :itemName="programName"
       :showModal="isModalOpen" @save="saveProgram" @close="isModalOpen = false" />
+
+    <ErrorModal :showModal="showErrorModal" :title="$t('common.error')" :message="errorMessage"
+      :isTranslated="isErrorTranslated" @update:showModal="showErrorModal = $event" />
   </div>
 </template>
 
@@ -50,10 +53,14 @@
 import { ref, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import BaseModal from '../components/layout/BaseModal.vue'
+import ErrorModal from '../components/layout/ErrorModal.vue'
 import { useI18n } from 'vue-i18n'
 
 export default {
-  components: { BaseModal },
+  components: {
+    BaseModal,
+    ErrorModal
+  },
   setup() {
     const { t } = useI18n()
     const store = useStore()
@@ -67,6 +74,9 @@ export default {
     const isEditing = computed(() => Boolean(editingProgramId.value))
 
     const modalTitle = computed(() => (isEditing.value ? t('common.edit') : t('common.add')))
+
+    const errorMessage = ref('')
+    const showErrorModal = ref(false)
 
     const openAddProgramModal = () => {
       editingProgramId.value = null
@@ -82,30 +92,32 @@ export default {
     }
 
     const saveProgram = async (name) => {
-      if (!name.trim()) return
-      if (name.trim() === originalProgramName.value) {
-        isModalOpen.value = false
-        return
+      const trimmedName = name.trim();
+
+      if (!trimmedName || trimmedName === originalProgramName.value) {
+        isModalOpen.value = false;
+        return;
       }
 
       try {
+        const payload = { name: trimmedName };
+
         if (isEditing.value) {
           await store.dispatch('program/updateProgram', {
             id: editingProgramId.value,
-            program: { name: name.trim() }
-          })
+            program: payload
+          });
         } else {
-          await store.dispatch('program/createProgram', { name: name.trim() })
+          await store.dispatch('program/createProgram', payload);
         }
-        isModalOpen.value = false
+
+        isModalOpen.value = false;
+
       } catch (error) {
-        alert(t('common.error_action', {
-          action: isEditing.value ? t('common.edit') : t('common.add'),
-          target: t('program.title'),
-          message: error.message
-        }))
+        errorMessage.value = store.state.program?.error || error.message || t('common.error_default');
+        showErrorModal.value = true;
       }
-    }
+    };
 
     onMounted(async () => {
       await store.dispatch('program/fetchPrograms')
@@ -119,7 +131,9 @@ export default {
       isModalOpen,
       openAddProgramModal,
       openEditProgramModal,
-      saveProgram
+      saveProgram,
+      errorMessage,
+      showErrorModal
     }
   }
 }

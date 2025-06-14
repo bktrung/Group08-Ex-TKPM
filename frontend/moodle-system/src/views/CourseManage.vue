@@ -2,11 +2,6 @@
   <div class="container-fluid px-5 mt-5">
     <h2 class="mb-4 text-center"> {{ $t('course.management') }}</h2>
 
-    <div v-if="success" class="alert alert-success alert-dismissible fade show" role="alert">
-      {{ success }}
-      <button type="button" class="btn-close" @click="success = ''" aria-label="Close"></button>
-    </div>
-
     <div v-if="showForm" class="card bg-light mb-4">
       <div class="card-header">
         <h4>{{ isEditing ? $t('course.edit') : $t('course.add') }}</h4>
@@ -19,14 +14,13 @@
     <CourseList v-if="!showForm" @add-course="showAddForm" @edit-course="showEditForm" @delete-course="deleteCourse"
       @toggle-active-status="toggleCourseActiveStatus" />
 
+    <!-- Success Modal -->
+    <SuccessModal :showModal="showSuccessModal" :title="$t('common.success') + '!'" :message="success"
+      @update:showModal="showSuccessModal = $event" />
+
     <!-- Error Modal -->
-    <ErrorModal 
-      :showModal="showErrorModal" 
-      :title="$t('common.error')" 
-      :message="errorMessage"
-      :isTranslated="isErrorTranslated"
-      @update:showModal="showErrorModal = $event" 
-    />
+    <ErrorModal :showModal="showErrorModal" :title="$t('common.error')" :message="errorMessage"
+      :isTranslated="isErrorTranslated" @update:showModal="showErrorModal = $event" />
   </div>
 </template>
 
@@ -38,13 +32,15 @@ import CourseList from '@/components/course/CourseList.vue'
 import { useI18n } from 'vue-i18n'
 import { useErrorHandler } from '@/composables/useErrorHandler'
 import ErrorModal from '@/components/layout/ErrorModal.vue'
+import SuccessModal from '@/components/layout/SuccessModal.vue'
 
 export default {
   name: 'CourseManage',
   components: {
     CourseForm,
     CourseList,
-    ErrorModal
+    ErrorModal,
+    SuccessModal
   },
   setup() {
     const { t } = useI18n()
@@ -53,6 +49,7 @@ export default {
     const isEditing = ref(false)
     const selectedCourse = ref({})
     const success = ref('')
+    const showSuccessModal = ref(false)
 
     const { errorMessage, isErrorTranslated, showErrorModal, handleError } = useErrorHandler()
 
@@ -73,28 +70,39 @@ export default {
       selectedCourse.value = {}
     }
 
+    // Function to build the update data object
+    const buildUpdateData = (newData, oldData) => {
+      const updateData = {};
+
+      if (newData.name !== oldData.name) {
+        updateData.name = newData.name;
+      }
+
+      const oldDept = typeof oldData.department === 'object'
+        ? oldData.department._id
+        : oldData.department;
+
+      if (newData.department !== oldDept) {
+        updateData.department = newData.department;
+      }
+
+      if (newData.description !== oldData.description) {
+        updateData.description = newData.description;
+      }
+
+      if (Number(newData.credits) !== oldData.credits) {
+        updateData.credits = Number(newData.credits);
+      }
+
+      return updateData;
+    };
+
+    // Function to save the course data
     const saveCourse = async (courseData) => {
       try {
         if (isEditing.value) {
-          const updateData = {};
 
-          if (courseData.name !== selectedCourse.value.name) {
-            updateData.name = courseData.name;
-          }
-
-          if (courseData.department !== (typeof selectedCourse.value.department === 'object'
-            ? selectedCourse.value.department._id
-            : selectedCourse.value.department)) {
-            updateData.department = courseData.department;
-          }
-
-          if (courseData.description !== selectedCourse.value.description) {
-            updateData.description = courseData.description;
-          }
-
-          if (Number(courseData.credits) !== selectedCourse.value.credits) {
-            updateData.credits = Number(courseData.credits);
-          }
+          const updateData = buildUpdateData(courseData, selectedCourse.value);
 
           await store.dispatch('course/updateCourse', {
             courseCode: selectedCourse.value.courseCode,
@@ -107,36 +115,34 @@ export default {
           success.value = t('course.add_success', { name: courseData.name });
         }
 
+        showSuccessModal.value = true;
+
         await store.dispatch('course/fetchCourses');
 
         showForm.value = false;
         selectedCourse.value = {};
 
-        setTimeout(() => {
-          success.value = '';
-        }, 5000);
       } catch (error) {
         handleError(error, 'course.save_error')
       }
     }
 
+    // Function to delete a course
     const deleteCourse = async (course) => {
       try {
         const result = await store.dispatch('course/deleteCourse', course.courseCode);
 
         if (result.success) {
           success.value = result.message || t('course.delete_success');
+          showSuccessModal.value = true;
           await store.dispatch('course/fetchCourses');
         }
-
-        setTimeout(() => {
-          success.value = '';
-        }, 5000);
       } catch (error) {
         handleError(error, 'course.delete_error')
       }
     }
 
+    // Function to toggle the active status of a course
     const toggleCourseActiveStatus = async (course) => {
       try {
         const newStatus = !course.isActive;
@@ -152,13 +158,9 @@ export default {
         });
 
         if (result.success) {
-          success.value = result.message ||
-            t(newStatus ? 'course.reopen_success' : 'course.close_success');
+          success.value = result.message || t(newStatus ? 'course.reopen_success' : 'course.close_success');
+          showSuccessModal.value = true;
         }
-
-        setTimeout(() => {
-          success.value = '';
-        }, 5000);
       } catch (error) {
         handleError(error, 'course.toggle_error')
       }
@@ -166,18 +168,16 @@ export default {
 
     onMounted(async () => {
       try {
+        // Fetch departments when the component is mounted
         await store.dispatch('department/fetchDepartments');
 
-        console.log('Fetching courses...');
-        const result = await store.dispatch('course/fetchCourses');
-        console.log('Courses fetched:', result);
-        console.log('Current courses in store:', store.state.course.courses);
+        // Fetch courses when the component is mounted
+        await store.dispatch('course/fetchCourses');
 
+        // If no courses are available, retry after 1 second
         if (!Array.isArray(store.state.course.courses) || store.state.course.courses.length === 0) {
-          console.log('No courses found, retrying...');
           setTimeout(async () => {
             await store.dispatch('course/fetchCourses');
-            console.log('Retry result - courses in store:', store.state.course.courses);
           }, 1000);
         }
       } catch (error) {
@@ -198,10 +198,9 @@ export default {
       cancelForm,
       saveCourse,
       deleteCourse,
-      toggleCourseActiveStatus
+      toggleCourseActiveStatus,
+      showSuccessModal
     }
   }
 }
 </script>
-
-<style scoped></style>

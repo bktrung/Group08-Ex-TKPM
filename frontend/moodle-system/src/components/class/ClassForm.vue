@@ -163,7 +163,7 @@
         {{ isEditing ? $t('class.edit') : $t('class.add') }}
       </button>
       <button type="button" @click="$emit('cancel')" class="btn btn-secondary mt-2 w-100">{{ $t('common.cancel')
-        }}</button>
+      }}</button>
     </div>
   </form>
 </template>

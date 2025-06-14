@@ -42,6 +42,10 @@
 
     <BaseModal :title="modalTitle" :placeholderTitle="$t('department.enter')" :itemName="departmentName"
       :showModal="isModalOpen" @save="saveDepartment" @close="isModalOpen = false" />
+
+    <ErrorModal :showModal="showErrorModal" :title="$t('common.error')" :message="errorMessage"
+      :isTranslated="isErrorTranslated" @update:showModal="showErrorModal = $event" />
+
   </div>
 </template>
 
@@ -50,10 +54,14 @@ import { useStore } from 'vuex'
 import { useI18n } from 'vue-i18n'
 import { ref, computed, onMounted } from 'vue'
 import BaseModal from '../components/layout/BaseModal.vue'
+import ErrorModal from '../components/layout/ErrorModal.vue'
 
 export default {
   watch: {},
-  components: { BaseModal },
+  components: {
+    BaseModal,
+    ErrorModal
+  },
   setup() {
     const { t } = useI18n()
     const store = useStore()
@@ -67,6 +75,9 @@ export default {
     const isEditing = computed(() => Boolean(editingDepartmentId.value))
 
     const modalTitle = computed(() => (isEditing.value ? t('common.edit') : t('common.add')))
+
+    const showErrorModal = ref(false)
+    const errorMessage = ref('')
 
     const openAddDepartmentModal = () => {
       editingDepartmentId.value = null
@@ -82,32 +93,33 @@ export default {
     }
 
     const saveDepartment = async (name) => {
+      const trimmedName = name.trim();
 
-      if (!name.trim()) return
-
-      if (name.trim() === originalDepartmentName.value) {
-        isModalOpen.value = false
-        return
+      if (!trimmedName || trimmedName === originalDepartmentName.value) {
+        isModalOpen.value = false;
+        return;
       }
 
       try {
+        const payload = { name: trimmedName };
+
         if (isEditing.value) {
           await store.dispatch('department/updateDepartment', {
             id: editingDepartmentId.value,
-            department: { name: name.trim() }
-          })
+            department: payload
+          });
         } else {
-          await store.dispatch('department/createDepartment', { name: name.trim() })
+          await store.dispatch('department/createDepartment', payload);
         }
-        isModalOpen.value = false
+
+        isModalOpen.value = false;
+
       } catch (error) {
-        alert(t('common.error_action', {
-          action: isEditing.value ? t('common.edit') : t('common.add'),
-          target: t('student.department'),
-          message: error.message
-        }))
+        showErrorModal.value = true;
+        errorMessage.value = store.state.department.error || error.message || t('common.unknown_error');
       }
-    }
+    };
+
 
     onMounted(async () => {
       await store.dispatch('department/fetchDepartments')
@@ -121,7 +133,9 @@ export default {
       isModalOpen,
       openAddDepartmentModal,
       openEditDepartmentModal,
-      saveDepartment
+      saveDepartment,
+      showErrorModal,
+      errorMessage
     }
   }
 }

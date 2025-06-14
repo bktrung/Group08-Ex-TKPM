@@ -24,6 +24,10 @@ export default {
         return apiClient.post('/v1/api/classes', classData)
     },
 
+    updateClass(classCode, classData) {
+        return apiClient.put(`/v1/api/classes/${classCode}`, classData)
+    },
+
     getClassByCourseId(courseId) {
         return apiClient.get(`/v1/api/classes${courseId}`)
     }
