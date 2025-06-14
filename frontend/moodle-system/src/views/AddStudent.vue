@@ -19,31 +19,13 @@
     </div>
 
     <!-- Success Modal -->
-    <div class="modal fade" id="successModal" tabindex="-1" aria-hidden="true" ref="modalRef">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header bg-success text-white">
-            <h5 class="modal-title">{{ $t('common.success') }}!</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" :aria-label="$t('common.close')"></button>
-          </div>
-          <div class="modal-body">
-            {{ $t('student.add_success') }}!
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" @click="redirectToList">OK</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <SuccessModal :showModal="showSuccessModal" :title="$t('common.success')"
+      :message="$t('student.add_success')" @confirm="redirectToList"
+      @update:showModal="showSuccessModal = $event" />
 
     <!-- Error Modal -->
-    <ErrorModal 
-      :showModal="showErrorModal" 
-      :title="$t('common.error')" 
-      :message="errorMessage"
-      :isTranslated="isErrorTranslated"
-      @update:showModal="showErrorModal = $event" 
-    />
+    <ErrorModal :showModal="showErrorModal" :title="$t('common.error')" :message="errorMessage"
+      :isTranslated="isErrorTranslated" @update:showModal="showErrorModal = $event" />
   </div>
 </template>
 
@@ -51,9 +33,9 @@
 import { ref, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
-import { Modal } from 'bootstrap'
 import StudentForm from '@/components/student/StudentForm.vue'
 import ErrorModal from '@/components/layout/ErrorModal.vue'
+import SuccessModal from '@/components/layout/SuccessModal.vue'
 import { useI18n } from 'vue-i18n'
 import { useErrorHandler } from '@/composables/useErrorHandler'
 
@@ -61,7 +43,8 @@ export default {
   name: 'AddStudent',
   components: {
     StudentForm,
-    ErrorModal
+    ErrorModal,
+    SuccessModal
   },
   setup() {
     const { t } = useI18n()
@@ -70,15 +53,14 @@ export default {
     const modalRef = ref(null)
     const loading = ref(true)
     const error = ref(null)
-    let successModal = null
-    
+
     // Use error handler composable
-    const { errorMessage, isErrorTranslated, showErrorModal, handleError } = useErrorHandler()
-    
+    const { errorMessage, isErrorTranslated, showErrorModal, showSuccessModal, handleError } = useErrorHandler()
+
     const loadReferenceData = async () => {
       loading.value = true
       error.value = null
-      
+
       try {
         await Promise.all([
           store.dispatch('department/fetchDepartments'),
@@ -99,75 +81,66 @@ export default {
     const handleSubmit = async (studentData) => {
       try {
         console.log('Adding new student:', JSON.stringify(studentData, null, 2))
-        
+
         const cleanData = {}
-        
+
         for (const [key, value] of Object.entries(studentData)) {
           if (key === 'department' || key === 'program' || key === 'status') {
             cleanData[key] = typeof value === 'object' ? value._id : value
-          } 
+          }
           else if (key === 'dateOfBirth') {
             cleanData[key] = new Date(value).toISOString()
           }
           else if (key === 'identityDocument') {
-            const docCopy = {...value}
-            
+            const docCopy = { ...value }
+
             if (docCopy.issueDate) {
               docCopy.issueDate = new Date(docCopy.issueDate).toISOString()
             }
-            
+
             if (docCopy.expiryDate) {
               docCopy.expiryDate = new Date(docCopy.expiryDate).toISOString()
             }
-            
+
             if (docCopy.type === 'CCCD') {
               docCopy.hasChip = Boolean(docCopy.hasChip)
             }
-            
+
             cleanData[key] = docCopy
           }
           else if (key === 'mailingAddress' || key === 'permanentAddress' || key === 'temporaryAddress') {
             if (value && value.houseNumberStreet && value.houseNumberStreet.trim() !== '') {
-              cleanData[key] = {...value}
+              cleanData[key] = { ...value }
             }
           }
           else {
             cleanData[key] = value
           }
         }
-        
+
         console.log('Prepared data for API:', JSON.stringify(cleanData, null, 2))
-        
+
         await store.dispatch('student/createStudent', cleanData)
-        
-        if (successModal) {
-          successModal.show()
-        }
+
+        showSuccessModal.value = true
       } catch (error) {
         console.error('Error adding student:', error)
         handleError(error, 'student.add_error')
       }
     }
-    
+
     const redirectToList = () => {
-      if (successModal) {
-        successModal.hide()
-      }
-      
+      showSuccessModal.value = false
+
       setTimeout(() => {
         router.push('/')
       }, 300)
     }
-    
+
     onMounted(async () => {
       await loadReferenceData()
-      
-      const successModalElement = document.getElementById('successModal')
-      if (successModalElement) {
-        successModal = new Modal(successModalElement)
-      }
     })
-    
+
     return {
       loading,
       error,

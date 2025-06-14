@@ -2,16 +2,6 @@
   <div class="container-fluid px-5 mt-5">
     <h2 class="mb-4 text-center">{{ $t('class.management') }}</h2>
 
-    <div v-if="error" class="alert alert-danger alert-dismissible fade show" role="alert">
-      {{ error }}
-      <button type="button" class="btn-close" @click="error = ''" aria-label="Close"></button>
-    </div>
-
-    <div v-if="success" class="alert alert-success alert-dismissible fade show" role="alert">
-      {{ success }}
-      <button type="button" class="btn-close" @click="success = ''" aria-label="Close"></button>
-    </div>
-
     <div v-if="showForm" class="card bg-light mb-4">
       <div class="card-header">
         <h4>{{ isEditing ? $t('common.edit') : $t('common.add') }}</h4>
@@ -126,85 +116,43 @@
       </div>
 
       <!-- Pagination -->
-      <div class="d-flex justify-content-between align-items-center">
-        <div>
-          <span>{{ $t('class.display_count', { current: paginatedClasses.length, total: filteredClasses.length })}}</span>
-        </div>
-        <nav>
-          <ul class="pagination">
-            <li class="page-item" :class="{ disabled: currentPage === 1 }">
-              <a class="page-link" href="#" @click.prevent="changePage(currentPage - 1)">{{ $t('common.previous') }}</a>
-            </li>
-            <li v-for="page in totalPages" :key="page" class="page-item" :class="{ active: page === currentPage }">
-              <a class="page-link" href="#" @click.prevent="changePage(page)">{{ page }}</a>
-            </li>
-            <li class="page-item" :class="{ disabled: currentPage === totalPages }">
-              <a class="page-link" href="#" @click.prevent="changePage(currentPage + 1)">{{ $t('common.next') }}</a>
-            </li>
-          </ul>
-        </nav>
-        <div>
-          <select v-model="pageSize" class="form-select form-select-sm" style="width: auto;">
-            <option :value="5">5 / {{ $t('common.page') }}</option>
-            <option :value="10">10 / {{ $t('common.page') }}</option>
-            <option :value="20">20 / {{ $t('common.page') }}</option>
-          </select>
-        </div>
-      </div>
+      <BasePagination v-model="currentPage" :pageSize="pageSize" :totalItems="filteredClasses.length"
+        :currentItems="paginatedClasses.length" @update:pageSize="pageSize = $event" />
     </div>
 
     <!-- Schedule Modal -->
-    <div class="modal fade" id="scheduleModal" tabindex="-1" ref="scheduleModalRef">
-      <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" v-if="selectedClass">
-              {{ $t('class.schedule') }}: {{ selectedClass.classCode }} - {{ getCourseInfo(selectedClass.course) }}
-            </h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body" v-if="selectedClass && selectedClass.schedule">
-            <div class="table-responsive">
-              <table class="table table-bordered">
-                <thead>
-                  <tr class="text-center">
-                    <th>{{ $t('class.day_of_week') }}</th>
-                    <th>{{ $t('class.room') }}</th>
-                    <th>{{ $t('class.start_period') }}</th>
-                    <th>{{ $t('class.end_period') }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="(schedule, index) in selectedClass.schedule" :key="index">
-                    <td class="text-center">{{ formatDayOfWeek(schedule.dayOfWeek) }}</td>
-                    <td class="text-center">{{ schedule.classroom }}</td>
-                    <td class="text-center">{{ schedule.startPeriod }}</td>
-                    <td class="text-center">{{ schedule.endPeriod }}</td>
-                  </tr>
-                </tbody>
-              </table>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">{{ $t('common.close') }}</button>
-          </div>
-        </div>
-      </div>
-    </div>
+    <ScheduleModal v-model:visible="isScheduleModalVisible" :selectedClass="selectedClass" />
+
+    <!-- Success Modals -->
+    <SuccessModal :showModal="showSuccessModal" :title="$t('common.success') + '!'" :message="success"
+      @update:showModal="showSuccessModal = $event" />
+
+    <!-- Error Modal -->
+    <ErrorModal :showModal="showErrorModal" :title="$t('common.error') + '!'" :message="error"
+      @update:showModal="showErrorModal = $event" />
+
   </div>
 </template>
 
 <script>
 import { ref, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
-import { Modal } from 'bootstrap'
 import ClassForm from '@/components/class/ClassForm.vue'
+import BasePagination from '@/components/layout/DefaultPagination.vue'
+import ScheduleModal from '@/components/layout/ScheduleModal.vue'
+import SuccessModal from '@/components/layout/SuccessModal.vue'
+import ErrorModal from '@/components/layout/ErrorModal.vue'
+
 import { useI18n } from 'vue-i18n'
 
 export default {
   name: 'ClassManage',
   components: {
-    ClassForm
+    ClassForm,
+    BasePagination,
+    ScheduleModal,
+    SuccessModal,
+    ErrorModal
   },
   setup() {
     const { t } = useI18n()
@@ -214,6 +162,8 @@ export default {
     const selectedClass = ref({})
     const error = ref('')
     const success = ref('')
+    const showErrorModal = ref(false)
+    const showSuccessModal = ref(false)
 
     const currentPage = ref(1)
     const pageSize = ref(10)
@@ -222,9 +172,7 @@ export default {
     const selectedAcademicYear = ref('')
     const selectedSemester = ref('')
 
-    const scheduleModalRef = ref(null)
-
-    let scheduleModal = null
+    const isScheduleModalVisible = ref(false)
 
     const currentDate = new Date()
     const currentYear = currentDate.getFullYear()
@@ -244,47 +192,57 @@ export default {
     const courses = computed(() => store.state.course.courses)
 
     const filteredClasses = computed(() => {
-      let filtered = Array.isArray(classes.value) ? [...classes.value] : []
+      const allClasses = Array.isArray(classes.value) ? [...classes.value] : [];
 
-      if (selectedAcademicYear.value) {
-        filtered = filtered.filter(cls => cls.academicYear === selectedAcademicYear.value)
-      }
+      return allClasses
+        .filter(cls => {
 
-      if (selectedSemester.value) {
-        filtered = filtered.filter(cls => cls.semester === Number(selectedSemester.value))
-      }
-
-      if (searchQuery.value) {
-        const query = searchQuery.value.toLowerCase()
-        filtered = filtered.filter(cls => {
-          if (cls.classCode.toLowerCase().includes(query)) return true
-
-          if (cls.instructor.toLowerCase().includes(query)) return true
-
-          const course = getCourseById(cls.course)
-          if (course) {
-            if (course.courseCode.toLowerCase().includes(query)) return true
-            if (course.name.toLowerCase().includes(query)) return true
+          // Filter by academic year
+          if (selectedAcademicYear.value && cls.academicYear !== selectedAcademicYear.value) {
+            return false;
           }
 
-          return false
+          // Filter by semester
+          if (selectedSemester.value && cls.semester !== Number(selectedSemester.value)) {
+            return false;
+          }
+
+          // Filter by search query
+          if (searchQuery.value) {
+            const query = searchQuery.value.toLowerCase();
+
+            const course = getCourseById(cls.course);
+            const courseCode = course?.courseCode?.toLowerCase() || '';
+            const courseName = course?.name?.toLowerCase() || '';
+            const classCode = cls.classCode?.toLowerCase() || '';
+            const instructor = cls.instructor?.toLowerCase() || '';
+
+            const matchesQuery =
+              classCode.includes(query) ||
+              instructor.includes(query) ||
+              courseCode.includes(query) ||
+              courseName.includes(query);
+
+            if (!matchesQuery) return false;
+          }
+
+          return true;
         })
-      }
+        .sort((a, b) => {
 
-      filtered.sort((a, b) => {
-        if (a.academicYear !== b.academicYear) {
-          return b.academicYear.localeCompare(a.academicYear)
-        }
+          // Descending order by academic year
+          const yearCompare = b.academicYear.localeCompare(a.academicYear);
+          if (yearCompare !== 0) return yearCompare;
 
-        if (a.semester !== b.semester) {
-          return a.semester - b.semester
-        }
+          // Ascending order by semester
+          const semesterCompare = a.semester - b.semester;
+          if (semesterCompare !== 0) return semesterCompare;
 
-        return a.classCode.localeCompare(b.classCode)
-      })
+          // Ascending order by class code
+          return a.classCode.localeCompare(b.classCode);
+        });
+    });
 
-      return filtered
-    })
 
     const totalPages = computed(() => {
       return Math.ceil(filteredClasses.value.length / pageSize.value) || 1
@@ -307,12 +265,6 @@ export default {
       currentPage.value = 1
     }
 
-    const changePage = (page) => {
-      if (page >= 1 && page <= totalPages.value) {
-        currentPage.value = page
-      }
-    }
-
     const showAddForm = () => {
       selectedClass.value = {}
       isEditing.value = false
@@ -332,35 +284,44 @@ export default {
 
     const saveClass = async (classData) => {
       try {
-        if (isEditing.value) {
+        const isUpdate = isEditing.value;
+        const classCode = classData.classCode;
+
+        if (isUpdate) {
           await store.dispatch('class/updateClass', {
             classCode: selectedClass.value.classCode,
             data: classData
-          })
-          success.value = t('class.update_success', { classCode: classData.classCode })
+          });
         } else {
-          await store.dispatch('class/addClass', classData)
-          success.value = t('class.add_success', { classCode: classData.classCode })
+          await store.dispatch('class/addClass', classData);
         }
 
-        await store.dispatch('class/fetchClasses')
+        success.value = isUpdate
+          ? t('class.update_success', { classCode })
+          : t('class.add_success', { classCode });
 
-        showForm.value = false
-        selectedClass.value = {}
+        showSuccessModal.value = true;
 
-        setTimeout(() => {
-          success.value = ''
-        }, 5000)
+        await store.dispatch('class/fetchClasses');
+        resetForm();
       } catch (err) {
-        error.value = `${t('class.save_error_prefix')} ${err.message || t('class.save_error_fallback')}`;
+
+        const fallback = t('class.save_error_fallback');
+        const errorMsg = err.response?.data?.message || err.message || fallback;
+
+        error.value = `${t('class.save_error_prefix')} ${errorMsg}`;
+        showErrorModal.value = true;
       }
-    }
+    };
+
+    const resetForm = () => {
+      showForm.value = false;
+      selectedClass.value = {};
+    };
 
     const showScheduleModal = (classItem) => {
       selectedClass.value = classItem
-      if (scheduleModal) {
-        scheduleModal.show()
-      }
+      isScheduleModalVisible.value = true
     }
 
     const formatDayOfWeek = (day) => {
@@ -373,18 +334,19 @@ export default {
     }
 
     const getCourseById = (courseId) => {
-      if (!courseId) return null
+      if (!courseId) return null;
 
-      const id = typeof courseId === 'object' ? courseId._id : courseId
-      return courses.value.find(course => course._id === id)
-    }
+      const id = courseId._id ?? courseId;
+      return courses.value?.find(course => course._id === id) || null;
+    };
 
     const getCourseInfo = (courseId) => {
-      const course = getCourseById(courseId)
-      if (!course) return 'N/A'
+      const course = getCourseById(courseId);
 
-      return `${course.courseCode} - ${course.name} (${course.credits} TC)`
-    }
+      return course
+        ? `${course.courseCode} - ${course.name} (${course.credits} TC)`
+        : 'N/A';
+    };
 
     const getProgressBarClass = (classItem) => {
       const ratio = classItem.enrolledStudents / classItem.maxCapacity
@@ -397,36 +359,25 @@ export default {
       try {
         resetFilter();
 
-        console.log('Fetching classes and courses...');
         await Promise.all([
           store.dispatch('class/fetchClasses'),
           store.dispatch('course/fetchCourses')
         ]);
 
-        console.log('Classes in store:', store.state.class.classes);
-        console.log('Filtered classes:', filteredClasses.value);
-
         if (!Array.isArray(store.state.class.classes) || store.state.class.classes.length === 0) {
-          console.log('No classes found, trying direct API call...');
-
-          const apiResponse = await store.dispatch('class/fetchClasses', {
+          await store.dispatch('class/fetchClasses', {
             page: 1,
             limit: 50
           });
-
-          console.log('Direct API response:', apiResponse);
         }
 
         if (store.state.class.classes.length > 0) {
           selectedAcademicYear.value = academicYears.value[1];
         }
 
-        if (document.getElementById('scheduleModal')) {
-          scheduleModal = new Modal(document.getElementById('scheduleModal'));
-        }
       } catch (err) {
-        console.error('Error loading data:', err);
-        const msg = err.message || t('error.load_failed')
+        showErrorModal.value = true
+        const msg = err.response?.data?.message || err.message || t('error.load_failed')
         error.value = `${t('error.prefix')}: ${msg}`
       }
     });
@@ -448,10 +399,8 @@ export default {
       filteredClasses,
       paginatedClasses,
       totalPages,
-      scheduleModalRef,
       filterClasses,
       resetFilter,
-      changePage,
       showAddForm,
       showEditForm,
       cancelForm,
@@ -460,7 +409,10 @@ export default {
       formatDayOfWeek,
       formatSemester,
       getCourseInfo,
-      getProgressBarClass
+      getProgressBarClass,
+      isScheduleModalVisible,
+      showErrorModal,
+      showSuccessModal
     }
   }
 }

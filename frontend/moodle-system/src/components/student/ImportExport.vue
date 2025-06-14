@@ -135,6 +135,15 @@
       </div>
     </div>
   </div>
+
+  <!-- Error Modal -->
+  <ErrorModal 
+    :showModal="showErrorModal" 
+    :title="$t('common.error')" 
+    :message="errorMessage"
+    :isTranslated="isErrorTranslated"
+    @update:showModal="showErrorModal = $event" 
+  />
 </template>
 
 <script>
@@ -142,9 +151,14 @@ import { ref, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import { Modal } from 'bootstrap'
 import { useI18n } from 'vue-i18n'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+import ErrorModal from '@/components/layout/ErrorModal.vue'
 
 export default {
   name: 'ImportExport',
+  components: {
+    ErrorModal
+  },
   setup() {
     const { t } = useI18n()
     const store = useStore()
@@ -156,6 +170,8 @@ export default {
     let importResultModal = null
     let helpModal = null
 
+    const { errorMessage, isErrorTranslated, showErrorModal, handleError } = useErrorHandler()
+
     const importResult = ref({
       success: false,
       message: '',
@@ -166,13 +182,17 @@ export default {
       selectedFile.value = event.target.files[0] || null
     }
 
-    const exportData = (format) => {
-      store.dispatch('student/exportStudents', format)
+    const exportData = async (format) => {
+      try {
+        await store.dispatch('student/exportStudents', format)
+      } catch (error) {
+        handleError(error, 'student.export.error')
+      }
     }
 
     const importData = async () => {
       if (!selectedFile.value) {
-        alert(t('student.import.validation.file_required'))
+        handleError({ message: t('student.import.validation.file_required') }, 'student.import.validation.file_required')
         return
       }
 
@@ -198,15 +218,7 @@ export default {
           await store.dispatch('student/fetchStudents', { page: 1 })
         }
       } catch (error) {
-        importResult.value = {
-          success: false,
-          message: `Lỗi: ${error.message}`,
-          errors: []
-        }
-
-        if (importResultModal) {
-          importResultModal.show()
-        }
+        handleError(error, 'student.import.error')
       } finally {
         loading.value = false
         if (fileInput.value) {
@@ -307,6 +319,9 @@ export default {
       importResult,
       importResultModalRef,
       helpModalRef,
+      errorMessage,
+      isErrorTranslated,
+      showErrorModal,
       handleFileChange,
       exportData,
       importData,

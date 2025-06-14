@@ -326,7 +326,8 @@
         "to": "To",
         "to_lowercase": "to",
         "notification": "Notification",
-        "confirm": "Confirm"
+        "confirm": "Confirm",
+        "display_count": "Displaying %{current} / %{total} items"
     },
     "days": {
         "day_of_week": "Day of week",

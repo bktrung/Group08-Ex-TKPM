@@ -34,7 +34,7 @@
             <td>{{ status.type }}</td>
             <td class="text-center">
               <button class="btn btn-warning btn-sm" @click="openEditStatusModal(status)">{{ $t('common.edit')
-                }}</button>
+              }}</button>
             </td>
           </tr>
         </tbody>
@@ -43,6 +43,10 @@
 
     <BaseModal :title="modalTitle" :itemName="statusType" :placeholderTitle="$t('student.status.enter')"
       :showModal="isModalOpen" @save="saveStatus" @close="isModalOpen = false" />
+
+    <ErrorModal :showModal="showErrorModal" :title="$t('common.error')" :message="errorMessage"
+      :isTranslated="isErrorTranslated" @update:showModal="showErrorModal = $event" />
+
   </div>
 </template>
 
@@ -50,10 +54,14 @@
 import { ref, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import BaseModal from '../components/layout/BaseModal.vue'
+import ErrorModal from '../components/layout/ErrorModal.vue'
 import { useI18n } from 'vue-i18n'
 
 export default {
-  components: { BaseModal },
+  components: {
+    BaseModal,
+    ErrorModal
+  },
   setup() {
     const { t } = useI18n()
     const store = useStore()
@@ -65,6 +73,9 @@ export default {
     const statusTypes = computed(() => store.state.status.statusTypes)
     const loading = computed(() => store.state.status.loading)
     const isEditing = computed(() => Boolean(editingStatusId.value))
+
+    const showErrorModal = ref(false)
+    const errorMessage = ref('')
 
     const modalTitle = computed(() => (isEditing.value ? t('common.edit') : t('common.add')))
 
@@ -82,28 +93,32 @@ export default {
     }
 
     const saveStatus = async (name) => {
-      if (!name.trim()) return
-      if (name.trim() === originalStatusType.value) {
-        isModalOpen.value = false
-        return
+      const trimmedName = name.trim();
+
+      if (!trimmedName || trimmedName === originalStatusType.value) {
+        isModalOpen.value = false;
+        return;
       }
 
       try {
+        const payload = { type: trimmedName };
+
         if (isEditing.value) {
           await store.dispatch('status/updateStatusType', {
             id: editingStatusId.value,
-            statusType: { type: name.trim() }
-          })
+            statusType: payload
+          });
         } else {
-          await store.dispatch('status/createStatusType', { type: name.trim() })
+          await store.dispatch('status/createStatusType', payload);
         }
-        isModalOpen.value = false
+
+        isModalOpen.value = false;
+
       } catch (error) {
-        console.error('Error saving status type:', error)
-        const action = isEditing.value ? t('common.edit') : t('common.add')
-        alert(t('student.status.error_action', { action, message: error.message }))
+        errorMessage.value = store.state.status?.error || error.message || t('common.error_occurred');
+        showErrorModal.value = true;
       }
-    }
+    };
 
     onMounted(async () => {
       await store.dispatch('status/fetchStatusTypes')
@@ -117,7 +132,9 @@ export default {
       isModalOpen,
       openAddStatusModal,
       openEditStatusModal,
-      saveStatus
+      saveStatus,
+      showErrorModal,
+      errorMessage
     }
   }
 }

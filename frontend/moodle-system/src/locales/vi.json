@@ -321,7 +321,8 @@
         "to": "Đến",
         "to_lowercase": "đến",
         "notification": "Thông báo",
-        "confirm": "Xác nhận"
+        "confirm": "Xác nhận",
+        "display_count": "Hiển thị %{current} / %{total} phần tử"
     },
     "days": {
         "day_of_week": "Thứ",

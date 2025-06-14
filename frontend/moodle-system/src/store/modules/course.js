@@ -1,4 +1,4 @@
-import api from '@/services/index.js'
+import courseService from '@/services/course.js'
 
 export default {
   namespaced: true,
@@ -55,7 +55,7 @@ export default {
     async fetchCourses({ commit }, params = {}) {
       commit('SET_LOADING', true)
       try {
-        const { data } = await api.course.getCourses(params);
+        const { data } = await courseService.getCourses(params);
         const metadata = data?.metadata || {};
 
         let coursesArray = [];
@@ -88,7 +88,7 @@ export default {
           courseData.credits = Number(courseData.credits);
         }
 
-        const { data } = await api.course.createCourse(courseData);
+        const { data } = await courseService.createCourse(courseData);
         const newCourse = data?.metadata?.newCourse;
 
         if (newCourse) { commit('ADD_COURSE', newCourse); }
@@ -119,7 +119,7 @@ export default {
           }
         });
 
-        const response = await api.course.updateCourse(courseCode, updateData);
+        const response = await courseService.updateCourse(courseCode, updateData);
         const metadata = response?.data?.metadata;
 
         if (metadata?.updatedCourse) {
@@ -142,7 +142,7 @@ export default {
       commit('SET_LOADING', true)
       try {
 
-        const response = await api.course.deleteCourse(courseCode);
+        const response = await courseService.deleteCourse(courseCode);
 
         if (response.data && response.data.metadata && response.data.metadata.deletedCourse) {
           if (response.data.metadata.deletedCourse.isActive === false) {
@@ -184,7 +184,7 @@ export default {
       commit('SET_LOADING', true);
       try {
 
-        await api.course.toggleCourseStatus(courseCode, isActive);
+        await courseService.toggleCourseStatus(courseCode, isActive);
         commit('SET_COURSE_ACTIVE_STATUS', { courseCode, isActive });
         await dispatch('fetchCourses');
 

@@ -22,33 +22,6 @@
     <!-- Delete button -->
     <button class="btn btn-danger" @click="confirmDelete">{{ $t('common.delete') }}</button>
 
-    <!-- Confirm delete modal -->
-    <div class="modal fade" ref="confirmModalRef" tabindex="-1">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">{{ $t('common.confirm_cancel') }}</h5>
-            <button type="button" class="btn-close" @click="hideConfirmModal"></button>
-          </div>
-          <div class="modal-body">
-            <p>{{ $t('enrollment.drop.confirmation', { studentId, classCode }) }}</p>
-            <p><strong>{{ $t('common.reason') }}:</strong> {{ reason }}</p>
-          </div>
-          <div class="modal-footer">
-            <button class="btn btn-secondary" @click="hideConfirmModal">{{ $t('common.cancel') }}</button>
-            <button class="btn btn-danger" @click="performDelete">{{ $t('common.confirm') }}</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <SuccessModal :showModal="showSuccessModal" :title="$t('common.cancel_success')"
-      :message="$t('enrollment.drop.confirm_success', { studentId, classCode })" @confirm="goBack"
-      @update:showModal="showSuccess = $event" />
-
-    <ErrorModal :showModal="showErrorModal" :title="$t('common.cancel_failed')" :message="dropError"
-      @update:showModal="showErrorModal = $event" />
-
     <!-- Filter MSSV -->
     <div class="mt-5 mb-3">
       <label class="form-label">{{ $t('enrollment.drop.history.search_by_id') }}</label>
@@ -57,6 +30,7 @@
         <button class="btn btn-primary" @click="loadHistory">{{ $t('common.search') }}</button>
       </div>
     </div>
+
     <!-- Drop history table -->
     <div v-if="dropHistory && dropHistory.length > 0" class="table-responsive">
       <table class="table table-bordered table-hover">
@@ -83,23 +57,37 @@
       </table>
     </div>
     <div v-else class="text-muted">{{ $t('enrollment.drop.history.no_data') }}</div>
+
+    <ConfirmModal :showModal="showConfirmModal" :title="$t('common.confirm_cancel')"
+      :message="$t('enrollment.drop.confirmation', { studentId, classCode })" :reasonHtml="`<strong>${$t('common.reason')}:</strong> ${reason}`"
+      @update:showModal="showConfirmModal = $event" @confirm="performDelete" />
+
+    <SuccessModal :showModal="showSuccessModal" :title="$t('common.cancel_success')"
+      :message="$t('enrollment.drop.confirm_success', { studentId, classCode })" @confirm="goBack"
+      @update:showModal="showSuccess = $event" />
+
+    <ErrorModal :showModal="showErrorModal" :title="$t('common.cancel_failed')" :message="dropError"
+      @update:showModal="showErrorModal = $event" />
   </div>
 </template>
 
 <script>
 import { ref, nextTick, onMounted } from 'vue'
-import { Modal } from 'bootstrap'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
 import SuccessModal from '@/components/layout/SuccessModal.vue'
 import ErrorModal from '@/components/layout/ErrorModal.vue'
+import ConfirmModal from '@/components/layout/ConfirmModal.vue'
 
 export default {
+  props: {
+  },
   name: 'DropCourse',
   components: {
     SuccessModal,
-    ErrorModal
+    ErrorModal,
+    ConfirmModal
   },
   setup() {
     const store = useStore()
@@ -114,16 +102,13 @@ export default {
     // Modal control flags
     const showSuccessModal = ref(false)
     const showErrorModal = ref(false)
-
-    const confirmModalRef = ref(null)
-    let confirmModal = null
+    const showConfirmModal = ref(false)
 
     const dropHistory = ref([])
     const searchMSSV = ref('')
 
     onMounted(async () => {
       await nextTick()
-      confirmModal = new Modal(confirmModalRef.value)
     })
 
     const confirmDelete = () => {
@@ -134,7 +119,7 @@ export default {
         showSuccessModal.value = false
         return
       }
-      confirmModal.show()
+      showConfirmModal.value = true
     }
 
     const loadHistory = async () => {
@@ -144,8 +129,6 @@ export default {
         console.log(dropHistory.value)
 
         const error = store.state.enrollment.historyError
-
-        console.log("Drop history error:", dropHistory)
 
         if (error) {
           dropHistory.value = []
@@ -164,9 +147,8 @@ export default {
     }
 
     const hideConfirmModal = () => {
-      confirmModal?.hide()
+      showConfirmModal.value = false
     }
-
 
     const goBack = () => {
       router.back()
@@ -215,17 +197,16 @@ export default {
       classCode,
       reason,
       dropError,
-      confirmModalRef,
       dropHistory,
       searchMSSV,
       confirmDelete,
       loadHistory,
-      hideConfirmModal,
       goBack,
       performDelete,
       formatDate,
       showSuccessModal,
-      showErrorModal
+      showErrorModal,
+      showConfirmModal
     }
   }
 }
