@@ -15,12 +15,17 @@
       @toggle-active-status="toggleCourseActiveStatus" />
 
     <!-- Success Modal -->
-    <SuccessModal :showModal="showSuccessModal" :title="$t('common.success') + '!'" :message="success"
+    <SuccessModal :showModal="showSuccessModal" :title="$t('common.success') + '!'" :message="successMessage"
       @update:showModal="showSuccessModal = $event" />
 
     <!-- Error Modal -->
-    <ErrorModal :showModal="showErrorModal" :title="$t('common.error')" :message="errorMessage"
-      :isTranslated="isErrorTranslated" @update:showModal="showErrorModal = $event" />
+    <ErrorModal 
+      :showModal="showErrorModal" 
+      :title="$t('common.error')" 
+      :message="errorMessage"
+      :isTranslated="isErrorTranslated" 
+      @update:showModal="showErrorModal = $event" 
+    />
   </div>
 </template>
 
@@ -48,7 +53,7 @@ export default {
     const showForm = ref(false)
     const isEditing = ref(false)
     const selectedCourse = ref({})
-    const success = ref('')
+    const successMessage = ref('')
     const showSuccessModal = ref(false)
 
     const { errorMessage, isErrorTranslated, showErrorModal, handleError } = useErrorHandler()
@@ -109,10 +114,10 @@ export default {
             data: updateData
           });
 
-          success.value = t('course.update_success', { name: courseData.name });
+          successMessage.value = t('course.update_success', { name: courseData.name });
         } else {
           await store.dispatch('course/createCourse', courseData);
-          success.value = t('course.add_success', { name: courseData.name });
+          successMessage.value = t('course.add_success', { name: courseData.name });
         }
 
         showSuccessModal.value = true;
@@ -123,7 +128,8 @@ export default {
         selectedCourse.value = {};
 
       } catch (error) {
-        handleError(error, 'course.save_error')
+        console.error('Error saving course:', error);
+        handleError(error, 'course.save_error_fallback');
       }
     }
 
@@ -133,12 +139,13 @@ export default {
         const result = await store.dispatch('course/deleteCourse', course.courseCode);
 
         if (result.success) {
-          success.value = result.message || t('course.delete_success');
+          successMessage.value = result.message || t('course.delete_success');
           showSuccessModal.value = true;
           await store.dispatch('course/fetchCourses');
         }
       } catch (error) {
-        handleError(error, 'course.delete_error')
+        console.error('Error deleting course:', error);
+        handleError(error, 'course.delete_error_fallback');
       }
     }
 
@@ -158,11 +165,12 @@ export default {
         });
 
         if (result.success) {
-          success.value = result.message || t(newStatus ? 'course.reopen_success' : 'course.close_success');
+          successMessage.value = result.message || t(newStatus ? 'course.reopen_success' : 'course.close_success');
           showSuccessModal.value = true;
         }
       } catch (error) {
-        handleError(error, 'course.toggle_error')
+        console.error('Error toggling course status:', error);
+        handleError(error, 'course.toggle_error_fallback');
       }
     }
 
@@ -181,7 +189,8 @@ export default {
           }, 1000);
         }
       } catch (error) {
-        handleError(error, 'course.load_error')
+        console.error('Error loading course data:', error);
+        handleError(error, 'course.load_error_fallback');
       }
     })
 
@@ -189,7 +198,7 @@ export default {
       showForm,
       isEditing,
       selectedCourse,
-      success,
+      successMessage,
       errorMessage,
       isErrorTranslated,
       showErrorModal,

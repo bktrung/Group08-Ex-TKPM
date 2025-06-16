@@ -17,9 +17,9 @@ apiClient.interceptors.request.use(
       config.params = { lang }
     }
 
-    console.log('🌐 API Request:', config.method?.toUpperCase(), config.url)
-    console.log('📋 Parameters:', config.params)
-    console.log('🔤 Language from localStorage:', localStorage.getItem('language'))
+    console.log('API Request:', config.method?.toUpperCase(), config.url)
+    console.log('Parameters:', config.params)
+    console.log('Language from localStorage:', localStorage.getItem('language'))
     
     return config
   },
@@ -28,5 +28,14 @@ apiClient.interceptors.request.use(
   }
 )
 
-export default apiClient
+apiClient.interceptors.response.use(
+  (response) => {
+    return response
+  },
+  (error) => {
+    console.error('API Error:', error.response?.status, error.response?.data?.message)
+    return Promise.reject(error)
+  }
+)
 
+export default apiClient

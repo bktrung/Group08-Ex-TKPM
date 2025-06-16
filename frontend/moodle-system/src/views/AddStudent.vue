@@ -24,8 +24,13 @@
       @update:showModal="showSuccessModal = $event" />
 
     <!-- Error Modal -->
-    <ErrorModal :showModal="showErrorModal" :title="$t('common.error')" :message="errorMessage"
-      :isTranslated="isErrorTranslated" @update:showModal="showErrorModal = $event" />
+    <ErrorModal 
+      :showModal="showErrorModal" 
+      :title="$t('common.error')" 
+      :message="errorMessage"
+      :isTranslated="isErrorTranslated"
+      @update:showModal="showErrorModal = $event" 
+    />
   </div>
 </template>
 
@@ -50,12 +55,12 @@ export default {
     const { t } = useI18n()
     const store = useStore()
     const router = useRouter()
-    const modalRef = ref(null)
     const loading = ref(true)
     const error = ref(null)
+    const showSuccessModal = ref(false)
 
     // Use error handler composable
-    const { errorMessage, isErrorTranslated, showErrorModal, showSuccessModal, handleError } = useErrorHandler()
+    const { errorMessage, isErrorTranslated, showErrorModal, handleError } = useErrorHandler()
 
     const loadReferenceData = async () => {
       loading.value = true
@@ -147,10 +152,9 @@ export default {
       errorMessage,
       isErrorTranslated,
       showErrorModal,
-      modalRef,
+      showSuccessModal,
       handleSubmit,
-      redirectToList,
-      t
+      redirectToList
     }
   }
 }

@@ -43,8 +43,13 @@
     <BaseModal :title="modalTitle" :placeholderTitle="$t('department.enter')" :itemName="departmentName"
       :showModal="isModalOpen" @save="saveDepartment" @close="isModalOpen = false" />
 
-    <ErrorModal :showModal="showErrorModal" :title="$t('common.error')" :message="errorMessage"
-      :isTranslated="isErrorTranslated" @update:showModal="showErrorModal = $event" />
+    <ErrorModal 
+      :showModal="showErrorModal" 
+      :title="$t('common.error')" 
+      :message="errorMessage"
+      :isTranslated="isErrorTranslated" 
+      @update:showModal="showErrorModal = $event" 
+    />
 
   </div>
 </template>
@@ -55,9 +60,9 @@ import { useI18n } from 'vue-i18n'
 import { ref, computed, onMounted } from 'vue'
 import BaseModal from '../components/layout/BaseModal.vue'
 import ErrorModal from '../components/layout/ErrorModal.vue'
+import { useErrorHandler } from '@/composables/useErrorHandler'
 
 export default {
-  watch: {},
   components: {
     BaseModal,
     ErrorModal
@@ -76,8 +81,7 @@ export default {
 
     const modalTitle = computed(() => (isEditing.value ? t('common.edit') : t('common.add')))
 
-    const showErrorModal = ref(false)
-    const errorMessage = ref('')
+    const { errorMessage, isErrorTranslated, showErrorModal, handleError } = useErrorHandler()
 
     const openAddDepartmentModal = () => {
       editingDepartmentId.value = null
@@ -115,14 +119,18 @@ export default {
         isModalOpen.value = false;
 
       } catch (error) {
-        showErrorModal.value = true;
-        errorMessage.value = store.state.department.error || error.message || t('common.unknown_error');
+        console.error('Error saving department:', error)
+        handleError(error, 'department.save_error')
       }
     };
 
-
     onMounted(async () => {
-      await store.dispatch('department/fetchDepartments')
+      try {
+        await store.dispatch('department/fetchDepartments')
+      } catch (error) {
+        console.error('Error loading departments:', error)
+        handleError(error, 'department.load_error')
+      }
     })
 
     return {
@@ -134,8 +142,9 @@ export default {
       openAddDepartmentModal,
       openEditDepartmentModal,
       saveDepartment,
-      showErrorModal,
-      errorMessage
+      errorMessage,
+      isErrorTranslated,
+      showErrorModal
     }
   }
 }
