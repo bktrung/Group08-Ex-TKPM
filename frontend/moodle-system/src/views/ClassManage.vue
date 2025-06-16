@@ -124,12 +124,17 @@
     <ScheduleModal v-model:visible="isScheduleModalVisible" :selectedClass="selectedClass" />
 
     <!-- Success Modals -->
-    <SuccessModal :showModal="showSuccessModal" :title="$t('common.success') + '!'" :message="success"
+    <SuccessModal :showModal="showSuccessModal" :title="$t('common.success') + '!'" :message="successMessage"
       @update:showModal="showSuccessModal = $event" />
 
     <!-- Error Modal -->
-    <ErrorModal :showModal="showErrorModal" :title="$t('common.error') + '!'" :message="error"
-      @update:showModal="showErrorModal = $event" />
+    <ErrorModal 
+      :showModal="showErrorModal" 
+      :title="$t('common.error')" 
+      :message="errorMessage"
+      :isTranslated="isErrorTranslated"
+      @update:showModal="showErrorModal = $event" 
+    />
 
   </div>
 </template>
@@ -142,8 +147,8 @@ import BasePagination from '@/components/layout/DefaultPagination.vue'
 import ScheduleModal from '@/components/layout/ScheduleModal.vue'
 import SuccessModal from '@/components/layout/SuccessModal.vue'
 import ErrorModal from '@/components/layout/ErrorModal.vue'
-
 import { useI18n } from 'vue-i18n'
+import { useErrorHandler } from '@/composables/useErrorHandler'
 
 export default {
   name: 'ClassManage',
@@ -157,12 +162,12 @@ export default {
   setup() {
     const { t } = useI18n()
     const store = useStore()
+    const { errorMessage, isErrorTranslated, showErrorModal, handleError } = useErrorHandler()
+    
     const showForm = ref(false)
     const isEditing = ref(false)
     const selectedClass = ref({})
-    const error = ref('')
-    const success = ref('')
-    const showErrorModal = ref(false)
+    const successMessage = ref('')
     const showSuccessModal = ref(false)
 
     const currentPage = ref(1)
@@ -296,7 +301,7 @@ export default {
           await store.dispatch('class/addClass', classData);
         }
 
-        success.value = isUpdate
+        successMessage.value = isUpdate
           ? t('class.update_success', { classCode })
           : t('class.add_success', { classCode });
 
@@ -305,12 +310,8 @@ export default {
         await store.dispatch('class/fetchClasses');
         resetForm();
       } catch (err) {
-
-        const fallback = t('class.save_error_fallback');
-        const errorMsg = err.response?.data?.message || err.message || fallback;
-
-        error.value = `${t('class.save_error_prefix')} ${errorMsg}`;
-        showErrorModal.value = true;
+        console.error('Error saving class:', err);
+        handleError(err, 'class.save_error_fallback');
       }
     };
 
@@ -322,10 +323,6 @@ export default {
     const showScheduleModal = (classItem) => {
       selectedClass.value = classItem
       isScheduleModalVisible.value = true
-    }
-
-    const formatDayOfWeek = (day) => {
-      return t(`days.${day}`) || `Thứ ${day}`
     }
 
     const formatSemester = (semester) => {
@@ -376,9 +373,8 @@ export default {
         }
 
       } catch (err) {
-        showErrorModal.value = true
-        const msg = err.response?.data?.message || err.message || t('error.load_failed')
-        error.value = `${t('error.prefix')}: ${msg}`
+        console.error('Error loading class data:', err);
+        handleError(err, 'error.load_failed');
       }
     });
 
@@ -386,8 +382,10 @@ export default {
       showForm,
       isEditing,
       selectedClass,
-      error,
-      success,
+      errorMessage,
+      isErrorTranslated,
+      showErrorModal,
+      successMessage,
       currentPage,
       pageSize,
       searchQuery,
@@ -406,12 +404,10 @@ export default {
       cancelForm,
       saveClass,
       showScheduleModal,
-      formatDayOfWeek,
       formatSemester,
       getCourseInfo,
       getProgressBarClass,
       isScheduleModalVisible,
-      showErrorModal,
       showSuccessModal
     }
   }
