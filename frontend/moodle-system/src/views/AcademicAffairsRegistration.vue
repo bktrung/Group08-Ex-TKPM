@@ -4,46 +4,71 @@
       <h2>{{ $t('enrollment.management_title') }}</h2>
 
       <div class="card-buttons">
-        <!-- Nút mở modal -->
+        <!-- Register button -->
         <div class="card" @click="goToRegisterPage" style="cursor: pointer;">
           <h3>📚 {{ $t('enrollment.register.title') }}</h3>
           <p>{{ $t('enrollment.register.description') }}</p>
         </div>
 
+        <!-- Drop button -->
         <div class="card danger" @click="goToDropPage">
           <h3>🗑️ {{ $t('enrollment.drop.title') }}</h3>
           <p>{{ $t('enrollment.drop.description') }}</p>
         </div>
       </div>
     </div>
+
+    <!-- Error Modal -->
+    <ErrorModal 
+      :showModal="showErrorModal" 
+      :title="$t('common.error')" 
+      :message="errorMessage"
+      :isTranslated="isErrorTranslated"
+      @update:showModal="showErrorModal = $event" 
+    />
     
   </div>
 </template>
 
 <script>
 import { useRouter } from 'vue-router'
+import { useErrorHandler } from '@/composables/useErrorHandler'
+import ErrorModal from '@/components/layout/ErrorModal.vue'
 
 export default {
-  props: {},
+  components: {
+    ErrorModal
+  },
   setup() {
     const router = useRouter()
+    const { errorMessage, isErrorTranslated, showErrorModal, handleError } = useErrorHandler()
 
     const goToRegisterPage = () => {
-      router.push('/register-course')
+      try {
+        router.push('/register-course')
+      } catch (error) {
+        handleError(error, 'common.navigation_error')
+      }
     }
 
     const goToDropPage = () => {
-      router.push('/drop-course')
+      try {
+        router.push('/drop-course')
+      } catch (error) {
+        handleError(error, 'common.navigation_error')
+      }
     }
 
     return { 
       goToRegisterPage, 
-      goToDropPage 
+      goToDropPage,
+      errorMessage,
+      isErrorTranslated,
+      showErrorModal
     }
   }
 }
 </script>
-
 
 <style scoped>
 .screen {
