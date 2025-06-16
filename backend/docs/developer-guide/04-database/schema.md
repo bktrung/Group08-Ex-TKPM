@@ -25,74 +25,66 @@ The Student Management System follows a relational-style design approach within 
 
 ```mermaid
 erDiagram
-    %% Core Academic Entities
     DEPARTMENT {
         ObjectId _id PK
-        string name UK "unique"
+        string name UK
         timestamp createdAt
         timestamp updatedAt
     }
     
     PROGRAM {
         ObjectId _id PK
-        string name UK "unique" 
+        string name UK
         timestamp createdAt
         timestamp updatedAt
     }
     
     COURSE {
         ObjectId _id PK
-        string courseCode UK "unique"
+        string courseCode UK
         string name
-        number credits "min: 2"
+        number credits
         ObjectId department FK
         string description
-        ObjectId[] prerequisites "self-reference"
-        boolean isActive "default: true"
+        ObjectId prerequisites
+        boolean isActive
         timestamp createdAt
         timestamp updatedAt
     }
     
-    %% Class Management
     CLASS {
         ObjectId _id PK
-        string classCode UK "unique"
+        string classCode UK
         ObjectId course FK
         string academicYear
-        number semester "1|2|3"
+        number semester
         string instructor
-        number maxCapacity "min: 1"
-        ISchedule[] schedule "embedded"
-        number enrolledStudents "default: 0"
-        boolean isActive "default: true"
+        number maxCapacity
+        number enrolledStudents
+        boolean isActive
         timestamp createdAt
         timestamp updatedAt
     }
     
     SCHEDULE {
-        number dayOfWeek "2-7 (Mon-Sat)"
-        number startPeriod "1-10"
-        number endPeriod "1-10"
+        number dayOfWeek
+        number startPeriod
+        number endPeriod
         string classroom
     }
     
-    %% Student Management
     STUDENT {
         ObjectId _id PK
-        string studentId UK "unique"
+        string studentId UK
         string fullName
         date dateOfBirth
-        string gender "Nam|Nữ"
+        string gender
         ObjectId department FK
-        number schoolYear "1990-current"
+        number schoolYear
         ObjectId program FK
-        IAddress permanentAddress "optional"
-        IAddress temporaryAddress "optional"
-        IAddress mailingAddress "required"
-        string email UK "unique"
-        string phoneNumber UK "unique"
+        string email UK
+        string phoneNumber UK
         ObjectId status FK
-        IdentityDocument identityDocument
         string nationality
         timestamp createdAt
         timestamp updatedAt
@@ -100,7 +92,7 @@ erDiagram
     
     STUDENT_STATUS {
         ObjectId _id PK
-        string type UK "unique"
+        string type UK
         timestamp createdAt
         timestamp updatedAt
     }
@@ -113,79 +105,87 @@ erDiagram
         timestamp updatedAt
     }
     
-    %% Enrollment System
     ENROLLMENT {
         ObjectId _id PK
         ObjectId student FK
         ObjectId class FK
-        date enrollmentDate "default: now"
-        string status "ACTIVE|DROPPED|COMPLETED"
-        date dropDate "optional"
-        string dropReason "optional"
+        date enrollmentDate
+        string status
+        date dropDate
+        string dropReason
         timestamp createdAt
         timestamp updatedAt
     }
     
     GRADE {
         ObjectId _id PK
-        ObjectId enrollment FK UK "one-to-one"
-        number midtermScore "optional"
-        number finalScore "optional"
+        ObjectId enrollment FK
+        number midtermScore
+        number finalScore
         number totalScore
         string letterGrade
         number gradePoints
-        boolean isPublished "default: true"
+        boolean isPublished
         timestamp createdAt
         timestamp updatedAt
     }
     
-    %% Academic Calendar
     SEMESTER {
         ObjectId _id PK
         string academicYear
-        number semester "1|2|3"
+        number semester
         date registrationStartDate
         date registrationEndDate
         date dropDeadline
         date semesterStartDate
         date semesterEndDate
-        boolean isActive "default: true"
+        boolean isActive
         timestamp createdAt
         timestamp updatedAt
     }
     
     %% Relationships
-    DEPARTMENT ||--o{ STUDENT : "manages"
-    DEPARTMENT ||--o{ COURSE : "offers"
-    PROGRAM ||--o{ STUDENT : "enrolls"
+    DEPARTMENT ||--o{ STUDENT : manages
+    DEPARTMENT ||--o{ COURSE : offers
+    PROGRAM ||--o{ STUDENT : enrolls
     
-    COURSE ||--o{ CLASS : "instantiated_as"
-    COURSE ||--o{ COURSE : "prerequisites"
+    COURSE ||--o{ CLASS : instantiated_as
+    COURSE ||--o{ COURSE : prerequisites
     
-    CLASS ||--o{ ENROLLMENT : "has"
-    CLASS ||--|| SCHEDULE : "contains"
+    CLASS ||--o{ ENROLLMENT : has
+    CLASS ||--|| SCHEDULE : contains
     
-    STUDENT ||--o{ ENROLLMENT : "enrolls_in"
-    STUDENT ||--|| STUDENT_STATUS : "has_status"
+    STUDENT ||--o{ ENROLLMENT : enrolls_in
+    STUDENT ||--|| STUDENT_STATUS : has_status
     
-    STUDENT_STATUS ||--o{ STUDENT_STATUS_TRANSITION : "transitions_from"
-    STUDENT_STATUS ||--o{ STUDENT_STATUS_TRANSITION : "transitions_to"
+    STUDENT_STATUS ||--o{ STUDENT_STATUS_TRANSITION : transitions_from
+    STUDENT_STATUS ||--o{ STUDENT_STATUS_TRANSITION : transitions_to
     
-    ENROLLMENT ||--|| GRADE : "receives"
-    
-    %% Cardinality Notes
-    %% Department (1) : Student (Many)
-    %% Department (1) : Course (Many)  
-    %% Program (1) : Student (Many)
-    %% Course (1) : Class (Many)
-    %% Course (Many) : Course (Many) - Prerequisites
-    %% Class (1) : Enrollment (Many)
-    %% Student (1) : Enrollment (Many)
-    %% Student (1) : StudentStatus (1)
-    %% StudentStatus (1) : StatusTransition (Many) - From
-    %% StudentStatus (1) : StatusTransition (Many) - To  
-    %% Enrollment (1) : Grade (1)
+    ENROLLMENT ||--|| GRADE : receives
 ```
+
+### Entity Details
+
+#### Core Academic Entities
+- **DEPARTMENT**: Academic departments (unique name)
+- **PROGRAM**: Academic programs offered
+- **COURSE**: Course definitions with prerequisites support
+- **CLASS**: Specific course instances with scheduling
+
+#### Student Management
+- **STUDENT**: Student records with personal information
+- **STUDENT_STATUS**: Available student status types
+- **STUDENT_STATUS_TRANSITION**: Allowed status changes
+
+#### Enrollment System
+- **ENROLLMENT**: Student-class enrollment records
+- **GRADE**: Grade records linked to enrollments
+- **SEMESTER**: Academic calendar management
+
+#### Embedded Documents
+- **SCHEDULE**: Embedded in CLASS for time/location data
+- **IAddress**: Embedded in STUDENT for address information
+- **IdentityDocument**: Embedded in STUDENT for ID documents
 
 ### Key Relationships Explained
 
