@@ -105,35 +105,57 @@
       :message="`${$t('student.delete.confirm')} ${studentToDelete?.fullName}?`" 
       @update:showModal="showConfirmModal = $event" @confirm="deleteStudent" />
 
+    <!-- Success Modal -->
+    <SuccessModal 
+      :showModal="showSuccessModal" 
+      :title="$t('common.success')" 
+      :message="successMessage"
+      @update:showModal="showSuccessModal = $event" 
+    />
+
+    <!-- Error Modal -->
+    <ErrorModal 
+      :showModal="showErrorModal" 
+      :title="$t('common.error')" 
+      :message="errorMessage"
+      :isTranslated="isErrorTranslated"
+      @update:showModal="showErrorModal = $event" 
+    />
+
   </div>
 </template>
 
 <script>
 import { useStore } from 'vuex'
-import { Modal } from 'bootstrap'
 import { ref, computed, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { useErrorHandler } from '@/composables/useErrorHandler'
 import StudentImportExport from '@/components/student/ImportExport.vue'
 import ConfirmModal from '@/components/layout/ConfirmModal.vue'
 import BasePagination from '@/components/layout/BasePagination.vue'
-import { useI18n } from 'vue-i18n'
+import SuccessModal from '@/components/layout/SuccessModal.vue'
+import ErrorModal from '@/components/layout/ErrorModal.vue'
 
 export default {
   name: 'StudentList',
   components: {
     StudentImportExport,
     ConfirmModal,
-    BasePagination
+    BasePagination,
+    SuccessModal,
+    ErrorModal
   },
 
   setup() {
     const { t } = useI18n()
-    const initialDataLoaded = ref(false);
     const store = useStore()
+    const { errorMessage, isErrorTranslated, showErrorModal, handleError } = useErrorHandler()
+    
+    const initialDataLoaded = ref(false)
     const searchQuery = ref('')
     const selectedDepartment = ref('')
     const studentToDelete = ref(null)
-    const deleteModal = ref(null)
-    const modalRef = ref(null)
+    const successMessage = ref('')
 
     const students = computed(() => store.state.student.students)
     const loading = computed(() => store.state.student.loading)
@@ -142,6 +164,7 @@ export default {
     const departments = computed(() => store.state.department.departments)
 
     const showConfirmModal = ref(false)
+    const showSuccessModal = ref(false)
 
     const startPage = computed(() => {
       return Math.max(1, currentPage.value - 2)
@@ -160,19 +183,29 @@ export default {
     })
 
     const loadData = async () => {
-      await Promise.all([
-        store.dispatch('student/fetchStudents', { page: currentPage.value }),
-        store.dispatch('department/fetchDepartments')
-      ]);
-      initialDataLoaded.value = true;
-    };
+      try {
+        await Promise.all([
+          store.dispatch('student/fetchStudents', { page: currentPage.value }),
+          store.dispatch('department/fetchDepartments')
+        ])
+        initialDataLoaded.value = true
+      } catch (error) {
+        console.error('Error loading data:', error)
+        handleError(error, 'common.loading_error')
+      }
+    }
 
     const search = async () => {
-      await store.dispatch('student/searchStudents', {
-        query: searchQuery.value,
-        departmentId: selectedDepartment.value,
-        page: 1
-      })
+      try {
+        await store.dispatch('student/searchStudents', {
+          query: searchQuery.value,
+          departmentId: selectedDepartment.value,
+          page: 1
+        })
+      } catch (error) {
+        console.error('Error searching students:', error)
+        handleError(error, 'student.search_error')
+      }
     }
 
     const resetSearch = async () => {
@@ -183,14 +216,19 @@ export default {
 
     const changePage = async (page) => {
       if (page >= 1 && page <= totalPages.value) {
-        if (searchQuery.value || selectedDepartment.value) {
-          await store.dispatch('student/searchStudents', {
-            query: searchQuery.value,
-            departmentId: selectedDepartment.value,
-            page
-          })
-        } else {
-          await store.dispatch('student/fetchStudents', { page })
+        try {
+          if (searchQuery.value || selectedDepartment.value) {
+            await store.dispatch('student/searchStudents', {
+              query: searchQuery.value,
+              departmentId: selectedDepartment.value,
+              page
+            })
+          } else {
+            await store.dispatch('student/fetchStudents', { page })
+          }
+        } catch (error) {
+          console.error('Error changing page:', error)
+          handleError(error, 'student.pagination_error')
         }
       }
     }
@@ -205,14 +243,19 @@ export default {
         try {
           await store.dispatch('student/deleteStudent', studentToDelete.value.studentId)
           showConfirmModal.value = false
+          
+          successMessage.value = t('student.delete.success', { name: studentToDelete.value.fullName })
+          showSuccessModal.value = true
 
+          // Refresh the data
           if (store.state.student.isSearchMode) {
             await search()
           } else {
             await loadData()
           }
         } catch (error) {
-          alert(`${t('common.error')}: ` + error.message)
+          console.error('Error deleting student:', error)
+          handleError(error, 'student.delete.error')
         }
       }
     }
@@ -252,11 +295,6 @@ export default {
 
     onMounted(async () => {
       await loadData()
-
-      const modalElement = document.getElementById('confirmDeleteModal')
-      if (modalElement) {
-        deleteModal.value = new Modal(modalElement)
-      }
     })
 
     return {
@@ -271,7 +309,13 @@ export default {
       searchQuery,
       selectedDepartment,
       studentToDelete,
-      modalRef,
+      initialDataLoaded,
+      showConfirmModal,
+      showSuccessModal,
+      successMessage,
+      errorMessage,
+      isErrorTranslated,
+      showErrorModal,
       search,
       resetSearch,
       changePage,
@@ -281,9 +325,7 @@ export default {
       formatAddress,
       getDepartmentName,
       getProgramName,
-      getStatusName,
-      initialDataLoaded,
-      showConfirmModal,
+      getStatusName
     }
   }
 }

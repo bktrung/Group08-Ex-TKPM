@@ -44,17 +44,24 @@
     <BaseModal :title="modalTitle" :placeholderTitle="$t('program.enter')" :itemName="programName"
       :showModal="isModalOpen" @save="saveProgram" @close="isModalOpen = false" />
 
-    <ErrorModal :showModal="showErrorModal" :title="$t('common.error')" :message="errorMessage"
-      :isTranslated="isErrorTranslated" @update:showModal="showErrorModal = $event" />
+    <!-- Error Modal -->
+    <ErrorModal 
+      :showModal="showErrorModal" 
+      :title="$t('common.error')" 
+      :message="errorMessage"
+      :isTranslated="isErrorTranslated" 
+      @update:showModal="showErrorModal = $event" 
+    />
   </div>
 </template>
 
 <script>
 import { ref, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
+import { useI18n } from 'vue-i18n'
+import { useErrorHandler } from '@/composables/useErrorHandler'
 import BaseModal from '../components/layout/BaseModal.vue'
 import ErrorModal from '../components/layout/ErrorModal.vue'
-import { useI18n } from 'vue-i18n'
 
 export default {
   components: {
@@ -64,6 +71,8 @@ export default {
   setup() {
     const { t } = useI18n()
     const store = useStore()
+    const { errorMessage, isErrorTranslated, showErrorModal, handleError } = useErrorHandler()
+    
     const programName = ref('')
     const originalProgramName = ref('')
     const editingProgramId = ref(null)
@@ -74,9 +83,6 @@ export default {
     const isEditing = computed(() => Boolean(editingProgramId.value))
 
     const modalTitle = computed(() => (isEditing.value ? t('common.edit') : t('common.add')))
-
-    const errorMessage = ref('')
-    const showErrorModal = ref(false)
 
     const openAddProgramModal = () => {
       editingProgramId.value = null
@@ -92,35 +98,40 @@ export default {
     }
 
     const saveProgram = async (name) => {
-      const trimmedName = name.trim();
+      const trimmedName = name.trim()
 
       if (!trimmedName || trimmedName === originalProgramName.value) {
-        isModalOpen.value = false;
-        return;
+        isModalOpen.value = false
+        return
       }
 
       try {
-        const payload = { name: trimmedName };
+        const payload = { name: trimmedName }
 
         if (isEditing.value) {
           await store.dispatch('program/updateProgram', {
             id: editingProgramId.value,
             program: payload
-          });
+          })
         } else {
-          await store.dispatch('program/createProgram', payload);
+          await store.dispatch('program/createProgram', payload)
         }
 
-        isModalOpen.value = false;
+        isModalOpen.value = false
 
       } catch (error) {
-        errorMessage.value = store.state.program?.error || error.message || t('common.error_default');
-        showErrorModal.value = true;
+        console.error('Error saving program:', error)
+        handleError(error, 'program.save_error')
       }
-    };
+    }
 
     onMounted(async () => {
-      await store.dispatch('program/fetchPrograms')
+      try {
+        await store.dispatch('program/fetchPrograms')
+      } catch (error) {
+        console.error('Error loading programs:', error)
+        handleError(error, 'program.load_error')
+      }
     })
 
     return {
@@ -129,11 +140,12 @@ export default {
       programName,
       modalTitle,
       isModalOpen,
+      errorMessage,
+      isErrorTranslated,
+      showErrorModal,
       openAddProgramModal,
       openEditProgramModal,
-      saveProgram,
-      errorMessage,
-      showErrorModal
+      saveProgram
     }
   }
 }

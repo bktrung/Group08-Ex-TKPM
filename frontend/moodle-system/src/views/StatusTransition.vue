@@ -57,7 +57,7 @@
     <div class="row" v-if="loading && !statusTransitions.length">
       <div class="col-12 text-center py-5">
         <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">L{{ $t('common.loading') }}...</span>
+          <span class="visually-hidden">{{ $t('common.loading') }}...</span>
         </div>
       </div>
     </div>
@@ -110,6 +110,15 @@
       :reasonHtml="`${$t('common.from')} <strong>${deleteFromStatus}</strong> ${$t('common.to_lowercase')} <strong>${deleteToStatus}</strong>`"
       @update:showModal="showConfirmModal = $event" @confirm="deleteTransition" />
 
+    <!-- Error Modal -->
+    <ErrorModal 
+      :showModal="showErrorModal" 
+      :title="$t('common.error')" 
+      :message="errorMessage"
+      :isTranslated="isErrorTranslated"
+      @update:showModal="showErrorModal = $event" 
+    />
+
   </div>
 </template>
 
@@ -118,17 +127,21 @@ import { ref, computed, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import { Toast } from 'bootstrap'
 import { useI18n } from 'vue-i18n'
+import { useErrorHandler } from '@/composables/useErrorHandler'
 import ConfirmModal from '../components/layout/ConfirmModal.vue'
+import ErrorModal from '../components/layout/ErrorModal.vue'
 
 export default {
   name: 'StatusTransition',
   components: {
-    ConfirmModal
+    ConfirmModal,
+    ErrorModal
   },
   setup() {
     const { t } = useI18n()
-    console.log(t)
     const store = useStore()
+    const { errorMessage, isErrorTranslated, showErrorModal, handleError } = useErrorHandler()
+    
     const fromStatusId = ref('')
     const toStatusId = ref('')
     const toastRef = ref(null)
@@ -178,7 +191,8 @@ export default {
         showToast(t('common.success'), t('statusTransitionRule.toast.addSuccess'), 'success')
       } catch (error) {
         console.error('Error adding transition rule:', error)
-        showToast(t('common.error'), t('statusTransitionRule.toast.addError', { error: error.message }), 'error')
+        handleError(error, 'statusTransitionRule.toast.addError')
+        showToast(t('common.error'), errorMessage.value, 'error')
       }
     }
 
@@ -204,32 +218,37 @@ export default {
         showToast(t('common.success'), t('statusTransitionRule.toast.deleteSuccess'), 'success')
       } catch (error) {
         console.error('Error deleting transition rule:', error)
-        showToast(t('common.error'), t('statusTransitionRule.toast.deleteError', { error: error.message }), 'error')
+        handleError(error, 'statusTransitionRule.toast.deleteError')
+        showToast(t('common.error'), errorMessage.value, 'error')
       }
     }
 
     const showToast = (title, message, type = 'info') => {
-      if (!message) return;
+      if (!message) return
 
-      toastTitle.value = title || t('common.notification');
-      toastMessage.value = message;
-      toastType.value = type;
+      toastTitle.value = title || t('common.notification')
+      toastMessage.value = message
+      toastType.value = type
 
       if (toast.value) {
-        toast.value.show();
+        toast.value.show()
       }
     }
 
     onMounted(async () => {
-      await Promise.all([
-        store.dispatch('status/fetchStatusTypes'),
-        store.dispatch('status/fetchStatusTransitions')
-      ])
+      try {
+        await Promise.all([
+          store.dispatch('status/fetchStatusTypes'),
+          store.dispatch('status/fetchStatusTransitions')
+        ])
 
-
-      const toastElement = document.getElementById('toast')
-      if (toastElement) {
-        toast.value = new Toast(toastElement, { delay: 3000 })
+        const toastElement = document.getElementById('toast')
+        if (toastElement) {
+          toast.value = new Toast(toastElement, { delay: 3000 })
+        }
+      } catch (error) {
+        console.error('Error loading status data:', error)
+        handleError(error, 'statusTransitionRule.load_error')
       }
     })
 
@@ -246,10 +265,13 @@ export default {
       toastMessage,
       toastClass,
       toastHeaderClass,
+      showConfirmModal,
+      errorMessage,
+      isErrorTranslated,
+      showErrorModal,
       addTransition,
       confirmDeleteTransition,
-      deleteTransition,
-      showConfirmModal
+      deleteTransition
     }
   }
 }
