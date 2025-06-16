@@ -20,10 +20,15 @@
 
     <SuccessModal :showModal="showSuccessModal" :title="$t('common.success') + '!'"
       :message="$t('student.update_success') + '!'" @confirm="redirectToList"
-      @update:showModal="showSuccess = $event" />
+      @update:showModal="showSuccessModal = $event" />
 
-    <ErrorModal :showModal="showErrorModal" :title="$t('common.error') + '!'" :message="errorMessage"
-      @update:showModal="showErrorModal = $event" />
+    <ErrorModal 
+      :showModal="showErrorModal" 
+      :title="$t('common.error') + '!'" 
+      :message="errorMessage"
+      :isTranslated="isErrorTranslated"
+      @update:showModal="showErrorModal = $event" 
+    />
 
   </div>
 </template>
@@ -36,6 +41,7 @@ import StudentForm from '@/components/student/StudentForm.vue'
 import { useI18n } from 'vue-i18n'
 import SuccessModal from '@/components/layout/SuccessModal.vue'
 import ErrorModal from '@/components/layout/ErrorModal.vue'
+import { useErrorHandler } from '@/composables/useErrorHandler'
 
 export default {
   name: 'EditStudent',
@@ -54,11 +60,9 @@ export default {
     const studentData = ref({})
     const loading = ref(true)
     const error = ref(null)
-    const modalRef = ref(null)
-    const errorMessage = ref(`${t('common.undefined_error')}`)
-
     const showSuccessModal = ref(false)
-    const showErrorModal = ref(false)
+
+    const { errorMessage, isErrorTranslated, showErrorModal, handleError } = useErrorHandler()
 
     const enhancedStudentData = computed(() => {
       if (!studentData.value || Object.keys(studentData.value).length === 0) {
@@ -245,8 +249,8 @@ export default {
 
         showSuccessModal.value = true
       } catch (err) {
-        errorMessage.value = err.response.data.message || t('common.error');
-        showErrorModal.value = true
+        console.error('Error updating student:', err)
+        handleError(err, 'student.update_error')
       }
     };
 
@@ -268,11 +272,11 @@ export default {
       loading,
       error,
       errorMessage,
-      modalRef,
+      isErrorTranslated,
+      showErrorModal,
       handleSubmit,
       redirectToList,
-      showSuccessModal,
-      showErrorModal
+      showSuccessModal
     }
   }
 }
