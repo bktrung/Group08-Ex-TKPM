@@ -24,195 +24,102 @@ The Student Management System follows a relational-style design approach within 
 ## Entity Relationship Diagram
 
 ```mermaid
-erDiagram
-    DEPARTMENT {
-        ObjectId _id PK
-        string name UK
-        timestamp createdAt
-        timestamp updatedAt
-    }
+graph TD
+    %% Core Academic Entities
+    DEPT[Department<br/>_id: ObjectId<br/>name: string]
+    PROG[Program<br/>_id: ObjectId<br/>name: string]
+    COURSE[Course<br/>_id: ObjectId<br/>courseCode: string<br/>name: string<br/>credits: number<br/>description: string<br/>isActive: boolean]
     
-    PROGRAM {
-        ObjectId _id PK
-        string name UK
-        timestamp createdAt
-        timestamp updatedAt
-    }
+    %% Class Management
+    CLASS[Class<br/>_id: ObjectId<br/>classCode: string<br/>academicYear: string<br/>semester: number<br/>instructor: string<br/>maxCapacity: number<br/>enrolledStudents: number<br/>isActive: boolean]
     
-    COURSE {
-        ObjectId _id PK
-        string courseCode UK
-        string name
-        number credits
-        ObjectId department FK
-        string description
-        ObjectId prerequisites
-        boolean isActive
-        timestamp createdAt
-        timestamp updatedAt
-    }
+    SCHEDULE[Schedule<br/>dayOfWeek: number<br/>startPeriod: number<br/>endPeriod: number<br/>classroom: string]
     
-    CLASS {
-        ObjectId _id PK
-        string classCode UK
-        ObjectId course FK
-        string academicYear
-        number semester
-        string instructor
-        number maxCapacity
-        number enrolledStudents
-        boolean isActive
-        timestamp createdAt
-        timestamp updatedAt
-    }
+    %% Student Management
+    STUDENT[Student<br/>_id: ObjectId<br/>studentId: string<br/>fullName: string<br/>dateOfBirth: date<br/>gender: string<br/>schoolYear: number<br/>email: string<br/>phoneNumber: string<br/>nationality: string]
     
-    SCHEDULE {
-        number dayOfWeek
-        number startPeriod
-        number endPeriod
-        string classroom
-    }
+    STATUS[StudentStatus<br/>_id: ObjectId<br/>type: string]
     
-    STUDENT {
-        ObjectId _id PK
-        string studentId UK
-        string fullName
-        date dateOfBirth
-        string gender
-        ObjectId department FK
-        number schoolYear
-        ObjectId program FK
-        string email UK
-        string phoneNumber UK
-        ObjectId status FK
-        string nationality
-        timestamp createdAt
-        timestamp updatedAt
-    }
+    TRANSITION[StudentStatusTransition<br/>_id: ObjectId<br/>fromStatus: ObjectId<br/>toStatus: ObjectId]
     
-    STUDENT_STATUS {
-        ObjectId _id PK
-        string type UK
-        timestamp createdAt
-        timestamp updatedAt
-    }
+    %% Enrollment System
+    ENROLLMENT[Enrollment<br/>_id: ObjectId<br/>enrollmentDate: date<br/>status: string<br/>dropDate: date<br/>dropReason: string]
     
-    STUDENT_STATUS_TRANSITION {
-        ObjectId _id PK
-        ObjectId fromStatus FK
-        ObjectId toStatus FK
-        timestamp createdAt
-        timestamp updatedAt
-    }
+    GRADE[Grade<br/>_id: ObjectId<br/>midtermScore: number<br/>finalScore: number<br/>totalScore: number<br/>letterGrade: string<br/>gradePoints: number<br/>isPublished: boolean]
     
-    ENROLLMENT {
-        ObjectId _id PK
-        ObjectId student FK
-        ObjectId class FK
-        date enrollmentDate
-        string status
-        date dropDate
-        string dropReason
-        timestamp createdAt
-        timestamp updatedAt
-    }
-    
-    GRADE {
-        ObjectId _id PK
-        ObjectId enrollment FK
-        number midtermScore
-        number finalScore
-        number totalScore
-        string letterGrade
-        number gradePoints
-        boolean isPublished
-        timestamp createdAt
-        timestamp updatedAt
-    }
-    
-    SEMESTER {
-        ObjectId _id PK
-        string academicYear
-        number semester
-        date registrationStartDate
-        date registrationEndDate
-        date dropDeadline
-        date semesterStartDate
-        date semesterEndDate
-        boolean isActive
-        timestamp createdAt
-        timestamp updatedAt
-    }
+    %% Academic Calendar
+    SEMESTER[Semester<br/>_id: ObjectId<br/>academicYear: string<br/>semester: number<br/>registrationStartDate: date<br/>registrationEndDate: date<br/>dropDeadline: date<br/>semesterStartDate: date<br/>semesterEndDate: date<br/>isActive: boolean]
     
     %% Relationships
-    DEPARTMENT ||--o{ STUDENT : manages
-    DEPARTMENT ||--o{ COURSE : offers
-    PROGRAM ||--o{ STUDENT : enrolls
+    DEPT -->|manages| STUDENT
+    DEPT -->|offers| COURSE
+    PROG -->|enrolls| STUDENT
     
-    COURSE ||--o{ CLASS : instantiated_as
-    COURSE ||--o{ COURSE : prerequisites
+    COURSE -->|instantiated as| CLASS
+    COURSE -->|has prerequisites| COURSE
     
-    CLASS ||--o{ ENROLLMENT : has
-    CLASS ||--|| SCHEDULE : contains
+    CLASS -->|contains| SCHEDULE
+    CLASS -->|has enrollments| ENROLLMENT
     
-    STUDENT ||--o{ ENROLLMENT : enrolls_in
-    STUDENT ||--|| STUDENT_STATUS : has_status
+    STUDENT -->|enrolls in| ENROLLMENT
+    STUDENT -->|has status| STATUS
     
-    STUDENT_STATUS ||--o{ STUDENT_STATUS_TRANSITION : transitions_from
-    STUDENT_STATUS ||--o{ STUDENT_STATUS_TRANSITION : transitions_to
+    STATUS -->|transitions from| TRANSITION
+    STATUS -->|transitions to| TRANSITION
     
-    ENROLLMENT ||--|| GRADE : receives
+    ENROLLMENT -->|receives| GRADE
+    
+    %% Foreign Key References
+    STUDENT -.->|department_id| DEPT
+    STUDENT -.->|program_id| PROG
+    STUDENT -.->|status_id| STATUS
+    COURSE -.->|department_id| DEPT
+    CLASS -.->|course_id| COURSE
+    ENROLLMENT -.->|student_id| STUDENT
+    ENROLLMENT -.->|class_id| CLASS
+    GRADE -.->|enrollment_id| ENROLLMENT
+    TRANSITION -.->|fromStatus_id| STATUS
+    TRANSITION -.->|toStatus_id| STATUS
 ```
 
-### Entity Details
+### Database Schema Overview
 
-#### Core Academic Entities
-- **DEPARTMENT**: Academic departments (unique name)
-- **PROGRAM**: Academic programs offered
-- **COURSE**: Course definitions with prerequisites support
-- **CLASS**: Specific course instances with scheduling
+#### Core Entities and Their Relationships
 
-#### Student Management
-- **STUDENT**: Student records with personal information
-- **STUDENT_STATUS**: Available student status types
-- **STUDENT_STATUS_TRANSITION**: Allowed status changes
+**Academic Structure:**
+- `Department` (1) → `Student` (Many) - Students belong to departments
+- `Department` (1) → `Course` (Many) - Departments offer courses  
+- `Program` (1) → `Student` (Many) - Students are enrolled in programs
+- `Course` (Many) → `Course` (Many) - Courses can have prerequisites
 
-#### Enrollment System
-- **ENROLLMENT**: Student-class enrollment records
-- **GRADE**: Grade records linked to enrollments
-- **SEMESTER**: Academic calendar management
+**Class Management:**
+- `Course` (1) → `Class` (Many) - Courses have multiple class instances
+- `Class` (1) → `Schedule` (Many) - Classes have embedded schedule objects
+- `Class` (1) → `Enrollment` (Many) - Classes have student enrollments
 
-#### Embedded Documents
-- **SCHEDULE**: Embedded in CLASS for time/location data
-- **IAddress**: Embedded in STUDENT for address information
-- **IdentityDocument**: Embedded in STUDENT for ID documents
+**Student Lifecycle:**
+- `Student` (1) → `StudentStatus` (1) - Current status
+- `StudentStatus` (Many) → `StudentStatusTransition` (Many) - Allowed transitions
+- `Student` (1) → `Enrollment` (Many) - Student enrollments
 
-### Key Relationships Explained
+**Grading System:**
+- `Enrollment` (1) → `Grade` (1) - One-to-one relationship
+- Each enrollment can have exactly one grade record
 
-1. **Academic Structure**:
-   - `Department` manages `Students` and offers `Courses`
-   - `Program` enrolls `Students`
-   - `Course` can have prerequisites (self-referencing relationship)
+#### Key Collections
 
-2. **Class Management**:
-   - `Course` is instantiated as multiple `Classes` across semesters
-   - `Class` contains embedded `Schedule` objects for time/location
-   - `Class` tracks enrollment capacity and current count
-
-3. **Student Enrollment**:
-   - `Student` enrolls in multiple `Classes` through `Enrollment`
-   - `Enrollment` tracks status (ACTIVE/DROPPED/COMPLETED)
-   - Each `Enrollment` can have one associated `Grade`
-
-4. **Status Management**:
-   - `Student` has current `StudentStatus`
-   - `StudentStatusTransition` defines allowed status changes
-   - Supports workflow for student lifecycle management
-
-5. **Academic Calendar**:
-   - `Semester` defines registration and academic periods
-   - `Class` references academic year and semester number
-   - Supports multiple semesters per academic year
+| Collection | Purpose | Key Fields |
+|------------|---------|------------|
+| `departments` | Academic departments | name (unique) |
+| `programs` | Academic programs | name |
+| `courses` | Course catalog | courseCode (unique), credits, prerequisites |
+| `classes` | Course instances | classCode (unique), academicYear, semester |
+| `students` | Student records | studentId (unique), email (unique) |
+| `studentStatus` | Status types | type (unique) |
+| `studentStatusTransitions` | Status workflows | fromStatus, toStatus |
+| `enrollments` | Student-class enrollments | student, class, status |
+| `grades` | Grade records | enrollment, scores, letterGrade |
+| `semesters` | Academic calendar | academicYear, semester, dates |
 
 ## Detailed Schema Documentation
 
