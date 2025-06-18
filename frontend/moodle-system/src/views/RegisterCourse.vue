@@ -17,10 +17,16 @@
     <SuccessModal :showModal="showSuccessModal" :title="$t('enrollment.register.success')" :message="$t('enrollment.register.confirm_success', {
       registeredClassCode,
       studentQuery
-    })" @confirm="goBack" @update:showModal="showSuccess = $event" />
+    })" @confirm="goBack" @update:showModal="showSuccessModal = $event" />
 
-    <ErrorModal :showModal="showErrorModal" :title="$t('enrollment.register.failed')" :message="registerError"
-      @update:showModal="showErrorModal = $event" />
+    <!-- Error Modal -->
+    <ErrorModal 
+      :showModal="showErrorModal" 
+      :title="$t('enrollment.register.failed')" 
+      :message="errorMessage"
+      :isTranslated="isErrorTranslated"
+      @update:showModal="showErrorModal = $event" 
+    />
 
   </div>
 </template>
@@ -29,9 +35,10 @@
 import { ref, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
+import { useI18n } from 'vue-i18n'
+import { useErrorHandler } from '@/composables/useErrorHandler'
 import CourseTable from '@/components/course/CourseTable.vue'
 import ClassTable from '@/components/class/ClassTable.vue'
-import { useI18n } from 'vue-i18n'
 import SuccessModal from '@/components/layout/SuccessModal.vue'
 import ErrorModal from '@/components/layout/ErrorModal.vue'
 
@@ -47,16 +54,15 @@ export default {
     const { t } = useI18n()
     const router = useRouter()
     const store = useStore()
+    const { errorMessage, isErrorTranslated, showErrorModal, handleError } = useErrorHandler()
 
     const studentQuery = ref('')
     const selectedCourseId = ref(null)
     const registeredClassCode = ref('')
-    const registerError = ref('')
     const classes = ref([])
 
     // Modal control flags
     const showSuccessModal = ref(false)
-    const showErrorModal = ref(false)
 
     const selectCourse = (course) => {
       selectedCourseId.value = course._id
@@ -68,42 +74,51 @@ export default {
 
     const register = async (classCode) => {
       if (!studentQuery.value.trim()) {
-        registerError.value = t('student.validation.required_student_id')
-        showErrorModal.value = true
+        handleError({ message: t('student.validation.required_student_id') }, 'student.validation.required_student_id')
         return
       }
 
-      await store.dispatch('enrollment/postEnrollment', {
-        studentId: studentQuery.value,
-        classCode: classCode
-      })
+      try {
+        await store.dispatch('enrollment/postEnrollment', {
+          studentId: studentQuery.value,
+          classCode: classCode
+        })
 
-      const error = store.state.enrollment.error
-
-      if (error) {
-        registerError.value = error
-        showErrorModal.value = true
-      } else {
-        registeredClassCode.value = classCode
-        showSuccessModal.value = true
+        const error = store.state.enrollment.error
+        if (error) {
+          handleError({ 
+            response: { data: { message: error } }
+          }, 'enrollment.register.failed')
+        } else {
+          registeredClassCode.value = classCode
+          showSuccessModal.value = true
+        }
+      } catch (err) {
+        handleError(err, 'enrollment.register.failed')
       }
     }
 
     onMounted(async () => {
-      await store.dispatch('course/fetchCourses')
+      try {
+        await store.dispatch('course/fetchCourses')
+      } catch (error) {
+        console.error('Error loading courses:', error)
+        handleError(error, 'course.load_error')
+      }
     })
 
     return {
       studentQuery,
       selectedCourseId,
       classes,
+      registeredClassCode,
+      errorMessage,
+      isErrorTranslated,
+      showErrorModal,
       register,
       selectCourse,
-      registeredClassCode,
-      registerError,
       goBack,
-      showSuccessModal,
-      showErrorModal
+      showSuccessModal
     }
   }
 }

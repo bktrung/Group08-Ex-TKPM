@@ -8,12 +8,15 @@
                 :placeholder="$t('student.enter_student_id')" />
         </div>
 
-        <button @click="generateTranscript" class="btn btn-primary">{{ $t('student.grade.create') }}</button>
-        <button v-if="pdfGenerated" @click="downloadPDF" class="btn btn-success">{{ $t(common.download) }} PDF</button>
+        <button @click="generateTranscript" class="btn btn-primary" :disabled="loading">
+            <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+            {{ $t('student.grade.create') }}
+        </button>
+        <button v-if="pdfGenerated" @click="downloadPDF" class="btn btn-success">{{ $t('common.download') }} PDF</button>
 
         <div id="pdf-content" style="margin-top: 20px; background: white; padding: 20px;">
             <div v-if="transcriptData">
-                <h3>{{ $t('stundent.student_info') }}</h3>
+                <h3>{{ $t('student.student_info') }}</h3>
                 <p>{{ $t('student.student_id') }}: {{ transcriptData.metadata.transcript.studentInfo.studentId }}</p>
                 <p>{{ $t('student.name') }}: {{ transcriptData.metadata.transcript.studentInfo.fullName }}</p>
                 <p>{{ $t('student.department') }}: {{ transcriptData.metadata.transcript.studentInfo.department }}</p>
@@ -22,7 +25,7 @@
                 <h4>{{ $t('student.subject') }}</h4>
                 <ul>
                     <li v-for="(course, index) in transcriptData.metadata.transcript.courses" :key="index">
-                        {{ course.name }} - {{ $t('student.grade.title') }}: {{ course.grade }}
+                        {{ course.courseName }} - {{ $t('student.grade.title') }}: {{ course.totalScore }}
                     </li>
                 </ul>
 
@@ -36,71 +39,80 @@
             </div>
         </div>
 
-        <ErrorModal :showModal="showErrorModal" :title="$t('common.failed')" :message="errorMessage"
-            @update:showModal="showErrorModal = $event" />
+        <!-- Error Modal -->
+        <ErrorModal 
+            :showModal="showErrorModal" 
+            :title="$t('common.error')" 
+            :message="errorMessage"
+            :isTranslated="isErrorTranslated"
+            @update:showModal="showErrorModal = $event" 
+        />
 
     </div>
 </template>
 
 <script>
-import { ref, nextTick } from 'vue'
+import { ref, nextTick, computed } from 'vue'
 import { useStore } from 'vuex'
 import { jsPDF } from 'jspdf'
 import html2canvas from 'html2canvas'
 import { useI18n } from 'vue-i18n'
+import { useErrorHandler } from '@/composables/useErrorHandler'
 import ErrorModal from '@/components/layout/ErrorModal.vue'
 
 export default {
-    name: 'CreateTranscript',
+    name: 'GradeTable',
     components: {
         ErrorModal
     },
     setup() {
         const { t } = useI18n()
         const store = useStore()
+        const { errorMessage, isErrorTranslated, showErrorModal, handleError } = useErrorHandler()
 
         const studentId = ref('')
         const transcriptData = ref(null)
         const pdfDoc = ref(null)
         const pdfGenerated = ref(false)
-        let errorMessage = ref('')
-
-        // Modal control flags
-        const showErrorModal = ref(false)
+        
+        const loading = computed(() => store.state.transcript.loading)
 
         const generateTranscript = async () => {
-            if (!studentId.value) {
-                errorMessage.value = t('student.enter_student_id');
-                showErrorModal.value = true;
-                return;
+            if (!studentId.value.trim()) {
+                handleError({ message: t('student.enter_student_id') }, 'student.enter_student_id')
+                return
             }
 
-            transcriptData.value = await store.dispatch('transcript/getTranscript', studentId.value);
+            try {
+                transcriptData.value = await store.dispatch('transcript/getTranscript', studentId.value)
 
-            const error = store.state.transcript.error;
+                const error = store.state.transcript.error
+                if (error) {
+                    pdfGenerated.value = false
+                    handleError({ 
+                        response: { data: { message: error } }
+                    }, 'student.grade.error')
+                    return
+                }
 
-            if (error) {
-                pdfGenerated.value = false;
-                errorMessage.value = error;
-                showErrorModal.value = true;
-            }
+                if (transcriptData.value && !error) {
+                    await nextTick()
 
-            if (transcriptData.value && !error) {
-                showErrorModal.value = false;
-                await nextTick();
+                    const element = document.getElementById('pdf-content')
+                    const canvas = await html2canvas(element, { scale: 2 })
+                    const imgData = canvas.toDataURL('image/png')
 
-                const element = document.getElementById('pdf-content');
-                const canvas = await html2canvas(element, { scale: 2 });
-                const imgData = canvas.toDataURL('image/png');
+                    const pdf = new jsPDF('p', 'mm', 'a4')
+                    const pageWidth = pdf.internal.pageSize.getWidth()
+                    const imgProps = pdf.getImageProperties(imgData)
+                    const imgHeight = (imgProps.height * pageWidth) / imgProps.width
 
-                const pdf = new jsPDF('p', 'mm', 'a4');
-                const pageWidth = pdf.internal.pageSize.getWidth();
-                const imgProps = pdf.getImageProperties(imgData);
-                const imgHeight = (imgProps.height * pageWidth) / imgProps.width;
-
-                pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, imgHeight);
-                pdfDoc.value = pdf;
-                pdfGenerated.value = true;
+                    pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, imgHeight)
+                    pdfDoc.value = pdf
+                    pdfGenerated.value = true
+                }
+            } catch (err) {
+                handleError(err, 'student.grade.error')
             }
         }
 
@@ -114,10 +126,12 @@ export default {
             studentId,
             transcriptData,
             pdfGenerated,
+            loading,
             errorMessage,
-            generateTranscript,
-            downloadPDF,
+            isErrorTranslated,
             showErrorModal,
+            generateTranscript,
+            downloadPDF
         }
     }
 }

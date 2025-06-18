@@ -64,10 +64,16 @@
 
     <SuccessModal :showModal="showSuccessModal" :title="$t('common.cancel_success')"
       :message="$t('enrollment.drop.confirm_success', { studentId, classCode })" @confirm="goBack"
-      @update:showModal="showSuccess = $event" />
+      @update:showModal="showSuccessModal = $event" />
 
-    <ErrorModal :showModal="showErrorModal" :title="$t('common.cancel_failed')" :message="dropError"
-      @update:showModal="showErrorModal = $event" />
+    <!-- Error Modal -->
+    <ErrorModal 
+      :showModal="showErrorModal" 
+      :title="$t('common.cancel_failed')" 
+      :message="errorMessage"
+      :isTranslated="isErrorTranslated"
+      @update:showModal="showErrorModal = $event" 
+    />
   </div>
 </template>
 
@@ -76,13 +82,12 @@ import { ref, nextTick, onMounted } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 import { useI18n } from 'vue-i18n'
+import { useErrorHandler } from '@/composables/useErrorHandler'
 import SuccessModal from '@/components/layout/SuccessModal.vue'
 import ErrorModal from '@/components/layout/ErrorModal.vue'
 import ConfirmModal from '@/components/layout/ConfirmModal.vue'
 
 export default {
-  props: {
-  },
   name: 'DropCourse',
   components: {
     SuccessModal,
@@ -93,15 +98,14 @@ export default {
     const store = useStore()
     const router = useRouter()
     const { t } = useI18n()
+    const { errorMessage, isErrorTranslated, showErrorModal, handleError } = useErrorHandler()
 
     const studentId = ref('')
     const classCode = ref('')
     const reason = ref('')
-    const dropError = ref('')
 
     // Modal control flags
     const showSuccessModal = ref(false)
-    const showErrorModal = ref(false)
     const showConfirmModal = ref(false)
 
     const dropHistory = ref([])
@@ -112,11 +116,8 @@ export default {
     })
 
     const confirmDelete = () => {
-      dropError.value = ''
       if (!studentId.value.trim() || !classCode.value.trim() || !reason.value.trim()) {
-        dropError.value = t('common.fill_all_required')
-        showErrorModal.value = true
-        showSuccessModal.value = false
+        handleError({ message: t('common.fill_all_required') }, 'common.fill_all_required')
         return
       }
       showConfirmModal.value = true
@@ -126,23 +127,16 @@ export default {
       try {
         await store.dispatch('enrollment/getDropHistory', searchMSSV.value)
         dropHistory.value = store.state.enrollment.history || []
-        console.log(dropHistory.value)
 
         const error = store.state.enrollment.historyError
-
         if (error) {
           dropHistory.value = []
-          dropError.value = error
-          showErrorModal.value = true
-          showSuccessModal.value = false
-        } else {
-          dropError.value = ''
+          handleError({ 
+            response: { data: { message: error } }
+          }, 'enrollment.drop.history.loading_error')
         }
-
       } catch (err) {
-        dropError.value = t('enrollment.drop.istory.loading_error')
-        showErrorModal.value = true
-        showSuccessModal.value = false
+        handleError(err, 'enrollment.drop.history.loading_error')
       }
     }
 
@@ -171,19 +165,15 @@ export default {
 
         const error = store.state.enrollment.error
         if (error) {
-          dropError.value = error
-          console.log("Error dropping enrollment:", error)
-          showErrorModal.value = true
-          showSuccessModal.value = false
+          handleError({ 
+            response: { data: { message: error } }
+          }, 'enrollment.drop.failed')
         } else {
           resetForm()
-          showErrorModal.value = false
           showSuccessModal.value = true
         }
       } catch (err) {
-        dropError.value = err.message || t('common.undefined_error')
-        showErrorModal.value = true
-        showSuccessModal.value = false
+        handleError(err, 'enrollment.drop.failed')
       }
     }
 
@@ -196,7 +186,9 @@ export default {
       studentId,
       classCode,
       reason,
-      dropError,
+      errorMessage,
+      isErrorTranslated,
+      showErrorModal,
       dropHistory,
       searchMSSV,
       confirmDelete,
@@ -205,7 +197,6 @@ export default {
       performDelete,
       formatDate,
       showSuccessModal,
-      showErrorModal,
       showConfirmModal
     }
   }
