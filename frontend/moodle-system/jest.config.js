@@ -34,8 +34,5 @@ module.exports = {
     '**/tests/unit/**/*.test.js',
     '**/tests/integration/**/*.spec.js',
     '**/tests/integration/**/*.test.js'
-  ],
-  testEnvironmentOptions: {
-    customExportConditions: ['node', 'node-addons']
-  }
+  ]
 };
