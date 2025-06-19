@@ -43,7 +43,8 @@
             "title": "Trạng thái",
             "enter": "Nhập trạng thái",
             "no_data": "Không có trạng thái nào. Vui lòng thêm trạng thái mới",
-            "error_action": "Lỗi khi %{action} trạng thái: %{message}"
+            "error_action": "Lỗi khi %{action} trạng thái: %{message}",
+            "confirm_delete": "Bạn có chắc chắn muốn xóa trạng thái %{statusName} ?"
         },
         "validation": {
             "required_student_id": "Mã số sinh viên là bắt buộc",

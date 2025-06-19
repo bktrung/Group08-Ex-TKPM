@@ -33,8 +33,12 @@
             <td class="text-center">{{ index + 1 }}</td>
             <td>{{ status.type }}</td>
             <td class="text-center">
-              <button class="btn btn-warning btn-sm" @click="openEditStatusModal(status)">{{ $t('common.edit')
-              }}</button>
+              <div class="d-flex justify-content-center gap-1">
+                <button class="btn btn-warning btn-sm" @click="openEditStatusModal(status)">{{ $t('common.edit')
+                }}</button>
+                <button @click="openConfirmDeleteModal(status)" class="btn btn-danger btn-sm">{{ $t('common.delete')
+                }}</button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -44,14 +48,13 @@
     <BaseModal :title="modalTitle" :itemName="statusType" :placeholderTitle="$t('student.status.enter')"
       :showModal="isModalOpen" @save="saveStatus" @close="isModalOpen = false" />
 
+    <ConfirmModal :showModal="showConfirmModal" :title="$t('common.confirm_delete')"
+      :message="`${$t('student.status.confirm_delete', { name: statusType })}`" @update:showModal="showConfirmModal = $event"
+      @confirm="deleteStatus" />
+
     <!-- Error Modal -->
-    <ErrorModal 
-      :showModal="showErrorModal" 
-      :title="$t('common.error')" 
-      :message="errorMessage"
-      :isTranslated="isErrorTranslated" 
-      @update:showModal="showErrorModal = $event" 
-    />
+    <ErrorModal :showModal="showErrorModal" :title="$t('common.error')" :message="errorMessage"
+      :isTranslated="isErrorTranslated" @update:showModal="showErrorModal = $event" />
 
   </div>
 </template>
@@ -63,21 +66,25 @@ import { useI18n } from 'vue-i18n'
 import { useErrorHandler } from '@/composables/useErrorHandler'
 import BaseModal from '../components/layout/BaseModal.vue'
 import ErrorModal from '../components/layout/ErrorModal.vue'
+import ConfirmModal from '../components/layout/ConfirmModal.vue'
 
 export default {
   components: {
     BaseModal,
-    ErrorModal
+    ErrorModal,
+    ConfirmModal
   },
   setup() {
     const { t } = useI18n()
     const store = useStore()
     const { errorMessage, isErrorTranslated, showErrorModal, handleError } = useErrorHandler()
-    
+
     const statusType = ref('')
     const originalStatusType = ref('')
     const editingStatusId = ref(null)
+    const deletingStatusId = ref(null)
     const isModalOpen = ref(false)
+    const showConfirmModal = ref(false)
 
     const statusTypes = computed(() => store.state.status.statusTypes)
     const loading = computed(() => store.state.status.loading)
@@ -96,6 +103,12 @@ export default {
       statusType.value = status.type
       originalStatusType.value = status.type
       isModalOpen.value = true
+    }
+
+    const openConfirmDeleteModal = (status) => {
+      deletingStatusId.value = status._id
+      statusType.value = status.type
+      showConfirmModal.value = true
     }
 
     const saveStatus = async (name) => {
@@ -126,6 +139,16 @@ export default {
       }
     }
 
+    const deleteStatus = async () => {
+      try {
+        await store.dispatch('status/deleteStatusType', deletingStatusId.value)
+        showConfirmModal.value = false
+      } catch (error) {
+        console.error('Error deleting status:', error)
+        handleError(error, 'common.error')
+      }
+    }
+
     onMounted(async () => {
       try {
         await store.dispatch('status/fetchStatusTypes')
@@ -146,7 +169,10 @@ export default {
       showErrorModal,
       openAddStatusModal,
       openEditStatusModal,
-      saveStatus
+      saveStatus,
+      openConfirmDeleteModal,
+      showConfirmModal,
+      deleteStatus
     }
   }
 }

@@ -89,7 +89,7 @@ export default {
     async deleteStatusType({ commit, dispatch }, id) {
       commit('SET_LOADING', true)
       try {
-        await api.deleteStatusType(id)
+        await api.statusType.deleteStatusType(id)
         await dispatch('fetchStatusTypes')
       } catch (error) {
         commit('SET_ERROR', error.response?.data?.message || error.message || 'Deleting status type failed')

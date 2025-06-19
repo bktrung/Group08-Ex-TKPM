@@ -49,8 +49,8 @@
       :showModal="isModalOpen" @save="saveProgram" @close="isModalOpen = false" />
 
     <ConfirmModal :showModal="showConfirmModal" :title="$t('common.confirm_delete')"
-      :message="`${$t('program.confirm_delete', { name: programName })}`"
-      @update:showModal="showConfirmModal = $event" @confirm="deleteProgram" />
+      :message="`${$t('program.confirm_delete', { name: programName })}`" @update:showModal="showConfirmModal = $event"
+      @confirm="deleteProgram" />
 
     <!-- Error Modal -->
     <ErrorModal :showModal="showErrorModal" :title="$t('common.error')" :message="errorMessage"

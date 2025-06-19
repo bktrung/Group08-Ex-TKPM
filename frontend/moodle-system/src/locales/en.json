@@ -43,7 +43,8 @@
             "title": "Status",
             "enter": "Enter status",
             "no_data": "No statuses available. Please add a new status",
-            "error_action": "Error while %{action} status: %{message}"
+            "error_action": "Error while %{action} status: %{message}",
+            "confirm_delete":"Are you sure you want to delete the status %{name}?"
         },
         "validation": {
             "required_student_id": "Student ID is required",
