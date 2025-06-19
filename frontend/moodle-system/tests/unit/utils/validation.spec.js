@@ -1,7 +1,6 @@
 import {
   vietnamesePhone,
   notFutureDate,
-  notFutureYear,
   vietnameseIdNumber,
   passportNumber,
   studentIdFormat,
