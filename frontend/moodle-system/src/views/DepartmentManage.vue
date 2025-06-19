@@ -32,8 +32,12 @@
             <td class="text-center">{{ index + 1 }}</td>
             <td>{{ department.name }}</td>
             <td class="text-center">
-              <button class="btn btn-warning btn-sm" @click="openEditDepartmentModal(department)">{{ $t('common.edit')
-              }}</button>
+              <div class="d-flex justify-content-center gap-1">
+                <button class="btn btn-warning btn-sm" @click="openEditDepartmentModal(department)">{{ $t('common.edit')
+                  }}</button>
+                <button @click="openConfirmDeleteModal(department)" class="btn btn-danger btn-sm">{{ $t('common.delete')
+                  }}</button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -43,13 +47,12 @@
     <BaseModal :title="modalTitle" :placeholderTitle="$t('department.enter')" :itemName="departmentName"
       :showModal="isModalOpen" @save="saveDepartment" @close="isModalOpen = false" />
 
-    <ErrorModal 
-      :showModal="showErrorModal" 
-      :title="$t('common.error')" 
-      :message="errorMessage"
-      :isTranslated="isErrorTranslated" 
-      @update:showModal="showErrorModal = $event" 
-    />
+    <ConfirmModal :showModal="showConfirmModal" :title="$t('common.confirm_delete')"
+      :message="`${$t('department.confirm_delete', { name: departmentName })}`"
+      @update:showModal="showConfirmModal = $event" @confirm="deleteDepartment" />
+
+    <ErrorModal :showModal="showErrorModal" :title="$t('common.error')" :message="errorMessage"
+      :isTranslated="isErrorTranslated" @update:showModal="showErrorModal = $event" />
 
   </div>
 </template>
@@ -61,11 +64,13 @@ import { ref, computed, onMounted } from 'vue'
 import BaseModal from '../components/layout/BaseModal.vue'
 import ErrorModal from '../components/layout/ErrorModal.vue'
 import { useErrorHandler } from '@/composables/useErrorHandler'
+import ConfirmModal from '../components/layout/ConfirmModal.vue'
 
 export default {
   components: {
     BaseModal,
-    ErrorModal
+    ErrorModal,
+    ConfirmModal
   },
   setup() {
     const { t } = useI18n()
@@ -73,7 +78,9 @@ export default {
     const departmentName = ref('')
     const originalDepartmentName = ref('')
     const editingDepartmentId = ref(null)
+    const deletingDepartmentId = ref(null)
     const isModalOpen = ref(false)
+    const showConfirmModal = ref(false)
 
     const departments = computed(() => store.state.department.departments)
     const loading = computed(() => store.state.department.loading)
@@ -94,6 +101,12 @@ export default {
       departmentName.value = department.name
       originalDepartmentName.value = department.name
       isModalOpen.value = true
+    }
+
+    const openConfirmDeleteModal = (department) => {
+      showConfirmModal.value = true
+      departmentName.value = department.name
+      deletingDepartmentId.value = department._id
     }
 
     const saveDepartment = async (name) => {
@@ -124,6 +137,16 @@ export default {
       }
     };
 
+    const deleteDepartment = async () => {
+      try {
+        await store.dispatch('department/deleteDepartment', deletingDepartmentId.value);
+        showConfirmModal.value = false
+      } catch (error) {
+        console.error('Error deleting department:', error)
+        handleError(error, 'common.error')
+      }
+    };
+
     onMounted(async () => {
       try {
         await store.dispatch('department/fetchDepartments')
@@ -144,7 +167,10 @@ export default {
       saveDepartment,
       errorMessage,
       isErrorTranslated,
-      showErrorModal
+      showErrorModal,
+      showConfirmModal,
+      openConfirmDeleteModal,
+      deleteDepartment
     }
   }
 }

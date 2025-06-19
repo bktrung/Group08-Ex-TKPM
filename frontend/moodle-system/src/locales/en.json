@@ -216,7 +216,8 @@
         "enter": "Enter department name",
         "add": "Add department",
         "description": "Department Description",
-        "no_data": "No departments available. Please add a new one."
+        "no_data": "No departments available. Please add a new one.",
+        "confirm_delete": "Are you sure you want to delete the department %{name} ?"
     },
     "course": {
         "title": "Course",

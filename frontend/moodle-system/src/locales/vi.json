@@ -258,7 +258,7 @@
         },
         "close": "Đóng khóa học",
         "reopen": "Mở lại khóa học",
-        "delete_confirm": "Bạn có chắc chắn muốn xóa khóa học <strong>%{code}} - %{name}</strong>?",
+        "delete_confirm": "Bạn có chắc chắn muốn xóa khóa học <strong>%{code} - %{name}</strong>?",
         "delete_note": "Lưu ý: Khóa học chỉ có thể xóa nếu chưa có lớp học nào được mở và được tạo trong vòng 30 phút.",
         "no_search_result": "Không tìm thấy khóa học phù hợp với tìm kiếm của bạn.",
         "confirm_close": "Bạn có chắc chắn muốn đóng khóa học %{courseCode} - %{name}?",
@@ -272,7 +272,8 @@
         "add": "Thêm khoa",
         "enter": "Nhập tên khoa",
         "department_description": "Mô tả khoa",
-        "no_data": "Không có khoa nào. Vui lòng thêm khoa mới."
+        "no_data": "Không có khoa nào. Vui lòng thêm khoa mới.",
+        "confirm_delete": "Bạn có chắc chắn muốn xóa khoa %{name} ?"
     },
     "common": {
         "add": "Thêm",
