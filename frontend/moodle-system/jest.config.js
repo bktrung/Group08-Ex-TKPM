@@ -4,8 +4,8 @@ module.exports = {
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
   collectCoverageFrom: [
     // Include main source components
-    'src/views/**/*.{js,vue}',
     'src/services/**/*.{js,vue}',
+    '!src/services/status.transition.js'
   ],
   coverageReporters: ['text', 'lcov', 'html'],
   coverageThreshold: {

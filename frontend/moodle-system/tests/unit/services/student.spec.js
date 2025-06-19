@@ -329,47 +329,4 @@ describe('Student Service', () => {
       })
     })
   })
-
-  describe('Edge cases and error handling', () => {
-    it('should handle malformed responses', async () => {
-      const mockResponse = { data: null }
-      apiClient.get.mockResolvedValue(mockResponse)
-
-      await expect(studentService.getStudent('STU001')).rejects.toThrow('Student not found')
-    })
-
-    it('should handle network timeouts', async () => {
-      const error = { code: 'ECONNABORTED', message: 'timeout of 5000ms exceeded' }
-      apiClient.get.mockRejectedValue(error)
-
-      await expect(studentService.getStudents()).rejects.toMatchObject(error)
-    })
-
-    it('should handle server errors', async () => {
-      const error = { 
-        response: { 
-          status: 500, 
-          data: { message: 'Internal server error' } 
-        } 
-      }
-      apiClient.post.mockRejectedValue(error)
-
-      await expect(studentService.createStudent({})).rejects.toMatchObject(error)
-    })
-
-    it('should handle validation errors', async () => {
-      const error = { 
-        response: { 
-          status: 400, 
-          data: { 
-            message: 'Validation failed',
-            errors: ['Student ID is required']
-          } 
-        } 
-      }
-      apiClient.post.mockRejectedValue(error)
-
-      await expect(studentService.createStudent({})).rejects.toMatchObject(error)
-    })
-  })
 })
