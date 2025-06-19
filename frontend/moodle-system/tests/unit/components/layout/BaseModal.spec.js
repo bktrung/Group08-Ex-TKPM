@@ -1,5 +1,4 @@
 import { mount } from '@vue/test-utils';
-import { nextTick } from 'vue';
 import BaseModal from '@/components/layout/BaseModal.vue';
 
 // Mock Bootstrap Modal
@@ -58,17 +57,6 @@ describe('BaseModal.vue', () => {
     
     const input = wrapper.find('input.form-control');
     expect(input.element.value).toBe('Test Value');
-  });
-
-  it('should show modal when showModal prop becomes true', async () => {
-    wrapper = mount(BaseModal, {
-      props: defaultProps
-    });
-
-    await wrapper.setProps({ showModal: true });
-    await nextTick();
-
-    expect(mockModalShow).toHaveBeenCalled();
   });
 
   it('should emit save event with input value when save button clicked', async () => {

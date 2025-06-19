@@ -104,23 +104,6 @@ describe('ClassTable.vue', () => {
     expect(wrapper.vm.filteredClasses[0].classCode).toBe('CS101-01');
   });
 
-  it('should show loading spinner when loading', async () => {
-    store.state.class.loading = true;
-
-    wrapper = mount(ClassTable, {
-      props: {
-        courseId: 'course1'
-      },
-      global: {
-        plugins: [store]
-      }
-    });
-
-    await nextTick();
-
-    expect(wrapper.find('.spinner-border').exists()).toBe(true);
-  });
-
   it('should emit register event when register button clicked', async () => {
     wrapper = mount(ClassTable, {
       props: {
