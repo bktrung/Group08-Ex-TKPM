@@ -297,7 +297,7 @@ Chạy lệnh `npm run start` để chạy cả frontend và backend, sau đó t
 
 ## Hướng dẫn sử dụng các chức năng
 
-#### 1. Tìm kiếm theo khoa
+#### 1. Tìm kiếm sinh viên theo khoa
 
    Ở trang quản lí sinh viên, chọn dropwdown bên trái thanh search để lọc theo Khoa.
    
@@ -346,7 +346,9 @@ Chạy lệnh `npm run start` để chạy cả frontend và backend, sau đó t
 
   Trong màn hình quản lí khoa, chọn nút xóa ở dòng của khoa muốn xóa, nhấn Xác nhận xóa.
 
-  ![alt text](image-1.png)
+ ![image](https://github.com/user-attachments/assets/261ceea4-5d80-4e71-87be-db132410dde9)
+
+
 
 #### 7. Thêm, xóa, sửa tình trạng sinh viên.
 
@@ -362,7 +364,8 @@ Chạy lệnh `npm run start` để chạy cả frontend và backend, sau đó t
 
    Trong màn hình quản lí tình trạng sinh viên, chọn nút xóa ở dòng của tình trạng muốn xóa, nhấn xác nhận hủy
 
-   ![alt text](image.png)
+   ![image](https://github.com/user-attachments/assets/85479c7b-a0b0-44e0-a449-88a9509fc7c1)
+
 
 #### 8. Thêm, xóa, sửa chương trình đào tạo.
 
@@ -377,7 +380,8 @@ Chạy lệnh `npm run start` để chạy cả frontend và backend, sau đó t
 
    Trong màn hình quản lí chương trình đào tạo, chọn nút xóa ở dòng của chương trình muốn xóa, nhấn xác nhận xóa
 
-   ![alt text](image.png)
+   ![image](https://github.com/user-attachments/assets/7ed4768a-05ba-4e94-b1c1-482198c43f0f)
+
 
   #### 9.Logging mechanism để troubleshooting production issue & audit purposes.
   
