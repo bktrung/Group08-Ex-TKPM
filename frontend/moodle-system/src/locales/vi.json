@@ -204,7 +204,9 @@
         "min_length_schedule": "Phải có ít nhất một lịch học",
         "end_period_validation": "Tiết kết thúc phải lớn hơn hoặc bằng tiết bắt đầu",
         "schedule_conflict": "Lịch học bị trùng với lịch học #%{index} tại phòng %{room}",
-        "no_matching_classes": "Không có lớp học nào phù hợp."
+        "no_matching_classes": "Không có lớp học nào phù hợp.",
+        "confirm_delete": "Bạn có chắc chắn muốn xóa lớp học %{classCode} - %{name}?",
+        "delete_success": "Xóa lớp học thành công!"
     },
     "course": {
         "title": "Khóa học",

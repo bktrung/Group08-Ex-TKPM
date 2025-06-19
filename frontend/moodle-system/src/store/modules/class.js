@@ -117,6 +117,20 @@ export default {
       } finally {
         commit('SET_LOADING', false)
       }
+    },
+
+    // Delete class
+    async deleteClass({ commit, dispatch }, classCode) {
+      commit('SET_LOADING', true)
+      try {
+        await api.class.deleteClass(classCode)
+        await dispatch('fetchClasses') // Refresh classes after deletion
+      } catch (error) {
+        commit('SET_ERROR', error.response?.data?.message || error.message || 'Deleting class failed')
+        throw error
+      } finally {
+        commit('SET_LOADING', false)
+      }
     }
   },
 

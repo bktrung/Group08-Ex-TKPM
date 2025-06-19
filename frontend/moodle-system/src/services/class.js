@@ -30,6 +30,10 @@ export default {
 
     getClassByCourseId(courseId) {
         return apiClient.get(`/v1/api/classes${courseId}`)
-    }
+    },
+
+    deleteClass(classCode) {
+        return apiClient.delete(`/v1/api/classes/${classCode}`)
+    },
 
 }

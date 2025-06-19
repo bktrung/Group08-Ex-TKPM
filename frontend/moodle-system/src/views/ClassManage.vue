@@ -105,8 +105,11 @@
 
               <td class="text-center">
                 <div class="d-flex gap-1 justify-content-center">
-                  <button @click="showEditForm(classItem)" class="btn btn-warning btn-sm">
+                  <button @click="showEditForm(classItem)" class="btn btn-warning btn-sm" title="Edit">
                     <i class="bi bi-pencil"></i>
+                  </button>
+                  <button @click="showDeleteModal(classItem)" class="btn btn-danger btn-sm" title="Delete">
+                    <i class="bi bi-trash"></i>
                   </button>
                 </div>
               </td>
@@ -131,6 +134,10 @@
     <ErrorModal :showModal="showErrorModal" :title="$t('common.error')" :message="errorMessage"
       :isTranslated="isErrorTranslated" @update:showModal="showErrorModal = $event" />
 
+    <ConfirmModal :showModal="showConfirmModal" :title="$t('common.confirm_delete')"
+      :message="`${$t('class.confirm_delete', { classCode: selectedClass.classCode, name: getCourseInfo(selectedClass.course) })}`"
+      @update:showModal="showConfirmModal = $event" @confirm="deleteClass" />
+
   </div>
 </template>
 
@@ -144,6 +151,7 @@ import SuccessModal from '@/components/layout/SuccessModal.vue'
 import ErrorModal from '@/components/layout/ErrorModal.vue'
 import { useI18n } from 'vue-i18n'
 import { useErrorHandler } from '@/composables/useErrorHandler'
+import ConfirmModal from '@/components/layout/ConfirmModal.vue'
 
 export default {
   name: 'ClassManage',
@@ -152,7 +160,8 @@ export default {
     BasePagination,
     ScheduleModal,
     SuccessModal,
-    ErrorModal
+    ErrorModal,
+    ConfirmModal
   },
   setup() {
     const { t } = useI18n()
@@ -164,6 +173,8 @@ export default {
     const selectedClass = ref({})
     const successMessage = ref('')
     const showSuccessModal = ref(false)
+    const showConfirmModal = ref(false)
+    const deletingClassId = ref(null)
 
     const currentPage = ref(1)
     const pageSize = ref(10)
@@ -282,6 +293,13 @@ export default {
       selectedClass.value = {}
     }
 
+    const showDeleteModal = (classItem) => {
+      selectedClass.value = classItem
+      deletingClassId.value = classItem.classCode
+      showConfirmModal.value = true
+
+    }
+
     const saveClass = async (classData) => {
       try {
         const isUpdate = isEditing.value;
@@ -354,6 +372,19 @@ export default {
       return 'bg-success'
     }
 
+    const deleteClass = async () => {
+      try {
+        console.log('Deleting class with ID:', deletingClassId.value);
+        await store.dispatch('class/deleteClass', deletingClassId.value);
+        showConfirmModal.value = false;
+        successMessage.value = t('class.delete_success');
+        showSuccessModal.value = true;
+      } catch (err) {
+        console.error('Error deleting class:', err);
+        handleError(err, 'class.delete_error_fallback');
+      }
+    }
+
     onMounted(async () => {
       try {
         resetFilter();
@@ -410,7 +441,11 @@ export default {
       getCourseInfo,
       getProgressBarClass,
       isScheduleModalVisible,
-      showSuccessModal
+      showSuccessModal,
+      showConfirmModal,
+      showDeleteModal,
+      deletingClassId,
+      deleteClass
     }
   }
 }
