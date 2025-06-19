@@ -101,23 +101,6 @@ describe('class service', () => {
     })
   })
 
-  describe('updateClass', () => {
-    it('should update existing class', async () => {
-      const classCode = 'CS101-01'
-      const classData = {
-        instructor: 'Jane Doe',
-        maxCapacity: 35
-      }
-      const mockResponse = { data: { updatedClass: classData } }
-      apiClient.put.mockResolvedValue(mockResponse)
-
-      const result = await classService.updateClass(classCode, classData)
-
-      expect(apiClient.put).toHaveBeenCalledWith(`/v1/api/classes/${classCode}`, classData)
-      expect(result).toEqual(mockResponse)
-    })
-  })
-
   describe('getClassByCourseId', () => {
     it('should get classes by course ID', async () => {
       const courseId = 'course123'

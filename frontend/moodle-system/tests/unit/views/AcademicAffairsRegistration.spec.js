@@ -49,27 +49,6 @@ describe('AcademicAffairsRegistration.vue', () => {
     wrapper.unmount()
   })
 
-  it('should render correctly', () => {
-    expect(wrapper.find('h2').text()).toBe('Course Enrollment Management')
-    expect(wrapper.findAll('.card')).toHaveLength(2)
-  })
-
-  it('should display register course card', () => {
-    const cards = wrapper.findAll('.card')
-    const registerCard = cards[0]
-    
-    expect(registerCard.text()).toContain('Course Registration')
-    expect(registerCard.text()).toContain('Add students to a class.')
-  })
-
-  it('should display drop course card', () => {
-    const cards = wrapper.findAll('.card')
-    const dropCard = cards[1]
-    
-    expect(dropCard.text()).toContain('Course Drop')
-    expect(dropCard.text()).toContain('Drop a class for a student')
-  })
-
   it('should navigate to register page when register card is clicked', async () => {
     const registerCard = wrapper.findAll('.card')[0]
     

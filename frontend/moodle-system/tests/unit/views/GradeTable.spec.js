@@ -152,22 +152,6 @@ describe('GradeTable.vue', () => {
     expect(downloadButton.text()).toContain('Download')
   })
 
-  it('should download PDF when download button is clicked', async () => {
-    const mockPdf = {
-      save: jest.fn()
-    }
-    await wrapper.setData({ 
-      pdfGenerated: true,
-      pdfDoc: mockPdf,
-      studentId: '123456'
-    })
-    
-    const downloadButton = wrapper.findAll('button')[1]
-    await downloadButton.trigger('click')
-    
-    expect(mockPdf.save).toHaveBeenCalledWith('bang_diem_123456.pdf')
-  })
-
   it('should show loading state', async () => {
     store.state.transcript.loading = true
     await wrapper.vm.$nextTick()

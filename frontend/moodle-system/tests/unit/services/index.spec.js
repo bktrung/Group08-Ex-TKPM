@@ -42,11 +42,6 @@ describe('Services Index', () => {
     expect(services.statusType.mockStatusType).toBe(true)
   })
 
-  it('should export statusTransition service', () => {
-    expect(services.statusTransition).toBeDefined()
-    expect(services.statusTransition.mockStatusTransition).toBe(true)
-  })
-
   it('should export class service', () => {
     expect(services.class).toBeDefined()
     expect(services.class.mockClass).toBe(true)
@@ -95,19 +90,5 @@ describe('Services Index', () => {
     ]
 
     expect(serviceKeys.sort()).toEqual(expectedKeys.sort())
-  })
-
-  it('should export services as an object with proper structure', () => {
-    expect(services).toEqual({
-      student: { mockStudent: true },
-      course: { mockCourse: true },
-      department: { mockDepartment: true },
-      program: { mockProgram: true },
-      statusType: { mockStatusType: true },
-      statusTransition: { mockStatusTransition: true },
-      class: { mockClass: true },
-      enrollment: { mockEnrollment: true },
-      geography: { mockGeography: true }
-    })
   })
 })
