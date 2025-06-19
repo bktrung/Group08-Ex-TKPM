@@ -1,69 +1,16 @@
-import { describe, it, expect } from '@jest/globals'
 import { createStore } from 'vuex'
+import storeConfig from '@/store/index.js'
 
-// Mock all modules
-const mockModule = {
-  namespaced: true,
-  state: () => ({}),
-  mutations: {},
-  actions: {},
-  getters: {}
-}
-
-jest.mock('@/store/modules/student', () => mockModule, { virtual: true })
-jest.mock('@/store/modules/department', () => mockModule, { virtual: true })
-jest.mock('@/store/modules/program', () => mockModule, { virtual: true })
-jest.mock('@/store/modules/status', () => mockModule, { virtual: true })
-jest.mock('@/store/modules/course', () => mockModule, { virtual: true })
-jest.mock('@/store/modules/class', () => mockModule, { virtual: true })
-jest.mock('@/store/modules/enrollment', () => mockModule, { virtual: true })
-jest.mock('@/store/modules/transcript', () => mockModule, { virtual: true })
-
-describe('store configuration', () => {
+describe('store index', () => {
   let store
 
   beforeEach(() => {
-    store = createStore({
-      state: {
-        loading: false,
-        error: null
-      },
-      mutations: {
-        SET_LOADING(state, loading) {
-          state.loading = loading
-        },
-        SET_ERROR(state, error) {
-          state.error = error
-        }
-      },
-      actions: {},
-      modules: {
-        student: mockModule,
-        department: mockModule,
-        program: mockModule,
-        status: mockModule,
-        course: mockModule,
-        'class': mockModule,
-        enrollment: mockModule,
-        transcript: mockModule
-      }
-    })
+    store = createStore(storeConfig)
   })
 
-  it('should have correct initial state', () => {
+  it('should have initial state', () => {
     expect(store.state.loading).toBe(false)
     expect(store.state.error).toBe(null)
-  })
-
-  it('should have SET_LOADING mutation', () => {
-    store.commit('SET_LOADING', true)
-    expect(store.state.loading).toBe(true)
-  })
-
-  it('should have SET_ERROR mutation', () => {
-    const error = 'Test error'
-    store.commit('SET_ERROR', error)
-    expect(store.state.error).toBe(error)
   })
 
   it('should have all required modules', () => {
@@ -75,5 +22,53 @@ describe('store configuration', () => {
     expect(store.hasModule('class')).toBe(true)
     expect(store.hasModule('enrollment')).toBe(true)
     expect(store.hasModule('transcript')).toBe(true)
+  })
+
+  it('should have root mutations', () => {
+    expect(store._mutations).toHaveProperty('SET_LOADING')
+    expect(store._mutations).toHaveProperty('SET_ERROR')
+  })
+
+  it('should set loading state', () => {
+    store.commit('SET_LOADING', true)
+    expect(store.state.loading).toBe(true)
+    
+    store.commit('SET_LOADING', false)
+    expect(store.state.loading).toBe(false)
+  })
+
+  it('should set error state', () => {
+    const error = 'Test error'
+    store.commit('SET_ERROR', error)
+    expect(store.state.error).toBe(error)
+    
+    store.commit('SET_ERROR', null)
+    expect(store.state.error).toBe(null)
+  })
+
+  it('should have namespaced modules', () => {
+    const moduleNames = ['student', 'department', 'program', 'status', 'course', 'class', 'enrollment', 'transcript']
+    
+    moduleNames.forEach(moduleName => {
+      expect(store._modules.root._children[moduleName].namespaced).toBe(true)
+    })
+  })
+
+  it('should have student module state', () => {
+    expect(store.state.student).toHaveProperty('students')
+    expect(store.state.student).toHaveProperty('loading')
+    expect(store.state.student).toHaveProperty('error')
+  })
+
+  it('should have course module state', () => {
+    expect(store.state.course).toHaveProperty('courses')
+    expect(store.state.course).toHaveProperty('loading')
+    expect(store.state.course).toHaveProperty('error')
+  })
+
+  it('should have class module state', () => {
+    expect(store.state.class).toHaveProperty('classes')
+    expect(store.state.class).toHaveProperty('loading')
+    expect(store.state.class).toHaveProperty('error')
   })
 })
