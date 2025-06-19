@@ -182,57 +182,70 @@ Directory structure:
     │       ├── public/
     │       │   └── index.html
     │       └── src/
-    │           ├── App.vue
-    │           ├── main.js
-    │           ├── assets/
-    │           ├── components/
-    │           │   ├── class/
-    │           │   │   ├── ClassForm.vue
-    │           │   │   └── ClassTable.vue
-    │           │   ├── course/
-    │           │   │   ├── CourseForm.vue
-    │           │   │   ├── CourseList.vue
-    │           │   │   └── CourseTable.vue
-    │           │   ├── layout/
-    │           │   │   ├── AppSidebar.vue
-    │           │   │   └── BaseModal.vue
-    │           │   └── student/
-    │           │       ├── AddressFields.vue
-    │           │       ├── IdentityDocumentFields.vue
-    │           │       ├── ImportExport.vue
-    │           │       └── StudentForm.vue
-    │           ├── router/
-    │           │   └── index.js
-    │           ├── services/
-    │           │   └── api.js
-    │           ├── store/
-    │           │   ├── index.js
-    │           │   └── modules/
-    │           │       ├── class.js
-    │           │       ├── course.js
-    │           │       ├── department.js
-    │           │       ├── enrollment.js
-    │           │       ├── program.js
-    │           │       ├── status.js
-    │           │       ├── student.js
-    │           │       └── transcript.js
-    │           ├── utils/
-    │           │   ├── format.js
-    │           │   └── validation.js
-    │           └── views/
-    │               ├── AcademicAffairsRegistration.vue
-    │               ├── AddStudent.vue
-    │               ├── ClassManage.vue
-    │               ├── CourseManage.vue
-    │               ├── DepartmentManage.vue
-    │               ├── DropCourse.vue
-    │               ├── EditStudent.vue
-    │               ├── GradeTable.vue
-    │               ├── ProgramManage.vue
-    │               ├── RegisterCourse.vue
-    │               ├── StatusManage.vue
-    │               ├── StatusTransition.vue
-    │               └── StudentList.vue
+    │       │   ├── App.vue
+    │       │   ├── main.js
+    │       │   ├── assets/
+    │       │   ├── components/
+    │       │   │   ├── class/
+    │       │   │   │   ├── ClassForm.vue
+    │       │   │   │   └── ClassTable.vue
+    │       │   │   ├── course/
+    │       │   │   │   ├── CourseForm.vue
+    │       │   │   │   ├── CourseList.vue
+    │       │   │   │   └── CourseTable.vue
+    │       │   │   ├── layout/
+    │       │   │   │   ├── AppSidebar.vue
+    │       │   │   │   └── BaseModal.vue
+    │       │   │   └── student/
+    │       │   │       ├── AddressFields.vue
+    │       │   │       ├── IdentityDocumentFields.vue
+    │       │   │       ├── ImportExport.vue
+    │       │   │       └── StudentForm.vue
+    │       │   ├── router/
+    │       │   │   └── index.js
+    │       │   ├── services/
+    │       │   │   └── api.js
+    │       │   ├── store/
+    │       │   │   ├── index.js
+    │       │   │   └── modules/
+    │       │   │       ├── class.js
+    │       │   │       ├── course.js
+    │       │   │       ├── department.js
+    │       │   │       ├── enrollment.js
+    │       │   │       ├── program.js
+    │       │   │       ├── status.js
+    │       │   │       ├── student.js
+    │       │   │       └── transcript.js
+    │       │   ├── utils/
+    │       │   │   ├── format.js
+    │       │   │   └── validation.js
+    │       │   └── views/
+    │       │       ├── AcademicAffairsRegistration.vue
+    │       │       ├── AddStudent.vue
+    │       │       ├── ClassManage.vue
+    │       │       ├── CourseManage.vue
+    │       │       ├── DepartmentManage.vue
+    │       │       ├── DropCourse.vue
+    │       │       ├── EditStudent.vue
+    │       │       ├── GradeTable.vue
+    │       │       ├── ProgramManage.vue
+    │       │       ├── RegisterCourse.vue
+    │       │       ├── StatusManage.vue
+    │       │       ├── StatusTransition.vue
+    │       │       └── StudentList.vue
+    |       └── tests
+    │           ├── setup.js
+    │           └── unit
+    │               └── services
+    │                   ├── class.spec.js
+    │                   ├── course.spec.js
+    │                   ├── department.spec.js
+    │                   ├── enrollment.spec.js
+    │                   ├── geography.spec.js
+    │                   ├── index.spec.js
+    │                   ├── program.spec.js
+    │                   ├── status.type.spec.js
+    │                   └── student.spec.js
     └── report/
         └── Unit Testing.pptx
 ```
@@ -287,13 +300,18 @@ Note:
 #### 4. Chạy chương trình.
 Chạy lệnh `npm run start` để chạy cả frontend và backend, sau đó truy cập vào trang web tại địa chỉ http://localhost:8080
 
-## Hướng dẫn chạy Unit Test
+## Hướng dẫn chạy Unit Test ở backend
 1. Mở terminal, di chuyển tới thư mục backend
 2. Chạy lệnh `npm install --save-dev jest @types/jest ts-jest mongodb-memory-server @shelf/jest-mongodb`
 3. Chạy lệnh `npm run test` để chạy tất cả các unit test
 4. Kết quả sẽ hiển thị trong console hoặc có thể xem thông qua file `coverage/lcov-report/index.html` được tạo tự động trong folder backend sau khi run test.
 ![image](https://github.com/user-attachments/assets/9b90e774-059e-42cd-936e-74cb9201f77b)
 
+## Hướng dẫn chạy Unit Test ở frontend
+1. Mở terminal, di chuyển tới thư mục frontend/moodle-system
+2. Chạy lệnh `npm install --save-dev jest@27.5.1 jest-environment-jsdom@27.5.1 @vue/vue3-jest@27.0.0-alpha.4`
+3. Chạy lệnh `npm run test` để chạy tất cả các unit test
+4. Kết quả sẽ hiển thị trong console
 
 ## Hướng dẫn sử dụng các chức năng
 
