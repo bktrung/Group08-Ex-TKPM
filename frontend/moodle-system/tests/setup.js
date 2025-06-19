@@ -1,41 +1,40 @@
-import { config } from '@vue/test-utils';
-import { createI18n } from 'vue-i18n';
+// tests/setup.js
+import { config } from '@vue/test-utils'
 
-// Mock i18n
-const i18n = createI18n({
-  legacy: false,
-  locale: 'en',
-  messages: {
-    en: {
-      common: {
-        loading: 'Loading...',
-        error: 'Error',
-        success: 'Success',
-        cancel: 'Cancel',
-        save: 'Save',
-        delete: 'Delete',
-        edit: 'Edit',
-        add: 'Add'
-      },
-      student: {
-        name: 'Student Name',
-        student_id: 'Student ID',
-        email: 'Email',
-        phone: 'Phone',
-        add_student: 'Add Student'
-      }
-    }
-  }
-});
+// Mock localStorage
+const localStorageMock = {
+  getItem: jest.fn(),
+  setItem: jest.fn(),
+  removeItem: jest.fn(),
+  clear: jest.fn(),
+}
+global.localStorage = localStorageMock
 
-// Global test configuration
-config.global.plugins = [i18n];
+// Mock window.open for export functionality
+global.window.open = jest.fn()
+
+// Mock console methods to reduce noise in tests
+global.console = {
+  ...console,
+  log: jest.fn(),
+  debug: jest.fn(),
+  info: jest.fn(),
+  warn: jest.fn(),
+  error: jest.fn(),
+}
+
+// Setup Vue Test Utils global config
 config.global.mocks = {
-  $t: (key) => key,
+  $t: (key, params) => {
+    if (params) {
+      return key.replace(/\{(\w+)\}/g, (match, param) => params[param] || match)
+    }
+    return key
+  },
   $route: {
+    path: '/',
     params: {},
-    query: {},
-    path: '/'
+    query: {}
   },
   $router: {
     push: jest.fn(),
@@ -43,27 +42,26 @@ config.global.mocks = {
     go: jest.fn(),
     back: jest.fn()
   }
-};
+}
 
-// Mock window methods
-Object.defineProperty(window, 'localStorage', {
-  value: {
-    getItem: jest.fn(),
-    setItem: jest.fn(),
-    removeItem: jest.fn(),
-    clear: jest.fn(),
-  },
-  writable: true,
-});
+// Mock process.env
+process.env.VUE_APP_API_URL = 'http://localhost:3456'
 
-// Mock Bootstrap
-global.bootstrap = {
-  Modal: jest.fn().mockImplementation(() => ({
-    show: jest.fn(),
-    hide: jest.fn()
-  })),
-  Toast: jest.fn().mockImplementation(() => ({
-    show: jest.fn(),
-    hide: jest.fn()
-  }))
-};
+// Setup fetch mock
+global.fetch = jest.fn()
+
+// Setup IntersectionObserver mock
+global.IntersectionObserver = class IntersectionObserver {
+  constructor() {}
+  disconnect() {}
+  observe() {}
+  unobserve() {}
+}
+
+// Setup ResizeObserver mock
+global.ResizeObserver = class ResizeObserver {
+  constructor() {}
+  disconnect() {}
+  observe() {}
+  unobserve() {}
+}

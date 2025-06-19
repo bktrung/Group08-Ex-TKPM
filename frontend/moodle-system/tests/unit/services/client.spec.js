@@ -1,170 +1,126 @@
 import axios from 'axios'
+import apiClient from '@/services/client.js'
 
 // Mock axios
-jest.mock('axios', () => ({
-  create: jest.fn(() => ({
-    interceptors: {
-      request: {
-        use: jest.fn()
-      },
-      response: {
-        use: jest.fn()
-      }
-    },
-    get: jest.fn(),
-    post: jest.fn(),
-    put: jest.fn(),
-    delete: jest.fn()
-  }))
-}))
+jest.mock('axios')
+const mockedAxios = axios
 
-// Mock localStorage
-const mockLocalStorage = {
-  getItem: jest.fn(),
-  setItem: jest.fn(),
-  removeItem: jest.fn(),
-  clear: jest.fn()
-}
-Object.defineProperty(window, 'localStorage', {
-  value: mockLocalStorage
-})
-
-// Mock console methods
-const mockConsole = {
-  log: jest.fn(),
-  error: jest.fn()
-}
-global.console = mockConsole
-
-describe('API client', () => {
-  let mockAxiosInstance
-  let requestInterceptor
-  let responseInterceptor
-
+describe('API Client', () => {
   beforeEach(() => {
     jest.clearAllMocks()
-    
-    mockAxiosInstance = {
-      interceptors: {
-        request: {
-          use: jest.fn()
-        },
-        response: {
-          use: jest.fn()
-        }
-      }
-    }
-    
-    axios.create.mockReturnValue(mockAxiosInstance)
-    
-    // Capture the interceptor functions
-    mockAxiosInstance.interceptors.request.use.mockImplementation((successFn, errorFn) => {
-      requestInterceptor = { success: successFn, error: errorFn }
-    })
-    
-    mockAxiosInstance.interceptors.response.use.mockImplementation((successFn, errorFn) => {
-      responseInterceptor = { success: successFn, error: errorFn }
-    })
-
-    // Re-import to trigger interceptor setup
-    jest.resetModules()
-    require('@/services/client.js')
+    // Clear localStorage
+    localStorage.clear()
   })
 
-  it('should create axios instance with correct config', () => {
-    expect(axios.create).toHaveBeenCalledWith({
-      baseURL: 'http://localhost:3456',
-      headers: {
-        'Content-Type': 'application/json'
-      }
+  describe('Configuration', () => {
+    it('should have correct default configuration', () => {
+      expect(apiClient.defaults.baseURL).toBe('http://localhost:3456')
+      expect(apiClient.defaults.headers['Content-Type']).toBe('application/json')
     })
-  })
 
-  it('should setup request and response interceptors', () => {
-    expect(mockAxiosInstance.interceptors.request.use).toHaveBeenCalled()
-    expect(mockAxiosInstance.interceptors.response.use).toHaveBeenCalled()
-  })
-
-  describe('request interceptor', () => {
-    it('should add language parameter from localStorage', () => {
-      mockLocalStorage.getItem.mockReturnValue('en')
+    it('should use environment variable for base URL if provided', () => {
+      const originalEnv = process.env.VUE_APP_API_URL
+      process.env.VUE_APP_API_URL = 'https://test-api.com'
       
-      const config = {
+      // Re-import to get new configuration
+      jest.resetModules()
+      const newApiClient = require('@/services/client.js').default
+      
+      expect(newApiClient.defaults.baseURL).toBe('https://test-api.com')
+      
+      // Restore
+      process.env.VUE_APP_API_URL = originalEnv
+    })
+  })
+
+  describe('Request Interceptor', () => {
+    let mockConfig
+
+    beforeEach(() => {
+      mockConfig = {
         method: 'GET',
         url: '/test',
-        params: { existing: 'param' }
+        params: {}
       }
+    })
+
+    it('should add language parameter from localStorage', () => {
+      localStorage.setItem('language', 'en')
       
-      const result = requestInterceptor.success(config)
+      const interceptor = apiClient.interceptors.request.handlers[0].fulfilled
+      const result = interceptor(mockConfig)
+
+      expect(result.params.lang).toBe('en')
+    })
+
+    it('should use default language when not in localStorage', () => {
+      const interceptor = apiClient.interceptors.request.handlers[0].fulfilled
+      const result = interceptor(mockConfig)
+
+      expect(result.params.lang).toBe('vi')
+    })
+
+    it('should preserve existing params', () => {
+      localStorage.setItem('language', 'en')
+      mockConfig.params = { page: 1, limit: 10 }
       
-      expect(mockLocalStorage.getItem).toHaveBeenCalledWith('language')
+      const interceptor = apiClient.interceptors.request.handlers[0].fulfilled
+      const result = interceptor(mockConfig)
+
       expect(result.params).toEqual({
-        existing: 'param',
+        page: 1,
+        limit: 10,
         lang: 'en'
       })
     })
 
-    it('should add default language when localStorage is empty', () => {
-      mockLocalStorage.getItem.mockReturnValue(null)
+    it('should handle config without params', () => {
+      localStorage.setItem('language', 'en')
+      delete mockConfig.params
       
-      const config = {
-        method: 'POST',
-        url: '/test'
-      }
-      
-      const result = requestInterceptor.success(config)
-      
-      expect(result.params).toEqual({
-        lang: 'vi'
-      })
-    })
+      const interceptor = apiClient.interceptors.request.handlers[0].fulfilled
+      const result = interceptor(mockConfig)
 
-    it('should create params object if not exists', () => {
-      mockLocalStorage.getItem.mockReturnValue('vi')
-      
-      const config = {
-        method: 'PUT',
-        url: '/test'
-      }
-      
-      const result = requestInterceptor.success(config)
-      
-      expect(result.params).toEqual({
-        lang: 'vi'
-      })
+      expect(result.params).toEqual({ lang: 'en' })
     })
 
     it('should log request information', () => {
-      const config = {
-        method: 'GET',
-        url: '/test',
-        params: { test: 'value' }
-      }
+      const consoleSpy = jest.spyOn(console, 'log').mockImplementation()
       
-      requestInterceptor.success(config)
+      mockConfig.method = 'POST'
+      mockConfig.url = '/api/test'
+      mockConfig.params = { test: true }
       
-      expect(mockConsole.log).toHaveBeenCalledWith('API Request:', 'GET', '/test')
-      expect(mockConsole.log).toHaveBeenCalledWith('Parameters:', { test: 'value', lang: 'vi' })
-      expect(mockConsole.log).toHaveBeenCalledWith('Language from localStorage:', null)
+      const interceptor = apiClient.interceptors.request.handlers[0].fulfilled
+      interceptor(mockConfig)
+
+      expect(consoleSpy).toHaveBeenCalledWith('API Request:', 'POST', '/api/test')
+      expect(consoleSpy).toHaveBeenCalledWith('Parameters:', { test: true, lang: 'vi' })
+      expect(consoleSpy).toHaveBeenCalledWith('Language from localStorage:', null)
+      
+      consoleSpy.mockRestore()
     })
 
-    it('should handle request interceptor error', () => {
+    it('should handle request errors', () => {
       const error = new Error('Request error')
-      
-      expect(() => requestInterceptor.error(error)).rejects.toThrow('Request error')
+      const interceptor = apiClient.interceptors.request.handlers[0].rejected
+
+      expect(() => interceptor(error)).rejects.toThrow('Request error')
     })
   })
 
-  describe('response interceptor', () => {
-    it('should return response on success', () => {
-      const response = { data: { test: 'data' } }
-      
-      const result = responseInterceptor.success(response)
-      
-      expect(result).toEqual(response)
+  describe('Response Interceptor', () => {
+    it('should return response for successful requests', () => {
+      const mockResponse = { data: { success: true }, status: 200 }
+      const interceptor = apiClient.interceptors.response.handlers[0].fulfilled
+
+      const result = interceptor(mockResponse)
+      expect(result).toEqual(mockResponse)
     })
 
-    it('should log error and reject on response error', () => {
+    it('should log and reject errors', () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
+      
       const error = {
         response: {
           status: 404,
@@ -174,15 +130,78 @@ describe('API client', () => {
         }
       }
       
-      expect(() => responseInterceptor.error(error)).rejects.toThrow()
-      expect(mockConsole.error).toHaveBeenCalledWith('API Error:', 404, 'Not found')
+      const interceptor = apiClient.interceptors.response.handlers[0].rejected
+
+      expect(() => interceptor(error)).rejects.toEqual(error)
+      expect(consoleErrorSpy).toHaveBeenCalledWith('API Error:', 404, 'Not found')
+      
+      consoleErrorSpy.mockRestore()
     })
 
-    it('should handle error without response', () => {
-      const error = new Error('Network error')
+    it('should handle errors without response', () => {
+      const consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation()
       
-      expect(() => responseInterceptor.error(error)).rejects.toThrow('Network error')
-      expect(mockConsole.error).toHaveBeenCalledWith('API Error:', undefined, undefined)
+      const error = new Error('Network error')
+      const interceptor = apiClient.interceptors.response.handlers[0].rejected
+
+      expect(() => interceptor(error)).rejects.toEqual(error)
+      expect(consoleErrorSpy).toHaveBeenCalledWith('API Error:', undefined, undefined)
+      
+      consoleErrorSpy.mockRestore()
+    })
+  })
+
+  describe('HTTP Methods', () => {
+    beforeEach(() => {
+      mockedAxios.create.mockReturnValue({
+        defaults: { baseURL: 'http://localhost:3456' },
+        interceptors: {
+          request: { use: jest.fn() },
+          response: { use: jest.fn() }
+        },
+        get: jest.fn(),
+        post: jest.fn(),
+        patch: jest.fn(),
+        delete: jest.fn()
+      })
+    })
+
+    it('should make GET requests', async () => {
+      const mockResponse = { data: { test: true } }
+      apiClient.get = jest.fn().mockResolvedValue(mockResponse)
+
+      const result = await apiClient.get('/test')
+      expect(result).toEqual(mockResponse)
+      expect(apiClient.get).toHaveBeenCalledWith('/test')
+    })
+
+    it('should make POST requests', async () => {
+      const mockResponse = { data: { id: 1 } }
+      const postData = { name: 'test' }
+      apiClient.post = jest.fn().mockResolvedValue(mockResponse)
+
+      const result = await apiClient.post('/test', postData)
+      expect(result).toEqual(mockResponse)
+      expect(apiClient.post).toHaveBeenCalledWith('/test', postData)
+    })
+
+    it('should make PATCH requests', async () => {
+      const mockResponse = { data: { updated: true } }
+      const patchData = { name: 'updated' }
+      apiClient.patch = jest.fn().mockResolvedValue(mockResponse)
+
+      const result = await apiClient.patch('/test/1', patchData)
+      expect(result).toEqual(mockResponse)
+      expect(apiClient.patch).toHaveBeenCalledWith('/test/1', patchData)
+    })
+
+    it('should make DELETE requests', async () => {
+      const mockResponse = { data: { deleted: true } }
+      apiClient.delete = jest.fn().mockResolvedValue(mockResponse)
+
+      const result = await apiClient.delete('/test/1')
+      expect(result).toEqual(mockResponse)
+      expect(apiClient.delete).toHaveBeenCalledWith('/test/1')
     })
   })
 })

@@ -20,19 +20,26 @@ module.exports = {
     }
   },
   moduleNameMapping: {
-    '^@/(.*)$': '<rootDir>/src/$1'
+    '^@/(.*)': '<rootDir>/src/$1'
   },
   transform: {
-    '^.+\\.vue$': '@vue/vue3-jest',
-    '^.+\\.js$': 'babel-jest'
+    '^.+\\.vue': '@vue/vue3-jest',
+    '^.+\\.js': 'babel-jest'
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(vue-i18n|@vue|vue-router|vuex)/)'
+    'node_modules/(?!(axios|@vuelidate|vue-i18n|@vue|vue-router|vuex)/)'
   ],
   testMatch: [
     '**/tests/unit/**/*.spec.js',
     '**/tests/unit/**/*.test.js',
     '**/tests/integration/**/*.spec.js',
     '**/tests/integration/**/*.test.js'
-  ]
+  ],
+  globals: {
+    'vue-jest': {
+      pug: {
+        doctype: 'html'
+      }
+    }
+  }
 };
