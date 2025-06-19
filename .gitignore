@@ -2,3 +2,4 @@
 .env.docker
 node_modules/
 backend/coverage
+frontend/moodle-system/coverage
