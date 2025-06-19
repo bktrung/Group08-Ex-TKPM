@@ -128,13 +128,8 @@
       @update:showModal="showSuccessModal = $event" />
 
     <!-- Error Modal -->
-    <ErrorModal 
-      :showModal="showErrorModal" 
-      :title="$t('common.error')" 
-      :message="errorMessage"
-      :isTranslated="isErrorTranslated"
-      @update:showModal="showErrorModal = $event" 
-    />
+    <ErrorModal :showModal="showErrorModal" :title="$t('common.error')" :message="errorMessage"
+      :isTranslated="isErrorTranslated" @update:showModal="showErrorModal = $event" />
 
   </div>
 </template>
@@ -163,7 +158,7 @@ export default {
     const { t } = useI18n()
     const store = useStore()
     const { errorMessage, isErrorTranslated, showErrorModal, handleError } = useErrorHandler()
-    
+
     const showForm = ref(false)
     const isEditing = ref(false)
     const selectedClass = ref({})
@@ -293,9 +288,16 @@ export default {
         const classCode = classData.classCode;
 
         if (isUpdate) {
+
+          const fieldsToRemove = ['classCode', 'course', 'academicYear', 'semester'];
+
+          const updatedData = Object.fromEntries(
+            Object.entries(classData).filter(([key]) => !fieldsToRemove.includes(key))
+          );
+
           await store.dispatch('class/updateClass', {
             classCode: selectedClass.value.classCode,
-            data: classData
+            data: updatedData
           });
         } else {
           await store.dispatch('class/addClass', classData);

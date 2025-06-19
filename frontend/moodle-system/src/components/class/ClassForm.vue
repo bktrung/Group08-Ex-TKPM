@@ -7,7 +7,7 @@
         <label class="form-label">{{ $t('class.class_code') }} <span class="text-danger">*</span></label>
         <input type="text" id="class-code" v-model="form.classCode" class="form-control"
           :class="{ 'is-invalid': v$.classCode.$error, 'is-valid': !v$.classCode.$invalid && v$.classCode.$dirty }"
-          :readonly="isEditing" required>
+          :readonly="isEditing" :disabled="isEditing" required>
         <div class="invalid-feedback" v-if="v$.classCode.$error">
           {{ v$.classCode.$errors[0].$message }}
         </div>
@@ -15,7 +15,8 @@
       <div class="col-md-6">
         <label class="form-label">{{ $t('class.course') }} <span class="text-danger">*</span></label>
         <select id="class-course" v-model="form.course" class="form-select"
-          :class="{ 'is-invalid': v$.course.$error, 'is-valid': !v$.course.$invalid && v$.course.$dirty }" required>
+          :class="{ 'is-invalid': v$.course.$error, 'is-valid': !v$.course.$invalid && v$.course.$dirty }"
+          :disabled="isEditing" required>
           <option value="">-- {{ $t('common.choose') }} {{ $t('class.course') }} --</option>
           <option v-for="course in activeCourses" :key="course._id" :value="course._id">
             {{ course.courseCode }} - {{ course.name }} ({{ course.credits }} tín chỉ)
@@ -32,7 +33,7 @@
         <label class="form-label">{{ $t('class.academic_year') }} <span class="text-danger">*</span></label>
         <select id="class-academic-year" v-model="form.academicYear" class="form-select"
           :class="{ 'is-invalid': v$.academicYear.$error, 'is-valid': !v$.academicYear.$invalid && v$.academicYear.$dirty }"
-          required>
+          :disabled="isEditing" required>
           <option value="">-- {{ $t('class.schedule') }} {{ $t('class.academic_year') }} --</option>
           <option v-for="year in academicYears" :key="year" :value="year">
             {{ year }}
@@ -46,7 +47,7 @@
         <label class="form-label">{{ $t('class.semester') }} <span class="text-danger">*</span></label>
         <select id="class-semester" v-model="form.semester" class="form-select"
           :class="{ 'is-invalid': v$.semester.$error, 'is-valid': !v$.semester.$invalid && v$.semester.$dirty }"
-          required>
+          :disabled="isEditing" required>
           <option value="">-- {{ $t('common.choose') }} {{ $t('class.semester') }} --</option>
           <option :value="1">{{ $t('class.semester_1') }}</option>
           <option :value="2">{{ $t('class.semester_2') }}</option>

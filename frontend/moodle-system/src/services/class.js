@@ -25,7 +25,7 @@ export default {
     },
 
     updateClass(classCode, classData) {
-        return apiClient.put(`/v1/api/classes/${classCode}`, classData)
+        return apiClient.patch(`/v1/api/classes/${classCode}`, classData)
     },
 
     getClassByCourseId(courseId) {
