@@ -387,7 +387,8 @@
         "title": "Program",
         "name": "Program Name",
         "no_data": "No programs available. Please add a new program",
-        "enter": "Enter program"
+        "enter": "Enter program",
+        "confirm_delete": "Are you sure you want to delete the program %{name}?"
     },
     "statusTransitionRule": {
         "title": "State Transition Rule Management",

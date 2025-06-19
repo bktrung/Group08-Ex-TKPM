@@ -33,8 +33,12 @@
             <td class="text-center">{{ index + 1 }}</td>
             <td>{{ program.name }}</td>
             <td class="text-center">
-              <button class="btn btn-warning btn-sm" @click="openEditProgramModal(program)">{{ $t('common.edit')
-              }}</button>
+              <div class="d-flex justify-content-center gap-1">
+                <button class="btn btn-warning btn-sm" @click="openEditProgramModal(program)">{{ $t('common.edit')
+                }}</button>
+                <button @click="openConfirmDeleteModal(program)" class="btn btn-danger btn-sm">{{ $t('common.delete')
+                }}</button>
+              </div>
             </td>
           </tr>
         </tbody>
@@ -44,14 +48,13 @@
     <BaseModal :title="modalTitle" :placeholderTitle="$t('program.enter')" :itemName="programName"
       :showModal="isModalOpen" @save="saveProgram" @close="isModalOpen = false" />
 
+    <ConfirmModal :showModal="showConfirmModal" :title="$t('common.confirm_delete')"
+      :message="`${$t('program.confirm_delete', { name: programName })}`"
+      @update:showModal="showConfirmModal = $event" @confirm="deleteProgram" />
+
     <!-- Error Modal -->
-    <ErrorModal 
-      :showModal="showErrorModal" 
-      :title="$t('common.error')" 
-      :message="errorMessage"
-      :isTranslated="isErrorTranslated" 
-      @update:showModal="showErrorModal = $event" 
-    />
+    <ErrorModal :showModal="showErrorModal" :title="$t('common.error')" :message="errorMessage"
+      :isTranslated="isErrorTranslated" @update:showModal="showErrorModal = $event" />
   </div>
 </template>
 
@@ -62,21 +65,25 @@ import { useI18n } from 'vue-i18n'
 import { useErrorHandler } from '@/composables/useErrorHandler'
 import BaseModal from '../components/layout/BaseModal.vue'
 import ErrorModal from '../components/layout/ErrorModal.vue'
+import ConfirmModal from '../components/layout/ConfirmModal.vue'
 
 export default {
   components: {
     BaseModal,
-    ErrorModal
+    ErrorModal,
+    ConfirmModal
   },
   setup() {
     const { t } = useI18n()
     const store = useStore()
     const { errorMessage, isErrorTranslated, showErrorModal, handleError } = useErrorHandler()
-    
+
     const programName = ref('')
     const originalProgramName = ref('')
     const editingProgramId = ref(null)
+    const deletingProgramId = ref(null)
     const isModalOpen = ref(false)
+    const showConfirmModal = ref(false)
 
     const programs = computed(() => store.state.program.programs)
     const loading = computed(() => store.state.program.loading)
@@ -95,6 +102,12 @@ export default {
       programName.value = program.name
       originalProgramName.value = program.name
       isModalOpen.value = true
+    }
+
+    const openConfirmDeleteModal = (program) => {
+      programName.value = program.name
+      deletingProgramId.value = program._id
+      showConfirmModal.value = true
     }
 
     const saveProgram = async (name) => {
@@ -125,6 +138,16 @@ export default {
       }
     }
 
+    const deleteProgram = async () => {
+      try {
+        await store.dispatch('program/deleteProgram', deletingProgramId.value);
+        showConfirmModal.value = false
+      } catch (error) {
+        console.error('Error deleting program:', error)
+        handleError(error, 'common.error')
+      }
+    };
+
     onMounted(async () => {
       try {
         await store.dispatch('program/fetchPrograms')
@@ -145,7 +168,10 @@ export default {
       showErrorModal,
       openAddProgramModal,
       openEditProgramModal,
-      saveProgram
+      saveProgram,
+      openConfirmDeleteModal,
+      showConfirmModal,
+      deleteProgram
     }
   }
 }

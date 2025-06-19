@@ -382,7 +382,8 @@
         "title": "Chương trình",
         "name": "Tên Chương trình",
         "no_data": "Không có chương trình nào. Vui lòng thêm chương trình mới",
-        "enter": "Nhập chương trình"
+        "enter": "Nhập chương trình",
+        "confirm_delete":"Bạn có chắc chắn muốn xóa chương trình %{name} ?"
     },
     "statusTransitionRule": {
         "title": "Quản lý Quy tắc Chuyển trạng thái",

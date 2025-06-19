@@ -34,9 +34,9 @@
             <td class="text-center">
               <div class="d-flex justify-content-center gap-1">
                 <button class="btn btn-warning btn-sm" @click="openEditDepartmentModal(department)">{{ $t('common.edit')
-                  }}</button>
+                }}</button>
                 <button @click="openConfirmDeleteModal(department)" class="btn btn-danger btn-sm">{{ $t('common.delete')
-                  }}</button>
+                }}</button>
               </div>
             </td>
           </tr>
