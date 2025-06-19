@@ -331,7 +331,7 @@ Chạy lệnh `npm run start` để chạy cả frontend và backend, sau đó t
    
    ![Screenshot 2025-03-21 214928](https://github.com/user-attachments/assets/0859ece8-d598-4592-a67d-c8eee3aa6b73)
 
-#### 6. Thêm, sửa khoa
+#### 6. Thêm, xóa, sửa khoa
 
    Nhấn vào "Danh sách khoa" bên thanh sidebar. Đi tới trang quản lí Khoa.
    
@@ -344,7 +344,11 @@ Chạy lệnh `npm run start` để chạy cả frontend và backend, sau đó t
    
   ![Screenshot 2025-03-21 213447](https://github.com/user-attachments/assets/dd800699-ee2b-4e2e-9e3c-7010a9a06d21)
 
-#### 7. Thêm, sửa tình trạng sinh viên.
+  Trong màn hình quản lí khoa, chọn nút xóa ở dòng của khoa muốn xóa, nhấn Xác nhận xóa.
+
+  ![alt text](image-1.png)
+
+#### 7. Thêm, xóa, sửa tình trạng sinh viên.
 
    Nhấn vào "Danh sách tình trạng sinh viên" bên thanh sidebar. Đi tới trang quản lí  tình trạng sinh viên.
    
@@ -352,11 +356,15 @@ Chạy lệnh `npm run start` để chạy cả frontend và backend, sau đó t
    
    ![Screenshot 2025-03-21 213727](https://github.com/user-attachments/assets/3ba78794-8826-493c-b449-5d442bce522b)
 
-   Trong màn hình quản lí  tình trạng sinh viên, chọn nút sửa ở dòng của tình trạng muốn sửa, sửa tên tình trạng và nhấn lưu
+   Trong màn hình quản lí tình trạng sinh viên, chọn nút sửa ở dòng của tình trạng muốn sửa, sửa tên tình trạng và nhấn lưu
 
    ![Screenshot 2025-03-21 213932](https://github.com/user-attachments/assets/374ae5a2-292e-4e85-a7e6-2ce23edfda96)
 
-#### 8. Thêm, sửa chương trình đào tạo.
+   Trong màn hình quản lí tình trạng sinh viên, chọn nút xóa ở dòng của tình trạng muốn xóa, nhấn xác nhận hủy
+
+   ![alt text](image.png)
+
+#### 8. Thêm, xóa, sửa chương trình đào tạo.
 
    Nhấn vào "Danh sách chương trình đào tạo" bên thanh sidebar. Đi tới trang quản lí chương trình đào tạo.
    Sau đó chọn "Thêm chương trình". Nhấn "Lưu"
@@ -366,6 +374,10 @@ Chạy lệnh `npm run start` để chạy cả frontend và backend, sau đó t
    Trong màn hình quản lí chương trình đào tạo, chọn nút sửa ở dòng của chương trình muốn sửa, sửa tên tình trạng và nhấn lưu
 
    ![Screenshot 2025-03-21 214205](https://github.com/user-attachments/assets/7138afd2-491b-4ce4-b36c-2bfbb5629d4e)
+
+   Trong màn hình quản lí chương trình đào tạo, chọn nút xóa ở dòng của chương trình muốn xóa, nhấn xác nhận xóa
+
+   ![alt text](image.png)
 
   #### 9.Logging mechanism để troubleshooting production issue & audit purposes.
   
@@ -458,7 +470,6 @@ Chạy lệnh `npm run start` để chạy cả frontend và backend, sau đó t
    - Nếu khóa học bị deactivate, nó vẫn xuất hiện trong lịch sử nhưng không thể thêm lớp học mới.
    ![image](https://github.com/user-attachments/assets/76c2b521-b62d-48c9-a3e6-9b508cacdc45)
    ![image](https://github.com/user-attachments/assets/202d0fc3-0d2d-4ebb-bae9-9fe6830215cc)
-
 
 
 #### 18. Cập nhật thông tin khóa học
