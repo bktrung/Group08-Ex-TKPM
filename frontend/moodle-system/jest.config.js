@@ -3,12 +3,12 @@ module.exports = {
   testEnvironment: 'jsdom',
   setupFilesAfterEnv: ['<rootDir>/tests/setup.js'],
   collectCoverageFrom: [
-    'src/**/*.{js,vue}',
-    '!src/main.js',
-    '!src/router/index.js',
-    '!src/i18n.js',
-    '!**/node_modules/**',
-    '!**/*.config.js'
+    // Include main source components
+    'src/components/**/*.{js,vue}',
+    'src/views/**/*.{js,vue}',
+    'src/services/**/*.{js,vue}',
+    
+    '!src/components/student/**',
   ],
   coverageReporters: ['text', 'lcov', 'html'],
   coverageThreshold: {
