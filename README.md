@@ -288,6 +288,8 @@ GEONAMES_USERNAME=YOUR_GEONAMES_USERNAME
 Note: 
 - Thay `YOUR_MONGODB_HOST` và `YOUR_MONGODB_PORT` thành host và port của MongoDB và sử dụng default setting.
 - Thay `YOUR_GEONAMES_USERNAME` thành username lấy từ tài khoản của geonames (lên trang web để đăng ký) hoặc dùng `bktrung` để test.
+- Nếu dùng hệ điều hành `Windows`, truy cập file `package.json` trong thư mục `backend`, setup `"copy-config"` là `"cmd /c copy rule_config.json dist\\rule_config.json"`
+- Nếu dùng hệ điều hành `Linux`, truy cập file `package.json` trong thư mục `backend`, setup `"copy-config"` là `"copyfiles rule_config.json dist/"`
 
 #### 2. Cài đặt toàn bộ dependencies cho frontend, backend
 1. Mở terminal, di chuyển tới thư mục gốc hiện tại.
@@ -526,3 +528,8 @@ Chạy lệnh `npm run start` để chạy cả frontend và backend, sau đó t
    - Ở trang Bảng điểm, nhập MSSV của sinh viên muốn in bảng điểm, nhấn Tạo bảng điểm
      ![image](https://github.com/user-attachments/assets/acdeff5f-a908-4fcd-9c49-3dd11816889a)
    - Nhấn Download PDF để tải file về
+
+     
+#### 2323. Đa ngôn ngữ
+   - Chọn biểu tượng Trái đất ở góc dưới phải màn hình để chọn ngôn ngữ hiển thị
+     ![image](https://github.com/user-attachments/assets/a3971103-f132-4f17-b2be-7611aee778f0)
