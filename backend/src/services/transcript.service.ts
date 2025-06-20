@@ -15,7 +15,7 @@ export class TranscriptService implements ITranscriptService {
 		@inject(TYPES.EnrollmentRepository) private enrollmentRepository: IEnrollmentRepository,
 		@inject(TYPES.GradeRepository) private gradeRepository: IGradeRepository,
 		@inject(TYPES.StudentRepository) private studentRepository: IStudentRepository
-	) {}
+	) { }
 
 	private async getStudentInfo(studentId: string) {
 		const student = await this.studentRepository.getStudentInfo(studentId);
@@ -44,24 +44,24 @@ export class TranscriptService implements ITranscriptService {
 		}
 
 		const enrollments = await this.enrollmentRepository.findEnrollmentsByStudent(getDocumentId(student));
-		
+
 		if (!enrollments.length) {
 			return [];
 		}
 
 		const courseEnrollmentMap = new Map();
 
-		const getCourse = (field: any): string => {
-			// Convert ObjectId to string if needed
-			if (field && typeof field === 'object' && 'course' in field) {
-				return field.course.toString();  // Ensure it's a string
+		const getCourse = (field: any): string | null => {
+			if (field && typeof field === 'object' && 'course' in field && field.course) {
+				return field.course.toString();
 			}
-			return '';
+			return null;
 		}
+
 
 		enrollments.forEach(enrollment => {
 			const courseId = getCourse(enrollment.class);
-			if (!courseEnrollmentMap.has(courseId) || 
+			if (!courseEnrollmentMap.has(courseId) ||
 				new Date(enrollment.enrollmentDate) > new Date(courseEnrollmentMap.get(courseId).enrollmentDate)
 			) {
 				courseEnrollmentMap.set(courseId, enrollment);
@@ -71,7 +71,10 @@ export class TranscriptService implements ITranscriptService {
 		const latestEnrollments = Array.from(courseEnrollmentMap.values());
 
 		const grades = await Promise.all(latestEnrollments.map(async enrollment => {
-			const courseInfo = await this.courseRepository.findCourseById(getCourse(enrollment.class));
+			const courseId = getCourse(enrollment.class);
+
+			if (!courseId) return null;
+			const courseInfo = await this.courseRepository.findCourseById(courseId);
 			if (!courseInfo) {
 				return null;
 			}

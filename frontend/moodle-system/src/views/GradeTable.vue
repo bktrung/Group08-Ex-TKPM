@@ -1,4 +1,4 @@
-<template>
+<template>More actions
     <div class="transcript-generator">
         <h2>{{ $t('student.grade.table') }}</h2>
 
@@ -12,41 +12,38 @@
             <span v-if="loading" class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
             {{ $t('student.grade.create') }}
         </button>
-        <button v-if="pdfGenerated" @click="downloadPDF" class="btn btn-success">{{ $t('common.download') }} PDF</button>
+        <button v-if="pdfGenerated" @click="downloadPDF" class="btn btn-success">{{ $t('common.download') }}
+            PDF</button>
 
         <div id="pdf-content" style="margin-top: 20px; background: white; padding: 20px;">
             <div v-if="transcriptData">
                 <h3>{{ $t('student.student_info') }}</h3>
-                <p>{{ $t('student.student_id') }}: {{ transcriptData.metadata.transcript.studentInfo.studentId }}</p>
-                <p>{{ $t('student.name') }}: {{ transcriptData.metadata.transcript.studentInfo.fullName }}</p>
-                <p>{{ $t('student.department') }}: {{ transcriptData.metadata.transcript.studentInfo.department }}</p>
-                <p>{{ $t('student.program') }}: {{ transcriptData.metadata.transcript.studentInfo.program }}</p>
+                <p>{{ $t('student.student_id') }}: {{ transcriptData.studentInfo.studentId }}</p>
+                <p>{{ $t('student.name') }}: {{ transcriptData.studentInfo.fullName }}</p>
+                <p>{{ $t('student.department') }}: {{ transcriptData.studentInfo.department }}</p>
+                <p>{{ $t('student.program') }}: {{ transcriptData.studentInfo.program }}</p>
 
                 <h4>{{ $t('student.subject') }}</h4>
                 <ul>
-                    <li v-for="(course, index) in transcriptData.metadata.transcript.courses" :key="index">
+                    <li v-for="(course, index) in transcriptData.courses" :key="index">
                         {{ course.courseName }} - {{ $t('student.grade.title') }}: {{ course.totalScore }}
                     </li>
                 </ul>
 
                 <h4>{{ $t('student.grade.summary.title') }}</h4>
                 <p>{{ $t('student.grade.summary.totalCredits') }}: {{
-                    transcriptData.metadata.transcript.summary.totalCredits }}</p>
+                    transcriptData.summary.totalCredits }}</p>
                 <p>{{ $t('student.grade.summary.gpaOutOf10') }}: {{
-                    transcriptData.metadata.transcript.summary.gpaOutOf10 }}</p>
-                <p>{{ $t('student.grade.summary.gpaOutOf4') }}: {{ transcriptData.metadata.transcript.summary.gpaOutOf4
+                    transcriptData.summary.gpaOutOf10 }}</p>
+                <p>{{ $t('student.grade.summary.gpaOutOf4') }}: {{ transcriptData.summary.gpaOutOf4
                     }}</p>
+
             </div>
         </div>
 
         <!-- Error Modal -->
-        <ErrorModal 
-            :showModal="showErrorModal" 
-            :title="$t('common.error')" 
-            :message="errorMessage"
-            :isTranslated="isErrorTranslated"
-            @update:showModal="showErrorModal = $event" 
-        />
+        <ErrorModal :showModal="showErrorModal" :title="$t('common.error')" :message="errorMessage"
+            :isTranslated="isErrorTranslated" @update:showModal="showErrorModal = $event" />
 
     </div>
 </template>
@@ -74,7 +71,7 @@ export default {
         const transcriptData = ref(null)
         const pdfDoc = ref(null)
         const pdfGenerated = ref(false)
-        
+
         const loading = computed(() => store.state.transcript.loading)
 
         const generateTranscript = async () => {
@@ -86,10 +83,11 @@ export default {
             try {
                 transcriptData.value = await store.dispatch('transcript/getTranscript', studentId.value)
 
+                console.log('Transcript Data:', transcriptData.value)
                 const error = store.state.transcript.error
                 if (error) {
                     pdfGenerated.value = false
-                    handleError({ 
+                    handleError({
                         response: { data: { message: error } }
                     }, 'student.grade.error')
                     return
@@ -100,10 +98,12 @@ export default {
 
                     const element = document.getElementById('pdf-content')
                     const canvas = await html2canvas(element, { scale: 2 })
+
                     const imgData = canvas.toDataURL('image/png')
 
                     const pdf = new jsPDF('p', 'mm', 'a4')
                     const pageWidth = pdf.internal.pageSize.getWidth()
+
                     const imgProps = pdf.getImageProperties(imgData)
                     const imgHeight = (imgProps.height * pageWidth) / imgProps.width
 
@@ -121,7 +121,6 @@ export default {
                 pdfDoc.value.save(`bang_diem_${studentId.value}.pdf`)
             }
         }
-
         return {
             studentId,
             transcriptData,

@@ -25,9 +25,13 @@ export default {
     async getTranscript({ commit }, studentId) {
       commit('SET_LOADING', true)
       try {
+        commit('SET_TRANSCRIPT', null)
         const response = await api.enrollment.getTranscript(studentId)
-        commit('SET_TRANSCRIPT', response.data)
+       
+        commit('SET_TRANSCRIPT', response.data.metadata.transcript)
+
         commit('SET_ERROR', null)
+        return response.data.metadata.transcript
       } catch (error) {
         commit('SET_ERROR', error.response?.data?.message || error.message || 'Fetching transcript failed')
       } finally {

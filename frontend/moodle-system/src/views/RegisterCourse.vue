@@ -94,6 +94,7 @@ export default {
           showSuccessModal.value = true
         }
       } catch (err) {
+        console.error('Error during registration:', err)
         handleError(err, 'enrollment.register.failed')
       }
     }
