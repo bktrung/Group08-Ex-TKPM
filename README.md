@@ -530,6 +530,6 @@ Chạy lệnh `npm run start` để chạy cả frontend và backend, sau đó t
    - Nhấn Download PDF để tải file về
 
      
-#### 2323. Đa ngôn ngữ
+#### 23. Đa ngôn ngữ
    - Chọn biểu tượng Trái đất ở góc dưới phải màn hình để chọn ngôn ngữ hiển thị
      ![image](https://github.com/user-attachments/assets/a3971103-f132-4f17-b2be-7611aee778f0)
