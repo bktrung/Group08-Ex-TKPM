@@ -10,7 +10,6 @@ Our deployment approach emphasizes:
 
 - **🔒 Security-First**: Secure configurations and practices
 - **⚡ Performance**: Optimized builds and caching strategies
-- **🔄 Automation**: CI/CD pipelines for reliable deployments
 - **📊 Monitoring**: Comprehensive observability and alerting
 - **🛡️ Reliability**: High availability and disaster recovery
 - **🔧 Maintainability**: Easy updates and rollback procedures
