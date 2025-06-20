@@ -132,6 +132,7 @@ export default {
 
         const register = (classItem) => {
             emit('register', classItem.classCode)
+            console.log(`Registering for class: ${classItem.classCode}`)
         }
 
         const formatDayOfWeek = (day) => {

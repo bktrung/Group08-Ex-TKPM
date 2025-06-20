@@ -21,10 +21,10 @@
             "create": "Tạo bảng điểm",
             "view": "Xem bảng điểm",
             "summary": {
-                "title": "Summary",
-                "totalCredits": "Total credits",
-                "gpaOutOf10": "GPA (scale 10)",
-                "gpaOutOf4": "GPA (scale 4)"
+                "title": "Tổng kết",
+                "totalCredits": "Tổng số tín chỉ",
+                "gpaOutOf10": "GPA (thang 10)",
+                "gpaOutOf4": "GPA (thang 4)"
             }
         },
         "gender_types": {
